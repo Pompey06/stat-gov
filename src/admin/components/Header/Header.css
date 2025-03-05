@@ -1,0 +1,135 @@
+.header {
+   padding: 54px 60px 0 0;
+   display: flex;
+   flex-direction: column;
+}
+
+/* Десктоп-версия Header */
+.desktop-header {
+   display: block;
+   width: 100%;
+}
+
+.header-top {
+   display: flex;
+   justify-content: flex-end;
+   align-items: center;
+   gap: 26px;
+   width: 100%;
+}
+
+.language-switcher {
+   display: flex;
+}
+
+.lang-button {
+   padding: 5px 10px;
+   border: 1px solid #0086bf;
+   background-color: #fff;
+   color: #0086bf;
+   cursor: pointer;
+   font-size: 16px;
+   font-weight: 300;
+   line-height: 1;
+   transition: background-color 0.3s, color 0.3s;
+}
+
+.ru {
+   border-radius: 5px 0 0 5px;
+}
+
+.kz {
+   border-radius: 0 5px 5px 0;
+}
+
+.lang-button.active {
+   background-color: #0086bf;
+   color: #fff;
+}
+
+.user-info {
+   background-color: #d9d9d9;
+   display: flex;
+   align-items: center;
+   padding: 10px 29px 10px 16px;
+}
+
+.user-info-arrow {
+   margin-left: 30px;
+   width: 16px;
+   height: 16px;
+}
+
+.user-details {
+   display: flex;
+   align-items: center;
+}
+
+.user-info-text {
+   display: flex;
+   flex-direction: column;
+   gap: 5px;
+   margin-left: 15px;
+}
+
+.user-name {
+   color: #82868a;
+   font-family: Roboto;
+   font-size: 16px;
+   font-weight: 300;
+}
+
+.user-email {
+   color: #0086bf;
+   font-family: Roboto;
+   font-size: 16px;
+   font-weight: 300;
+}
+
+.header-bottom-border {
+   margin-top: 10px;
+   height: 1px;
+   background-color: #d3d3d3;
+}
+
+@media (max-width: 768px) {
+   .desktop-header {
+      display: none;
+   }
+   .header {
+      padding: 0;
+      background: #0086bf;
+   }
+   .mobile-header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      padding: 36px 29px 16px 16px;
+      gap: 10px;
+   }
+   .mobile-header-left,
+   .mobile-header-right {
+      flex: 0 0 auto;
+   }
+   .mobile-header-center {
+      flex: 1;
+      text-align: center;
+   }
+   .mobile-header-title {
+      color: #fff;
+      font-family: Roboto;
+      font-size: 20px;
+      font-style: normal;
+      font-weight: 300;
+      line-height: normal;
+      justify-self: start;
+   }
+   .menu-toggle-icon {
+      cursor: pointer;
+      margin-bottom: 2px;
+   }
+   .mobile-user-icon {
+      width: 50px;
+      height: 50px;
+   }
+}

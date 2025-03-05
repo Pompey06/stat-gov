@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+.language {
+   margin-bottom: -4px;
+}
+
+input {
+   border-color: transparent;
+}
+
+input:focus {
+   border-color: transparent;
+   outline: none;
+}
+
+.bg-blue {
+   background: #0068bf !important;
+}
+
+.color-blue {
+   color: #0068bf;
+}
+
+.bg-gray {
+   background: #eee;
+}
+
+.wrapper {
+   width: 100vw;
+   height: 100vh;
+}
+
+.message-list-wrap {
+   min-height: calc(100vh - 158px) !important;
+   max-height: calc(100vh - 158px) !important;
+}
+
+.message-list {
+   padding-top: 30px;
+   padding-left: 30px;
+   padding-right: 40px;
+   min-height: calc(100vh - 158px) !important;
+}
+
+.sidebar {
+   max-height: calc(100vh) !important;
+}
+
+@media (max-width: 900px) {
+   .message-list-wrap {
+      min-height: calc(100vh - 198px) !important;
+      max-height: calc(100vh - 198px) !important;
+   }
+   .message-list {
+      min-height: calc(100vh - 198px) !important;
+   }
+}
+
+@media (max-width: 700px) {
+   .message-list {
+      padding-left: 15px;
+      padding-right: 15px;
+   }
+   .wrapper {
+      padding-bottom: 0;
+   }
+   .sidebar {
+      max-height: 100vh !important;
+   }
+   .typing-container {
+      margin-bottom: 10px !important;
+   }
+}

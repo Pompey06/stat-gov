@@ -1,0 +1,33 @@
+.sidebar-button {
+   width: 100%;
+   background: transparent;
+   border-bottom: 1px solid #D3D3D3;
+   color: #fff;
+   text-align: left;
+   display: flex;
+   align-items: center;
+   gap: 16px;
+   padding: 17px 29px 20px 16px;
+   font-size: 16px;
+   cursor: pointer;
+   transition: background 0.3s;
+ }
+ 
+ .sidebar-button:hover {
+   background: rgba(237, 237, 237, 0.1);
+ }
+ 
+ .sidebar-button.active {
+   background: rgba(237, 237, 237, 0.54);
+ }
+
+ .sidebar-button-text {
+   font-family: Roboto;
+font-size: 20px;
+font-style: normal;
+font-weight: 300;
+line-height: normal;
+color: #FFF;
+ }
+ 
+ 

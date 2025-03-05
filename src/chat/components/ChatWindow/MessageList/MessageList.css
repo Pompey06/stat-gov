@@ -1,0 +1,31 @@
+.typing {
+   font-size: 12px;
+}
+
+.suggestion-text {
+   color: #878787;
+   font-size: 13px;
+   font-weight: 300;
+   text-align: right;
+   margin-bottom: 20px;
+   margin-top: -15px;
+}
+
+@media (max-width: 700px) {
+   .suggestion-text {
+      margin-top: 0;
+   }
+}
+
+.message-list-wrap::-webkit-scrollbar {
+   width: 6px;
+}
+
+.message-list-wrap::-webkit-scrollbar-track {
+   background: transparent;
+}
+
+.message-list-wrap::-webkit-scrollbar-thumb {
+   background: rgb(207, 206, 206);
+   border-radius: 3px;
+}

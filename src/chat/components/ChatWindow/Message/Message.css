@@ -1,0 +1,89 @@
+.message {
+   font-family: Roboto;
+   font-size: 14px;
+   font-style: normal;
+   font-weight: 400;
+   line-height: normal;
+   color: #141414;
+   max-width: 672px;
+}
+
+.user {
+   padding: 15px 22px;
+   color: #fff;
+   border-radius: 16px 16px 0px 16px;
+   background: #0068bf;
+}
+
+.ai {
+   padding: 22px;
+   border-radius: 16px 16px 16px 0px;
+   background: #ebf0f5;
+}
+
+.file-download-container {
+   display: flex;
+   flex-direction: column; /* Изменяем на колонку для вертикального списка файлов */
+   gap: 8px; /* Добавляем отступ между файлами */
+   margin-top: 8px; /* Увеличиваем отступ сверху */
+}
+
+.file-download-link {
+   display: flex;
+   align-items: center;
+   text-decoration: none;
+   font-size: 14px;
+   color: #007bff;
+   font-weight: bold;
+   padding: 4px 6px;
+   margin-left: 2px;
+   border: 1px solid transparent;
+   border-radius: 4px;
+   transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.file-download-link:hover {
+   background-color: #e6f0ff;
+   border-color: #b3d1ff;
+}
+
+.file-icon {
+   margin-right: 6px;
+   width: 20px;
+   height: 20px;
+}
+
+.file-name {
+   font-size: 14px;
+}
+
+.categories {
+}
+
+.message-link {
+   color: #007bff;
+   text-decoration: underline;
+   cursor: pointer;
+}
+.message-link:hover {
+   color: #0056b3;
+}
+
+@media (max-width: 930px) {
+   .message {
+      max-width: 80%;
+   }
+}
+
+@media (max-width: 700px) {
+   .user,
+   .ai {
+      padding: 16px;
+      margin-bottom: 16px;
+      font-size: 16px;
+   }
+   .message {
+      width: 100%;
+      max-width: none;
+   }
+}

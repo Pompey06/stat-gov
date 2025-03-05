@@ -1,0 +1,175 @@
+.feedback-export {
+   padding: 51px 9vw 20px 5.83vw;
+}
+
+.export-title {
+   color: #000;
+   font-size: 24px;
+   font-weight: 300;
+   line-height: 1;
+   margin-bottom: 8px;
+}
+
+.export-subtitle {
+   color: #000;
+   font-size: 16px;
+   font-weight: 300;
+   line-height: 1;
+   margin-bottom: 39px;
+}
+
+.date-picker-container {
+   display: flex;
+   gap: 86px;
+}
+
+/* Можно переопределить стандартные стили react-datepicker через класс */
+.custom-date-picker {
+   width: 150px;
+   padding: 8px 12px;
+   border: 1px solid #ccc;
+   border-radius: 4px;
+   font-size: 14px;
+}
+
+.download-button {
+   padding: 13px 82px;
+   margin-top: 240px;
+}
+
+.react-datepicker__month-container {
+   width: 245px;
+}
+
+.custom-date-input {
+   display: flex;
+   align-items: center;
+   position: relative;
+   border-radius: 8px;
+   border: 1px solid #ddd;
+   background: #fff;
+   padding: 13px 15px;
+   background-color: #fff;
+   gap: 8px;
+}
+
+.date-picker-item {
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+   max-height: 73px;
+   width: 245px;
+}
+
+.date-picker-title {
+   color: #000;
+   font-size: 20px;
+   font-weight: 300;
+   line-height: 1;
+}
+
+.custom-date-input input::placeholder {
+   color: #bbb;
+   font-family: "Open Sans";
+   font-size: 15px;
+   font-weight: 400;
+   line-height: 1;
+}
+
+.calendar-icon {
+   margin-right: 6px;
+}
+
+.date-input-field {
+   border: none;
+   outline: none;
+   flex-grow: 1;
+   font-size: 14px;
+   background: transparent;
+}
+
+.clear-icon {
+   margin-left: 6px;
+   cursor: pointer;
+}
+
+.react-datepicker__header {
+   background-color: transparent;
+   border: none;
+}
+
+.react-datepicker__day--outside-month {
+   opacity: 0.5;
+}
+
+.react-datepicker__current-month {
+   text-transform: capitalize;
+   font-size: 14px;
+   font-weight: bold;
+}
+
+.react-datepicker__day-name {
+   text-transform: capitalize;
+   font-weight: bold;
+   font-size: 14px;
+}
+
+.react-datepicker__day-names {
+   margin-top: 10px;
+}
+
+.react-datepicker__day {
+   font-size: 14px;
+}
+
+.react-datepicker__week {
+   margin-top: -5px;
+}
+
+.react-datepicker__navigation--previous::before {
+   content: "««";
+   font-size: 18px;
+}
+
+.react-datepicker__navigation--next::before {
+   content: "»»";
+   font-size: 18px;
+}
+
+/* Стили для выбранной даты */
+.react-datepicker__day--selected,
+.react-datepicker__day--selected:hover {
+   border-radius: 8px;
+   background: #2f80ed;
+   color: #fff;
+}
+
+@media (max-width: 1024px) {
+   .feedback-export {
+      padding: 50px 20px;
+   }
+}
+
+@media (max-width: 900px) {
+   .date-picker-container {
+      flex-direction: column;
+      gap: 36px;
+   }
+}
+
+@media (max-width: 768px) {
+   .feedback-export {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+   }
+   .export-subtitle {
+      margin-bottom: 32px;
+   }
+   .download-button {
+      margin-top: auto;
+   }
+   .date-picker-container {
+      margin-bottom: 10px;
+   }
+}

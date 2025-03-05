@@ -1,0 +1,51 @@
+.message-input {
+   border-radius: 24px;
+   border: 1px solid #ced2db;
+   width: 100%;
+}
+
+.message-input input {
+   padding: 12px 26px;
+   color: #000;
+   font-family: Roboto;
+   font-size: 16px;
+   font-style: normal;
+   font-weight: 400;
+   line-height: 1;
+   background-color: transparent;
+}
+
+.message-input-container {
+   display: flex;
+   align-items: center;
+   padding-top: 12px;
+   gap: 15px;
+   background: #fff;
+   border-top: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.ai__text {
+   font-family: Roboto;
+   font-size: 12px;
+   font-style: normal;
+   font-weight: 400;
+   line-height: normal;
+   color: #141414;
+   opacity: 0.5;
+   margin-top: 10px;
+}
+
+.bottom__wrapper {
+   padding: 0px 34px 10px 16px;
+}
+
+@media (max-width: 700px) {
+   .message-input-container {
+      padding-right: 7px;
+      gap: 10px;
+      padding-left: 7px;
+   }
+   .message-input input {
+      font-size: 14px;
+   }
+}

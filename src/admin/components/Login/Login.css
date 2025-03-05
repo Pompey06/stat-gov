@@ -1,0 +1,143 @@
+.login-wrapper {
+   background-color: #0086bf;
+   min-height: 100vh;
+   width: 100vw;
+   display: flex;
+   flex-direction: column;
+   gap: 76px;
+   align-items: center;
+   justify-content: center;
+   padding: 20px;
+   overflow-y: auto;
+}
+
+.login-form {
+   background-color: #fff;
+   padding: 54px 70px 44px 70px;
+   border-radius: 5px;
+   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+   margin-bottom: 28px;
+}
+
+.form-group label {
+   color: #0086bf;
+   font-family: Roboto;
+   font-size: 20px;
+   font-style: normal;
+   font-weight: 300;
+   line-height: normal;
+
+   display: block;
+   margin-bottom: 5px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"] {
+   width: 100%;
+   padding: 15px 9px;
+   font-size: 16px;
+   border-radius: 5px;
+   border: 1px solid #d9d9d9;
+   background: #fff;
+   width: 420px;
+   color: #848080;
+   font-family: "Roboto";
+   font-weight: 300;
+   line-height: 1;
+}
+
+.form-group .remember {
+   font-size: 14px;
+   display: flex;
+   align-items: center;
+   gap: 6px;
+}
+
+.checkbox-group {
+   display: flex;
+   align-items: center;
+}
+
+.login-button {
+   width: 100%;
+}
+
+.checkbox-group input[type="checkbox"] {
+   appearance: none;
+   -webkit-appearance: none;
+   width: 20px;
+   height: 20px;
+   border: 1px solid #0086bf;
+   border-radius: 50%;
+   cursor: pointer;
+   position: relative;
+   outline: none;
+   transition: background-color 0.2s, border-color 0.2s;
+}
+
+.checkbox-group input[type="checkbox"]:checked {
+   background-color: #0086bf;
+   border-color: #0086bf;
+}
+
+.checkbox-group input[type="checkbox"]:checked::after {
+   content: "";
+   position: absolute;
+   top: 50%;
+   left: 50%;
+   transform: translate(-50%, -50%);
+   width: 10px;
+   height: 10px;
+   background-color: #fff;
+   border-radius: 50%;
+}
+
+.password-wrapper {
+   position: relative;
+}
+
+.password-wrapper input {
+   width: 100%;
+   padding-right: 40px;
+}
+
+.password-wrapper .hide {
+   position: absolute;
+   top: 50%;
+   right: 10px;
+   transform: translateY(-50%);
+   cursor: pointer;
+}
+
+.form-group input.error {
+   border: 1px solid #f00000;
+}
+
+.wrong__wrapper {
+   display: flex;
+   align-items: end;
+   gap: 2px;
+   margin-top: 3px;
+}
+
+.wrong__text {
+   color: #f00000;
+   font-size: 16px;
+   font-style: normal;
+   font-weight: 300;
+   line-height: normal;
+}
+
+@media (max-width: 600px) {
+   .form-group input[type="text"],
+   .form-group input[type="password"] {
+      width: 100%;
+   }
+   .login-form {
+      width: 95vw;
+      padding: 54px 15px 39px 15px;
+   }
+}

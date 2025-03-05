@@ -1,0 +1,48 @@
+html, body {
+   height: 100%;
+   overflow: hidden;
+ }
+
+ .database-update,
+ .feedback-export {
+   height: calc(100vh - 100px);
+   overflow-y: auto;
+ }
+ 
+
+.app {
+   display: flex;
+   height: 100%;
+ }
+ 
+ .main-content {
+   flex-grow: 1;
+   display: flex;
+   flex-direction: column;
+   background: #EEE;
+   overflow: hidden;
+ }
+
+ .database-update,
+ .feedback-export {
+   height: calc(100vh - 139px);
+   overflow-y: auto;
+ }
+
+.show-768 {
+   display: none;
+}
+
+ @media (max-width: 768px) {
+   .show-768 {
+      display: flex;
+   }
+   .hide-768 {
+      display: none;
+   }
+   .database-update,
+   .feedback-export {
+     height: calc(100vh - 102px);
+   }
+ }
+ 

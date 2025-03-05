@@ -1,0 +1,175 @@
+.database-update {
+   display: flex;
+   flex-direction: column;
+   padding: 20px;
+   overflow-y: auto;
+}
+
+.upload-block {
+   padding: 51px 9vw 0px 5.83vw;
+   display: flex;
+   flex-direction: column;
+}
+
+.upload-title {
+   color: #000;
+   font-family: Roboto;
+   font-size: 24px;
+   font-weight: 300;
+   line-height: 1;
+   margin-bottom: 8px;
+}
+
+.upload-subtitle {
+   color: #000;
+   font-size: 16px;
+   font-weight: 300;
+   line-height: 1;
+   margin-bottom: 32px;
+}
+
+.file-upload-field {
+   height: 170px;
+   border-radius: 3px;
+   border: 2px dashed #0086bf;
+   background: #fff;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   margin-bottom: 32px;
+   cursor: pointer;
+}
+
+.upload-field-text {
+   color: #ada8a8;
+   font-size: 20px;
+   font-weight: 300;
+   line-height: 1;
+}
+
+.upload-field-format {
+   margin-bottom: 8px;
+   color: #0086bf;
+   font-size: 16px;
+   font-weight: 300;
+   line-height: 1;
+}
+
+.upload-button {
+   padding: 13px 97px;
+   display: inline-block;
+   align-self: end;
+}
+
+.file-preview {
+   background-color: #fff;
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+   border-radius: 12px;
+   border: 1px solid #e7e7e7;
+   padding: 16px;
+   margin-top: 16px;
+   margin-bottom: 32px;
+}
+
+.file-preview-header {
+   display: flex;
+   align-items: center;
+}
+
+.file-preview-icon {
+   margin-right: 10px;
+}
+
+.file-preview-info {
+   flex-grow: 1;
+}
+
+.file-name {
+   color: #0b0b0b;
+   font-size: 14px;
+   font-style: normal;
+   font-weight: 600;
+   line-height: 1.5;
+}
+
+.file-size {
+   color: #6d6d6d;
+   font-size: 14px;
+   font-style: normal;
+   font-weight: 600;
+   line-height: 1.5;
+}
+
+.file-remove-icon {
+   cursor: pointer;
+}
+
+.upload-progress {
+   display: flex;
+   position: relative;
+   width: 95%;
+   height: 10px;
+   background-color: #e0e0e0;
+   border-radius: 5px;
+   margin-top: 10px;
+}
+
+.upload-progress-bar {
+   height: 100%;
+   background-color: #0086bf;
+   border-radius: 5px;
+   transition: width 0.3s ease;
+}
+
+.upload-progress-text {
+   color: #6d6d6d;
+   font-size: 16px;
+   font-weight: 400;
+   position: absolute;
+   right: -55px;
+   bottom: -2px;
+   color: #333;
+}
+
+@media (max-width: 1024px) {
+   .database-update {
+      padding: 20px;
+      align-items: center;
+   }
+   .upload-button {
+      align-self: center;
+   }
+}
+
+@media (max-width: 768px) {
+   .database-update {
+      padding: 16px;
+      padding-bottom: 0;
+      overflow-x: hidden;
+   }
+   .upload-block {
+      padding: 0;
+      padding-bottom: 20px;
+   }
+   .upload-title {
+      text-align: center;
+   }
+   .upload-subtitle {
+      text-align: center;
+   }
+}
+
+@media (max-width: 550px) {
+   .upload-progress {
+      width: 85%;
+   }
+}
+
+@media (max-width: 400px) {
+   .upload-progress {
+      width: 80%;
+   }
+}

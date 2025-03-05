@@ -1,0 +1,108 @@
+.sidebar {
+   background-color: #0086bf;
+   height: 100vh;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   padding: 64px 20px 20px 60px;
+   width: 400px;
+}
+
+/* Стандартные стили для логотипа и навигации */
+.sidebar-logo {
+   margin-bottom: 30px;
+}
+
+.sidebar-nav {
+   width: 100%;
+   display: flex;
+   flex-direction: column;
+   gap: 15px;
+}
+
+/* Стили для десктопа (ширина больше 768px) остаются без изменений */
+@media (max-width: 1024px) {
+   .sidebar {
+      padding: 20px;
+      padding-right: 0;
+      width: 250px;
+   }
+}
+
+/* Мобильные стили (максимальная ширина 768px) */
+@media (max-width: 768px) {
+   .sidebar {
+      padding: 20px;
+      /* Делаем sidebar фиксированным, чтобы он занимал весь экран */
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      transition: transform 0.3s ease;
+      z-index: 1000;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: start;
+   }
+   /* Состояние закрытого меню – сдвиг за экран */
+   .sidebar.closed {
+      transform: translateX(-100%);
+   }
+   /* Открытое меню – без сдвига */
+   .sidebar.open {
+      transform: translateX(0);
+   }
+
+   /* Перестройка логотипа и бургер-иконки */
+   .sidebar-logo {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      margin-bottom: 20px;
+   }
+   .logo {
+      width: 50px;
+      height: 50px;
+   }
+   /* Можно скорректировать размеры кнопок и текста */
+   .sidebar-button-text {
+      font-size: 16px;
+   }
+   .sidebar-button {
+      padding: 12px;
+      padding-bottom: 20px;
+   }
+   .sidebar-nav {
+      margin-bottom: 10px;
+   }
+   .sidebar-bottom {
+      margin-top: auto;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+   }
+   .sidebar-bottom .user-info {
+      border-radius: 5px;
+      background: #d9d9d9;
+      padding: 10px 14px;
+   }
+   .sidebar-bottom .lang-button {
+      border: 1px solid #eee;
+      background-color: #0086bf;
+      color: #fff;
+   }
+   .sidebar-bottom .lang-button.active {
+      background-color: #eee;
+      color: #0086bf;
+   }
+   .sidebar-bottom .user-email {
+      font-size: 14px;
+   }
+   .sidebar-bottom .user-name {
+      font-size: 14px;
+   }
+}
