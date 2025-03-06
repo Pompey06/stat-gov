@@ -48,7 +48,7 @@ CustomDateInput.propTypes = {
 
 CustomDateInput.displayName = "CustomDateInput";
 
-const FeedbackExport = () => {
+const FeedbackExport = ({ credentials }) => {
    const { t } = useTranslation();
    const api = useApi();
    const [startDate, setStartDate] = useState(null);
@@ -59,7 +59,11 @@ const FeedbackExport = () => {
          console.error("Обе даты должны быть выбраны");
          return;
       }
-      const encodedCredentials = btoa("admin:HmADJuDisELD");
+      if (!credentials) {
+         console.error("Учётные данные не заданы");
+         return;
+      }
+      const encodedCredentials = btoa(`${credentials.login}:${credentials.password}`);
       try {
          const response = await api.get("/conversation/export.xlsx", {
             headers: {
@@ -98,7 +102,7 @@ const FeedbackExport = () => {
                   onChange={(date) => setStartDate(date)}
                   placeholderText={t("feedbackExport.datePlaceholder")}
                   dateFormat="dd.MM.yyyy"
-                  maxDate={endDate} // Нельзя выбрать дату больше, чем endDate
+                  maxDate={endDate}
                   customInput={
                      <CustomDateInput
                         onClear={() => setStartDate(null)}
@@ -115,7 +119,7 @@ const FeedbackExport = () => {
                   onChange={(date) => setEndDate(date)}
                   placeholderText={t("feedbackExport.datePlaceholder")}
                   dateFormat="dd.MM.yyyy"
-                  minDate={startDate} // Нельзя выбрать дату меньше, чем startDate
+                  minDate={startDate}
                   customInput={
                      <CustomDateInput
                         onClear={() => setEndDate(null)}
@@ -125,16 +129,18 @@ const FeedbackExport = () => {
                />
             </div>
          </div>
-         <Button
-            type="button"
-            onClick={handleDownload}
-            className="download-button"
-            disabled={!startDate || !endDate} // Блокировка кнопки, если даты не выбраны
-         >
+         <Button type="button" onClick={handleDownload} className="download-button" disabled={!startDate || !endDate}>
             {t("feedbackExport.downloadButton")}
          </Button>
       </div>
    );
+};
+
+FeedbackExport.propTypes = {
+   credentials: PropTypes.shape({
+      login: PropTypes.string.isRequired,
+      password: PropTypes.string.isRequired,
+   }).isRequired,
 };
 
 export default FeedbackExport;

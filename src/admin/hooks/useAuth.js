@@ -7,7 +7,7 @@ export const useAuth = () => {
    /**
     * Функция для проверки логина администратора.
     * @param {string} login - Логин (например, "admin").
-    * @param {string} password - Пароль (например, "HmADJuDisELD").
+    * @param {string} password
     * @returns {Promise<boolean>} - Возвращает true, если авторизация успешна, иначе false.
     */
    const checkAdmin = async (login, password) => {
