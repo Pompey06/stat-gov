@@ -21,6 +21,11 @@ const ChatProvider = ({ children }) => {
    const [currentCategory, setCurrentCategory] = useState(null);
    const [currentSubcategory, setCurrentSubcategory] = useState(null);
 
+   const api = axios.create({
+      baseURL: import.meta.env.VITE_API_URL,
+      withCredentials: true, // <-- добавлено
+   });
+
    const createDefaultChat = () => ({
       id: null,
       title: null,
@@ -68,7 +73,7 @@ const ChatProvider = ({ children }) => {
 
    const fetchChatHistory = async (chatId) => {
       try {
-         const response = await axios.get(`${import.meta.env.VITE_API_URL}/conversation/by-id/${chatId}`);
+         const response = await api.get(`/conversation/by-id/${chatId}`);
 
          const formattedMessages = response.data.messages.map((message) => ({
             text: message.text,
@@ -144,7 +149,7 @@ const ChatProvider = ({ children }) => {
 
    const fetchMyChats = async () => {
       try {
-         const response = await axios.get(`${import.meta.env.VITE_API_URL}/conversation/my`);
+         const response = await api.get(`/conversation/my`);
          return response.data;
       } catch (error) {
          console.error("Error fetching my chats:", error);
@@ -185,7 +190,7 @@ const ChatProvider = ({ children }) => {
       }
 
       try {
-         const res = await axios.get(`${import.meta.env.VITE_API_URL}/assistant/categories`);
+         const res = await api.get(`/assistant/categories`);
          const fetchedCategories = res.data.categories;
          setCategories(fetchedCategories);
          setTranslationsKz(res.data.translations_kz || {});
@@ -430,7 +435,7 @@ const ChatProvider = ({ children }) => {
          };
 
          // Отправляем запрос с новыми параметрами
-         const res = await axios.post(`${import.meta.env.VITE_API_URL}/assistant/ask`, null, { params });
+         const res = await api.post(`/assistant/ask`, null, { params });
 
          // Получаем данные из ответа
          const conversationId = res.data.conversation_id;
@@ -746,14 +751,11 @@ const ChatProvider = ({ children }) => {
          );
          if (!currentChat) throw new Error("Chat not found");
 
-         const response = await axios.post(
-            `${import.meta.env.VITE_API_URL}/conversation/by-id/${currentChat.id}/add-feedback`,
-            {
-               message_index: messageIndex,
-               rate: rate,
-               text: text,
-            }
-         );
+         const response = await api.post(`/conversation/by-id/${currentChat.id}/add-feedback`, {
+            message_index: messageIndex,
+            rate: rate,
+            text: text,
+         });
 
          // Сохраняем информацию об отправленном фидбеке
          saveFeedbackState(currentChat.id, messageIndex);

@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { BaseModal } from "./BaseModal";
 import clearIcon from "../../../assets/clearIcon.svg";
-import InputMask from "react-input-mask";
+// import InputMask from "react-input-mask"; // Удаляем, чтобы не было проблем с findDOMNode
 import { useTranslation } from "react-i18next";
 import "./Modal.css";
 import axios from "axios";
@@ -10,18 +10,17 @@ import chatI18n from "../../../i18n";
 export default function RegistrationModal({ isOpen, onClose, title, onSubmit, currentChatId, addBotMessage }) {
    const { t } = useTranslation(undefined, { i18n: chatI18n });
 
-   // Состояние для типа лица: 'physical' (по умолчанию) или 'legal'
+   const api = axios.create({
+      baseURL: import.meta.env.VITE_API_URL,
+      withCredentials: true,
+   });
+
+   // ========= Состояние и refs =========
    const [entityType, setEntityType] = useState("physical");
-   // Состояние для открытого селекта региона (если потребуется в будущем)
-   const [regionOpen, setRegionOpen] = useState(false);
-   // Состояние для списка регионов
    const [regions, setRegions] = useState([]);
-   // Состояние для загрузки регионов
    const [loadingRegions, setLoadingRegions] = useState(false);
-   // Состояние для ошибки загрузки регионов
    const [regionsError, setRegionsError] = useState(null);
 
-   // Используем refs для полей формы
    const surnameRef = useRef(null);
    const nameRef = useRef(null);
    const patronymicRef = useRef(null);
@@ -32,28 +31,60 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
    const binRef = useRef(null);
    const iinRef = useRef(null);
 
-   // Состояние для выбранных файлов
    const [selectedFiles, setSelectedFiles] = useState([]);
-
    const [isSubmitting, setIsSubmitting] = useState(false);
-   // errors: если значение true — добавляется класс error
    const [errors, setErrors] = useState({});
 
-   // Загрузка регионов при открытии модального окна
+   // ========= Локальное состояние для телефона (заменяем InputMask) =========
+   const [phoneValue, setPhoneValue] = useState("");
+
+   // Функция форматирования номера: +7 9999 99 99 99
+   const formatPhone = (rawValue) => {
+      // Удаляем всё, кроме цифр
+      let digits = rawValue.replace(/\D/g, "");
+
+      // Ограничим максимум 11 цифрами (первая — 7, потом 10 ещё)
+      if (digits.length > 11) {
+         digits = digits.slice(0, 11);
+      }
+
+      // Убедимся, что начинается с "7" (по аналогии с +7)
+      if (!digits.startsWith("7")) {
+         digits = "7" + digits;
+      }
+
+      // Собираем результат: +7 9999 99 99 99
+      let formatted = "+7";
+      if (digits.length > 1) {
+         // первые 4 цифры после 7
+         formatted += " " + digits.substring(1, Math.min(5, digits.length));
+      }
+      if (digits.length >= 5) {
+         formatted += " " + digits.substring(5, Math.min(7, digits.length));
+      }
+      if (digits.length >= 7) {
+         formatted += " " + digits.substring(7, Math.min(9, digits.length));
+      }
+      if (digits.length >= 9) {
+         formatted += " " + digits.substring(9, Math.min(11, digits.length));
+      }
+
+      return formatted;
+   };
+
+   // ========= Эффект загрузки регионов при открытии модалки =========
    useEffect(() => {
       if (isOpen) {
          fetchRegions();
       }
    }, [isOpen]);
 
-   // Функция для загрузки регионов
    const fetchRegions = async () => {
       setLoadingRegions(true);
       setRegionsError(null);
 
       try {
-         const response = await axios.get(`${import.meta.env.VITE_API_URL}/form/get-regions`);
-         // Проверяем наличие данных в ответе
+         const response = await api.get(`/form/get-regions`);
          if (response.data && response.data.result && Array.isArray(response.data.result)) {
             setRegions(response.data.result);
          } else {
@@ -67,12 +98,12 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
       }
    };
 
-   // При любом изменении значения очищаем ошибку для этого поля
+   // ========= Валидация при любом изменении значения (сброс ошибки) =========
    const handleChange = (e) => {
       setErrors((prev) => ({ ...prev, [e.target.name]: false }));
    };
 
-   // onBlur-валидация для полей (BIN, ИИН, телефон, email)
+   // ========= onBlur-валидация для BIN, ИИН, телефон, email =========
    const handleBlur = (e) => {
       const { name, value } = e.target;
       let error = false;
@@ -83,7 +114,7 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
             error = !/^\d+$/.test(value);
          }
          if (name === "phone") {
-            // Телефон: разрешаем цифры, пробелы, плюс, тире, скобки (без проверки длины)
+            // Разрешаем цифры, пробелы, +, -, скобки
             error = !/^[0-9+\-\s()]+$/.test(value);
          }
          if (name === "email") {
@@ -93,12 +124,12 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
       setErrors((prev) => ({ ...prev, [name]: error }));
    };
 
-   // Для полей, где разрешены только цифры (BIN, ИИН, телефон)
+   // ========= Поля, где разрешены только цифры (bin, iin, phone) =========
    const handleDigitInput = (e) => {
       e.target.value = e.target.value.replace(/\D/g, "");
    };
 
-   // Обработка выбора файлов
+   // ========= Обработка выбора файлов =========
    const handleFileChange = (e) => {
       const files = Array.from(e.target.files);
       const validFiles = files.filter((file) => file.size <= 5 * 1024 * 1024);
@@ -113,13 +144,14 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
       setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
    };
 
-   // Функция для получения значения поля или null, если оно пустое
+   // ========= Возвращает либо строку trim, либо null =========
    const getFieldValueOrNull = (ref) => {
       if (!ref.current) return null;
       const value = ref.current.value.trim();
       return value === "" ? null : value;
    };
 
+   // ========= Сабмит формы =========
    const handleSubmit = async () => {
       const formData = new FormData();
 
@@ -128,7 +160,7 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
       formData.append("last_name", surnameRef.current.value);
       formData.append("first_name", nameRef.current.value);
 
-      // Необязательные поля - отправляем null если пустые
+      // Необязательные поля
       const patronymic = getFieldValueOrNull(patronymicRef);
       const description = getFieldValueOrNull(descriptionRef);
 
@@ -146,8 +178,6 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
       // Если выбрано юридическое лицо, добавляем BIN и IIN
       if (entityType === "legal") {
          formData.append("bin_number", binRef.current.value);
-
-         // IIN необязательное поле - отправляем null если пустое
          const iin = getFieldValueOrNull(iinRef);
          formData.append("iin_number", iin);
       }
@@ -160,19 +190,19 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
          phone: phoneRef.current.value,
          email: emailRef.current.value,
          region: regionRef.current.value,
-         ...(entityType === "legal" && { bin: binRef.current.value }), // BIN обязателен только для юридического лица
+         ...(entityType === "legal" && { bin: binRef.current.value }),
       }).forEach(([key, value]) => {
          if (!value.trim()) {
-            newErrors[key] = true; // Пустое обязательное поле
+            newErrors[key] = true;
          } else {
             if (key === "bin" && !/^\d+$/.test(value)) {
-               newErrors[key] = true; // BIN должен содержать только цифры
+               newErrors[key] = true;
             }
             if (key === "phone" && !/^[0-9+\-\s()]+$/.test(value)) {
-               newErrors[key] = true; // Телефон: только цифры, пробелы, +, -, скобки
+               newErrors[key] = true;
             }
             if (key === "email" && !/\S+@\S+\.\S+/.test(value)) {
-               newErrors[key] = true; // Email: стандартная проверка
+               newErrors[key] = true;
             }
          }
       });
@@ -183,14 +213,11 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
       setIsSubmitting(true);
 
       try {
-         // Выбираем эндпоинт в зависимости от типа лица
-         const endpoint =
-            entityType === "physical"
-               ? `${import.meta.env.VITE_API_URL}/form/submit-form/individual`
-               : `${import.meta.env.VITE_API_URL}/form/submit-form/corporate`;
+         // Определяем эндпоинт
+         const endpoint = entityType === "physical" ? `/form/submit-form/individual` : `/form/submit-form/corporate`;
 
-         // Отправка данных на API
-         const response = await axios.post(endpoint, formData, {
+         // Отправляем форму
+         const response = await api.post(endpoint, formData, {
             headers: {
                "Content-Type": "multipart/form-data",
             },
@@ -201,13 +228,13 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
          // Получаем ID из ответа
          const requestId = response.data?.result?.id;
 
-         // Если ID получен, добавляем сообщение в чат от бота
+         // Если есть ID, шлём сообщение в чат
          if (requestId && addBotMessage) {
             const successMessage = t("registration.successMessage", { requestId });
             addBotMessage(successMessage);
          }
 
-         // Очистка формы после успешной отправки
+         // Очистка полей
          if (surnameRef.current) surnameRef.current.value = "";
          if (nameRef.current) nameRef.current.value = "";
          if (patronymicRef.current) patronymicRef.current.value = "";
@@ -220,10 +247,10 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
          setSelectedFiles([]);
          setErrors({});
 
-         // Вызываем callback после успешной отправки
+         // Вызываем колбэк
          onSubmit(response.data);
 
-         // Закрываем модальное окно после успешной отправки
+         // Закрываем модалку
          handleClose();
       } catch (error) {
          console.error("Ошибка при отправке формы:", error);
@@ -232,6 +259,7 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
       }
    };
 
+   // ========= Закрытие модалки =========
    const handleClose = () => {
       if (surnameRef.current) surnameRef.current.value = "";
       if (nameRef.current) nameRef.current.value = "";
@@ -248,10 +276,8 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
       onClose();
    };
 
-   // Компонент для отображения звездочки обязательного поля
    const RequiredStar = () => <span className="text-red-500">*</span>;
 
-   // Функция для повторной загрузки регионов при ошибке
    const handleRetryLoadRegions = () => {
       fetchRegions();
    };
@@ -290,6 +316,7 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
                   placeholder={t("registration.surname")}
                />
             </div>
+
             <div className="form-group mb-2.5">
                <label htmlFor="name" className="block text-sm font-medium mb-1">
                   {t("registration.name")} <RequiredStar />
@@ -305,6 +332,7 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
                   placeholder={t("registration.name")}
                />
             </div>
+
             <div className="form-group mb-2.5">
                <label htmlFor="patronymic" className="block text-sm font-medium mb-1">
                   {t("registration.patronymic")}
@@ -316,32 +344,46 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
                   ref={patronymicRef}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`registration-input w-full`}
+                  className="registration-input w-full"
                   placeholder={t("registration.patronymic")}
                />
             </div>
+
+            {/* ======== ЗАМЕНА InputMask на ручную маску ======== */}
             <div className="form-group mb-2.5">
                <label htmlFor="phone" className="block text-sm font-medium mb-1">
                   {t("registration.phone")} <RequiredStar />
                </label>
-               <InputMask
-                  mask="+7 9999 99 99 99"
-                  maskChar=" "
-                  onBlur={(e) => handleBlur({ target: { name: "phone", value: e.target.value } })}
-                  onChange={(e) => handleChange({ target: { name: "phone", value: e.target.value } })}
-               >
-                  {(inputProps) => (
-                     <input
-                        {...inputProps}
-                        id="phone"
-                        name="phone"
-                        ref={phoneRef}
-                        className={`registration-input w-full ${errors.phone ? "error" : ""}`}
-                        placeholder={t("registration.phone")}
-                     />
-                  )}
-               </InputMask>
+               <input
+                  type="text"
+                  id="phone"
+                  name="phone"
+                  ref={phoneRef}
+                  className={`registration-input w-full ${errors.phone ? "error" : ""}`}
+                  placeholder={t("registration.phone")}
+                  // Значение берем из phoneValue
+                  value={phoneValue}
+                  // При вводе форматируем и сохраняем в phoneRef и в state
+                  onChange={(e) => {
+                     const formatted = formatPhone(e.target.value);
+                     setPhoneValue(formatted);
+                     if (phoneRef.current) {
+                        phoneRef.current.value = formatted;
+                     }
+                     handleChange({ target: { name: "phone", value: formatted } });
+                  }}
+                  onBlur={(e) => {
+                     const formatted = formatPhone(e.target.value);
+                     setPhoneValue(formatted);
+                     if (phoneRef.current) {
+                        phoneRef.current.value = formatted;
+                     }
+                     handleBlur({ target: { name: "phone", value: formatted } });
+                  }}
+               />
             </div>
+            {/* ================================================ */}
+
             <div className="form-group mb-2.5">
                <label htmlFor="email" className="block text-sm font-medium mb-1">
                   {t("registration.email")} <RequiredStar />
@@ -388,14 +430,14 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
                         onInput={handleDigitInput}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        className={`registration-input w-full`}
+                        className="registration-input w-full"
                         placeholder={t("registration.iin")}
                      />
                   </div>
                </div>
             )}
 
-            {/* Поле-селект "Выберите регион" с кликабельной стрелкой */}
+            {/* Поле-селект "Выберите регион" */}
             <div className="form-group mb-2.5">
                <label htmlFor="region" className="block text-sm font-medium mb-1">
                   {t("registration.region.select")} <RequiredStar />
@@ -447,7 +489,7 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
                   ref={descriptionRef}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`registration-textarea w-full`}
+                  className="registration-textarea w-full"
                   placeholder={t("registration.description")}
                   rows="5"
                ></textarea>

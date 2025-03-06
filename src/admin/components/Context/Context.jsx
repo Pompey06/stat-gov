@@ -10,6 +10,7 @@ export const ContextProvider = ({ children }) => {
    // Создаем экземпляр axios с базовым URL
    const api = axios.create({
       baseURL: import.meta.env.VITE_API_URL,
+      withCredentials: true,
    });
 
    // Здесь можно добавить interceptors для логирования, обработки ошибок и т.д.

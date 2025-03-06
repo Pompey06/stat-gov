@@ -4,11 +4,17 @@ import downloadIcon from "../../../assets/pdf.svg";
 import "./Message.css";
 import { useTranslation } from "react-i18next";
 import chatI18n from "../../../i18n";
+//import { useApi } from "../../../context/ChatContext";
 
 export default function Message({ text, isUser, isButton, onClick, filePath, filePaths }) {
    const { t } = useTranslation(undefined, { i18n: chatI18n });
-
    // Преобразуем все пути к файлам в массив
+
+   const api = axios.create({
+      baseURL: import.meta.env.VITE_API_URL,
+      withCredentials: true,
+   });
+
    const allFilePaths = React.useMemo(() => {
       if (filePaths && Array.isArray(filePaths)) {
          return filePaths.filter((path) => typeof path === "string"); // Фильтруем только строки
@@ -112,9 +118,7 @@ export default function Message({ text, isUser, isButton, onClick, filePath, fil
       }
 
       try {
-         const response = await axios({
-            method: "get",
-            url: `${import.meta.env.VITE_API_URL}/knowledge/get-file`,
+         const response = await api.get(`/knowledge/get-file`, {
             params: { path: path },
             responseType: "blob",
          });
