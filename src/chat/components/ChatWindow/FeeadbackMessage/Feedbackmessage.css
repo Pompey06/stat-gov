@@ -4,11 +4,12 @@
    font-style: normal;
    font-weight: 400;
    line-height: normal;
+   align-items: center;
    color: #141414;
-   max-width: 672px;
-   padding: 22px;
+   padding: 12px;
    border-radius: 16px 16px 16px 0px;
    background: #ebf0f5;
+   max-width: 170px;
 }
 
 .feedback-button {
@@ -16,12 +17,12 @@
    border: 1px solid #0068bf;
    background: #fff;
    color: #0068bf;
-   font-size: 16px;
-   padding: 10px 45px;
+   font-size: 12px;
+   /*padding: 10px 15px;*/
+   padding: 6px 20px;
    position: relative;
    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
    font-weight: 400;
-   margin: 0 8px;
 }
 
 .feedback-button:hover {
@@ -31,6 +32,7 @@
 }
 
 .feedback-button img {
+   width: 19px;
    transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
