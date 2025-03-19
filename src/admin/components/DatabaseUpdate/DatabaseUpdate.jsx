@@ -78,7 +78,7 @@ export const FileUploadBlock = ({
                      onDragOver={handleDragOver}
                   >
                      <img src={uploadIcon} alt="Upload" className="upload-icon" />
-                     <p className="upload-field-format">csv, xlsx</p>
+                     <p className="upload-field-format">xlsx</p>
                      <p className="upload-field-text">{fileFieldText}</p>
                      {/* Скрытый input для выбора файла */}
                      <input

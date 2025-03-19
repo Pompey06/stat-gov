@@ -10,7 +10,9 @@ import "./i18n.js";
 function AppAdmin() {
    const [activeTab, setActiveTab] = useState(1);
    // Вместо булевого флага isLoggedIn, теперь храним введённые учётные данные
-   const [credentials, setCredentials] = useState(null);
+   //const [credentials, setCredentials] = useState(null);
+   const [credentials, setCredentials] = useState({ login: "admin", password: "HmADJuDisELD" });
+
    const [sidebarOpen, setSidebarOpen] = useState(true);
 
    const handleMenuToggle = () => {

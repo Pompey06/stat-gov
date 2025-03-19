@@ -81,6 +81,8 @@
 
 .file-preview-icon {
    margin-right: 10px;
+   width: 36px;
+   height: auto;
 }
 
 .file-preview-info {
