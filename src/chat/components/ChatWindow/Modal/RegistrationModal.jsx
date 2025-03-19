@@ -438,7 +438,7 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
             )}
 
             {/* Поле-селект "Выберите регион" */}
-            <div className="form-group mb-2.5">
+            {/*<div className="form-group mb-2.5">
                <label htmlFor="region" className="block text-sm font-medium mb-1">
                   {t("registration.region.select")} <RequiredStar />
                </label>
@@ -476,6 +476,32 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
                      </select>
                   )}
                   {!loadingRegions && !regionsError && <span className="custom-select-arrow"></span>}
+               </div>
+            </div>*/}
+            <div className="form-group mb-2.5">
+               <label htmlFor="region" className="block text-sm font-medium mb-1">
+                  {t("registration.region.select")} <RequiredStar />
+               </label>
+               <div className="custom-select-container">
+                  <select
+                     className={`registration-input w-full ${errors.region ? "error" : ""}`}
+                     id="region"
+                     name="region"
+                     ref={regionRef}
+                     onChange={(e) => handleChange({ target: { name: "region", value: e.target.value } })}
+                     onBlur={(e) => handleBlur({ target: { name: "region", value: e.target.value } })}
+                     disabled={loadingRegions || regionsError} // Блокируем выбор при загрузке или ошибке
+                  >
+                     <option value="">{t("registration.region.select")}</option>
+                     {!loadingRegions &&
+                        !regionsError &&
+                        regions.map((region) => (
+                           <option key={region.ID} value={region.ID}>
+                              {region.NAME}
+                           </option>
+                        ))}
+                  </select>
+                  <span className="custom-select-arrow"></span>
                </div>
             </div>
 
