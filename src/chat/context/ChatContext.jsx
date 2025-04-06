@@ -484,6 +484,7 @@ const ChatProvider = ({ children }) => {
                if (String(chat.id) === String(currentChatId) || (chat.id === null && chat === prev[0])) {
                   return {
                      ...chat,
+                     isEmpty: false, // Устанавливаем, что чат больше не пустой
                      lastUpdated: new Date().toISOString(),
                      messages: [
                         ...chat.messages.filter((message) => !message.isButton),
