@@ -35,6 +35,7 @@ const ChatProvider = ({ children }) => {
             isUser: false,
             isFeedback: false,
             isButton: false,
+            isGreeting: true,
          },
       ],
       isEmpty: true,

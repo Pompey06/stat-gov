@@ -67,6 +67,7 @@ export default function MessageList({ isSidebarOpen, toggleSidebar }) {
                                  isUser={message.isUser}
                                  messageIndex={botMessageIndex}
                                  isButton={message.isButton}
+                                 isGreeting={message.isGreeting}
                                  onClick={() => handleButtonClick(message)}
                                  filePath={message.filePath}
                                  filePaths={message.filePaths}

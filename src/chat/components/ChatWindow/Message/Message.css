@@ -57,7 +57,8 @@
    font-size: 14px;
 }
 
-.categories {
+.bot-response {
+   padding-top: 30px;
 }
 
 .message-link {
@@ -67,6 +68,28 @@
 }
 .message-link:hover {
    color: #0056b3;
+}
+
+.copy-button {
+   position: absolute;
+   top: 4px;
+   right: 4px;
+   background: transparent;
+   display: flex;
+   align-items: center;
+   gap: 4px;
+   border: none;
+   cursor: pointer;
+   transition: background-color 0.2s;
+}
+
+.copy-button:hover {
+   background-color: #f0f0f0;
+}
+
+.icon-xs,
+.icon-check {
+   margin-top: 2px;
 }
 
 @media (max-width: 930px) {
