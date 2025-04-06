@@ -47,6 +47,46 @@ const ChatProvider = ({ children }) => {
       buttonsWereShown: false,
    });
 
+   function autoDeleteInactiveChats() {
+      const now = new Date();
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+      setChats((prevChats) => {
+         // Выделяем дефолтный чат (id === null) отдельно – он не подлежит автоудалению
+         const defaultChat = prevChats.find((chat) => chat.id === null);
+
+         // Фильтруем все чаты с id !== null, оставляя только активные (lastUpdated не старше недели)
+         const activeNonDefault = prevChats
+            .filter((chat) => chat.id !== null)
+            .filter((chat) => new Date(chat.lastUpdated) >= weekAgo);
+
+         // Помечаем как удалённые неактивные (только для чатов с id !== null)
+         prevChats.forEach((chat) => {
+            if (chat.id !== null) {
+               const lastUpdatedDate = new Date(chat.lastUpdated);
+               if (lastUpdatedDate < weekAgo) {
+                  markChatAsDeleted(chat.id);
+               }
+            }
+         });
+
+         // Собираем итоговый массив: если дефолтный чат есть, он всегда остается
+         const newChats = defaultChat ? [defaultChat, ...activeNonDefault] : activeNonDefault;
+
+         // Если текущий активный чат удален (или его id нет в новом массиве), переключаемся:
+         if (currentChatId && !newChats.some((chat) => String(chat.id) === String(currentChatId))) {
+            if (activeNonDefault.length > 0) {
+               setCurrentChatId(activeNonDefault[0].id);
+            } else if (defaultChat) {
+               setCurrentChatId(defaultChat.id);
+            }
+         }
+
+         console.log("autoDeleteInactiveChats: newChats =", newChats);
+         return newChats;
+      });
+   }
+
    const [chats, setChats] = useState(() => [createDefaultChat()]);
    const [currentChatId, setCurrentChatId] = useState(null);
    const [isTyping, setIsTyping] = useState(false);
@@ -162,7 +202,7 @@ const ChatProvider = ({ children }) => {
    };
 
    useEffect(() => {
-      const loadExistingChats = async () => {
+      const loadAndCleanChats = async () => {
          try {
             const myChats = await fetchMyChats();
             const filteredChats = myChats.filter((chat) => !isChatDeleted(chat.id));
@@ -179,12 +219,14 @@ const ChatProvider = ({ children }) => {
                   })),
                ];
             });
+            // После загрузки чатов запускаем автоматическое удаление неактивных
+            autoDeleteInactiveChats();
          } catch (error) {
             console.error("Error loading existing chats:", error);
          }
       };
 
-      loadExistingChats();
+      loadAndCleanChats();
    }, []);
 
    const fetchInitialMessages = async () => {
@@ -845,6 +887,18 @@ const ChatProvider = ({ children }) => {
          })
       );
    };
+
+   //const updateChatLastUpdated = (chatId, newDate) => {
+   //   setChats((prevChats) =>
+   //      prevChats.map((chat) => (String(chat.id) === String(chatId) ? { ...chat, lastUpdated: newDate } : chat))
+   //   );
+   //};
+
+   //if (typeof window !== "undefined") {
+   //   window.updateChatLastUpdated = updateChatLastUpdated;
+   //}
+
+   //и ещё для проверки удаления неактивных чатов нужно autoDeleteInactiveChats передать в sidebar и раскоментировать вызов внутри handleNewChat
 
    return (
       <ChatContext.Provider

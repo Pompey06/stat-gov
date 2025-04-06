@@ -24,6 +24,8 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
 
    const handleNewChat = () => {
       createNewChat();
+      // Временный вызов для проверки удаления неактивных чатов:
+      //autoDeleteInactiveChats();
       if (isMobile) {
          toggleSidebar();
       }
