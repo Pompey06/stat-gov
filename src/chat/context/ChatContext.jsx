@@ -40,6 +40,7 @@ const ChatProvider = ({ children }) => {
             isGreeting: true,
          },
       ],
+      lastUpdated: new Date().toISOString(), // Новый параметр активности
       isEmpty: true,
       showInitialButtons: true,
       buttonsWereHidden: false,
@@ -441,6 +442,7 @@ const ChatProvider = ({ children }) => {
                if (String(chat.id) === String(currentChatId) || (chat.id === null && chat === prev[0])) {
                   return {
                      ...chat,
+                     lastUpdated: new Date().toISOString(),
                      messages: [
                         ...chat.messages.filter((message) => !message.isButton),
                         {
