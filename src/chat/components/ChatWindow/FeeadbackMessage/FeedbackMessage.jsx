@@ -14,7 +14,7 @@ import chatI18n from "../../../i18n";
 export default function FeedbackMessage({ messageIndex }) {
    const { currentChatId } = useContext(ChatContext);
    const { t } = useTranslation(undefined, { i18n: chatI18n });
-   const { removeFeedbackMessage, sendFeedback } = useContext(ChatContext);
+   const { sendFeedback } = useContext(ChatContext);
    const [modalType, setModalType] = useState(null);
    const [hoveredButton, setHoveredButton] = useState(null);
    const [selectedMessageIndex, setSelectedMessageIndex] = useState(null);
