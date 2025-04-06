@@ -9,6 +9,8 @@ import {
    getFilePaths,
    saveFilePath,
    getFilePathByBotIndex,
+   isChatDeleted,
+   markChatAsDeleted,
 } from "../utils/feedbackStorage";
 import chatI18n from "../i18n";
 
@@ -162,12 +164,13 @@ const ChatProvider = ({ children }) => {
       const loadExistingChats = async () => {
          try {
             const myChats = await fetchMyChats();
+            const filteredChats = myChats.filter((chat) => !isChatDeleted(chat.id));
+
             setChats((prevChats) => {
-               // Оставляем текущий дефолтный чат и добавляем существующие
-               const defaultChat = prevChats.find((chat) => chat.id === null);
+               const defaultChat = prevChats.find((c) => c.id === null);
                return [
                   defaultChat,
-                  ...myChats.map((chat) => ({
+                  ...filteredChats.map((chat) => ({
                      ...createDefaultChat(),
                      id: chat.id,
                      title: chat.title,
@@ -201,6 +204,31 @@ const ChatProvider = ({ children }) => {
          console.error("Ошибка при загрузке начальных сообщений:", error);
       }
    };
+
+   function deleteChat(chatId) {
+      // Помечаем чат как удалённый в localStorage
+      markChatAsDeleted(chatId);
+
+      setChats((prevChats) => {
+         // Фильтруем чаты, удаляя чат с данным chatId
+         const newChats = prevChats.filter((chat) => String(chat.id) !== String(chatId));
+
+         // Если удалённый чат был активным
+         if (String(currentChatId) === String(chatId)) {
+            if (newChats.length > 0) {
+               // Переключаемся на самый новый чат (последний элемент массива)
+               setCurrentChatId(newChats[newChats.length - 1].id);
+            } else {
+               // Если удалён последний чат, создаем новый пустой чат
+               const newChat = createDefaultChat();
+               newChats.push(newChat);
+               setCurrentChatId(newChat.id);
+            }
+         }
+
+         return newChats;
+      });
+   }
 
    const updateChatWithCategories = (fetchedCategories) => {
       setChats((prev) =>
@@ -833,6 +861,7 @@ const ChatProvider = ({ children }) => {
                chats.find((c) => String(c.id) === String(currentChatId) || (c.id === null && c === chats[0]))
                   ?.showInitialButtons || false,
             updateLocale,
+            deleteChat,
             addBotMessage,
          }}
       >

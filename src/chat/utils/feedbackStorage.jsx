@@ -4,6 +4,7 @@
 const FEEDBACK_STORAGE_KEY = "chat_feedback_state";
 const BAD_FEEDBACK_PROMPT_KEY = "chat_bad_feedback_prompt";
 const FILE_PATHS_KEY = "chat_file_paths";
+const DELETED_CHATS_KEY = "deleted_chats";
 
 // Базовые функции для работы с localStorage
 export const getFeedbackState = () => {
@@ -212,3 +213,30 @@ export const clearFilePaths = (chatId) => {
       localStorage.setItem(FILE_PATHS_KEY, JSON.stringify(currentState));
    }
 };
+
+export function getDeletedChats() {
+   try {
+      const data = JSON.parse(localStorage.getItem(DELETED_CHATS_KEY));
+      return Array.isArray(data) ? data : [];
+   } catch {
+      return [];
+   }
+}
+
+/**
+ * Помечаем чат как удалённый, добавляя его ID в localStorage
+ */
+export function markChatAsDeleted(chatId) {
+   const deletedChats = getDeletedChats();
+   if (!deletedChats.includes(chatId)) {
+      deletedChats.push(chatId);
+      localStorage.setItem(DELETED_CHATS_KEY, JSON.stringify(deletedChats));
+   }
+}
+
+/**
+ * Проверяем, удалён ли чат
+ */
+export function isChatDeleted(chatId) {
+   return getDeletedChats().includes(chatId);
+}
