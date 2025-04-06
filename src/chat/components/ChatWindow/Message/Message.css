@@ -102,6 +102,7 @@
    .user,
    .ai {
       padding: 16px;
+      padding-top: 28px;
       margin-bottom: 16px;
       font-size: 16px;
    }
