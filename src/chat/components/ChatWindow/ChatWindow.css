@@ -29,22 +29,32 @@
 }
 
 .chat-window-start .message-list {
-   min-height: 320px !important;
+   min-height: 50px !important;
+   flex-direction: row;
+   gap: 15px;
 }
 
+.chat-window-start .user {
+   border-radius: 16px;
+}
 .chat-window-start .message-list-wrap {
-   min-height: 320px !important;
-   max-height: 320px !important;
+   min-height: 100px !important;
+   max-height: 100px !important;
 }
 
 @media (max-width: 1400px) {
    .chat-window-start .bottom__wrapper {
       width: 100%;
    }
+   .chat-window-start .message-list-wrap {
+      min-height: 150px !important;
+      max-height: 150px !important;
+   }
 }
 
 @media (max-width: 950px) {
    .chat-window-start .message-list {
+      flex-direction: column;
       min-height: 400px !important;
       max-height: 400px !important;
    }

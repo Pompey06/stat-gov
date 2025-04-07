@@ -1,0 +1,11 @@
+                        <svg
+                           viewBox="0 0 24 24"
+                           fill="none"
+                           xmlns="http://www.w3.org/2000/svg"
+                           className="icon-check"
+                        >
+                           <path
+                              d="M20.285 6.709a1 1 0 00-1.414 0L9 16.58l-3.871-3.87a1 1 0 10-1.414 1.414l4.578 4.578a1 1 0 001.414 0l10.578-10.578a1 1 0 000-1.414z"
+                              fill="#0068bf"
+                           />
+                        </svg>

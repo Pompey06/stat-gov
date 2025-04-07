@@ -38,25 +38,25 @@
 }
 
 @media (max-width: 930px) {
-   .feedback-message__btns {
+   /*.feedback-message__btns {
       flex-direction: column;
       gap: 12px;
-   }
+   }*/
 
-   .feedback-button {
+   /*.feedback-button {
       padding: 10px 50px;
       margin: 4px 0;
-   }
+   }*/
 }
 
 @media (max-width: 700px) {
    .feedback-message {
-      padding: 16px;
-      margin-bottom: 8px;
+      /*padding: 16px;
+      margin-bottom: 8px;*/
       font-size: 14px;
    }
-   .feedback-button {
+   /*.feedback-button {
       padding: 8px 40px;
       font-size: 14px;
-   }
+   }*/
 }

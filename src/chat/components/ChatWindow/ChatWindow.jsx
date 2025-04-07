@@ -16,6 +16,8 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
          <div className="chat-window chat-window-start flex flex-col h-full items-center justify-center">
             <Header isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
+            <div className="chat-window-start__content">Здравствуйте! Чем я могу вам помочь?</div>
+
             <MessageInput />
 
             <MessageList isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
