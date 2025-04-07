@@ -6,24 +6,22 @@ import Header from "../Header/Header";
 import "./ChatWindow.css";
 
 export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
-   //const { chats, currentChatId } = useContext(ChatContext);
+   const { chats, currentChatId } = useContext(ChatContext);
 
-   // Находим текущий чат или дефолтный (нулевой)
-   //const currentChat = chats.find((c) => c.id === currentChatId) || chats[0];
-   //const isEmptyChat = currentChat.isEmpty && currentChat.messages.length <= 5;
+   const currentChat = chats.find((c) => c.id === currentChatId) || chats[0];
+   const isEmptyChat = currentChat.isEmpty && currentChat.messages.length <= 5;
 
-   // Если чат пустой (нет реальных сообщений от пользователя)
-   //if (isEmptyChat) {
-   //   return (
-   //      <div className="chat-window chat-window-start flex flex-col h-full items-center justify-center">
-   //         <Header isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+   if (isEmptyChat) {
+      return (
+         <div className="chat-window chat-window-start flex flex-col h-full items-center justify-center">
+            <Header isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
-   //         <MessageInput />
+            <MessageInput />
 
-   //         <MessageList isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-   //      </div>
-   //   );
-   //}
+            <MessageList isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+         </div>
+      );
+   }
 
    // Иначе рендерим «стандартную» верстку
    return (

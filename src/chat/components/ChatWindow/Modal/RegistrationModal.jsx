@@ -7,7 +7,15 @@ import "./Modal.css";
 import axios from "axios";
 import chatI18n from "../../../i18n";
 
-export default function RegistrationModal({ isOpen, onClose, title, onSubmit, currentChatId, addBotMessage }) {
+export default function RegistrationModal({
+   isOpen,
+   onClose,
+   title,
+   onSubmit,
+   currentChatId,
+   addBotMessage,
+   removeBadFeedbackMessage,
+}) {
    const { t } = useTranslation(undefined, { i18n: chatI18n });
 
    const api = axios.create({
@@ -234,6 +242,8 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
             addBotMessage(successMessage);
          }
 
+         //removeBadFeedbackMessage();
+
          // Очистка полей
          if (surnameRef.current) surnameRef.current.value = "";
          if (nameRef.current) nameRef.current.value = "";
@@ -248,10 +258,10 @@ export default function RegistrationModal({ isOpen, onClose, title, onSubmit, cu
          setErrors({});
 
          // Вызываем колбэк
-         onSubmit(response.data);
 
          // Закрываем модалку
          handleClose();
+         onSubmit(response.data);
       } catch (error) {
          console.error("Ошибка при отправке формы:", error);
       } finally {

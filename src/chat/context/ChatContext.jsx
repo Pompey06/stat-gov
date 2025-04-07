@@ -187,6 +187,20 @@ const ChatProvider = ({ children }) => {
       }
    };
 
+   const removeBadFeedbackMessage = () => {
+      setChats((prevChats) =>
+         prevChats.map((chat) => {
+            if (String(chat.id) === String(currentChatId) || (chat.id === null && currentChatId === null)) {
+               return {
+                  ...chat,
+                  messages: chat.messages.filter((msg) => !msg.badFeedbackPrompt),
+               };
+            }
+            return chat;
+         })
+      );
+   };
+
    const fetchMyChats = async () => {
       try {
          const response = await api.get(`/conversation/my`);
@@ -920,6 +934,7 @@ const ChatProvider = ({ children }) => {
             updateLocale,
             deleteChat,
             addBotMessage,
+            removeBadFeedbackMessage,
          }}
       >
          {children}
