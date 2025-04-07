@@ -21,6 +21,8 @@ export default function FeedbackModal({ isOpen, onClose, title, description, onS
    const handleSubmit = async () => {
       if (feedback.trim() === "" || isSubmitting) {
          setIsError(true);
+         setIsSubmitting(false);
+
          return;
       }
       setIsSubmitting(true);

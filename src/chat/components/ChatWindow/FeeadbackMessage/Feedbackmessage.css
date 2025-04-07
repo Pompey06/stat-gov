@@ -4,12 +4,13 @@
    font-style: normal;
    font-weight: 400;
    line-height: normal;
-   align-items: center;
+   align-items: start;
    color: #141414;
-   padding: 12px;
+   padding-top: 12px;
    border-radius: 16px 16px 16px 0px;
    background: #ebf0f5;
    max-width: 170px;
+   margin: 0;
 }
 
 .feedback-button {

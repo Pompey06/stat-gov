@@ -126,7 +126,7 @@ const ChatProvider = ({ children }) => {
             isButton: false,
          }));
 
-         const messagesWithFeedback = [];
+         let messagesWithFeedback = [];
 
          const savedFilePaths = getFilePaths(chatId);
          console.log("Saved file paths for chat", chatId, ":", savedFilePaths);
@@ -144,13 +144,11 @@ const ChatProvider = ({ children }) => {
 
                // Также проверяем сохраненные пути по индексу сообщения
                if (savedFilePaths[index] && savedFilePaths[index].length > 0) {
-                  // Если уже есть filePaths, объединяем массивы без дубликатов
                   const existingPaths = message.filePaths || [];
                   const newPaths = Array.isArray(savedFilePaths[index])
                      ? savedFilePaths[index]
                      : [savedFilePaths[index]];
 
-                  // Объединяем массивы и удаляем дубликаты
                   message.filePaths = [...new Set([...existingPaths, ...newPaths])];
                }
 
@@ -158,18 +156,6 @@ const ChatProvider = ({ children }) => {
             }
 
             messagesWithFeedback.push(message);
-
-            // Добавляем фидбек только если:
-            // 1. Сообщение от ассистента
-            // 2. Фидбек ещё не был отправлен
-            if (!message.isUser && !hasFeedback(chatId, index)) {
-               messagesWithFeedback.push({
-                  text: t("feedback.requestFeedback"),
-                  isUser: false,
-                  isFeedback: true,
-                  isButton: false,
-               });
-            }
          });
 
          if (hasBadFeedbackPrompt(chatId)) {
@@ -180,6 +166,16 @@ const ChatProvider = ({ children }) => {
                badFeedbackPrompt: true,
             });
          }
+
+         // Здесь добавляем флаг isAssistantResponse для подходящих сообщений
+         messagesWithFeedback = messagesWithFeedback.map((message) => {
+            // Если сообщение не от пользователя, не является фидбеком,
+            // не имеет кастомных флагов (например, для регистрации)
+            if (!message.isUser && !message.isFeedback && !message.badFeedbackPrompt && !message.isCustomMessage) {
+               return { ...message, isAssistantResponse: true };
+            }
+            return message;
+         });
 
          return {
             ...response.data,
@@ -548,16 +544,17 @@ const ChatProvider = ({ children }) => {
                         isFeedback: false,
                         filePaths: filePaths,
                         hasLineBreaks: formattedResponse.hasLineBreaks,
+                        isAssistantResponse: true,
                      },
                   ];
 
-                  if (!hasFeedback(chatId, newBotMessageIndex)) {
-                     messages.push({
-                        text: t("feedback.requestFeedback"),
-                        isUser: false,
-                        isFeedback: true,
-                     });
-                  }
+                  //if (!hasFeedback(chatId, newBotMessageIndex)) {
+                  //   messages.push({
+                  //      text: t("feedback.requestFeedback"),
+                  //      isUser: false,
+                  //      isFeedback: true,
+                  //   });
+                  //}
 
                   return {
                      ...chat,
@@ -835,7 +832,9 @@ const ChatProvider = ({ children }) => {
          saveFeedbackState(currentChat.id, messageIndex);
 
          // Удаляем сообщение с фидбеком из чата
-         removeFeedbackMessage(messageIndex);
+         setTimeout(() => {
+            removeFeedbackMessage(messageIndex);
+         }, 0);
 
          // Если пользователь отправил плохой отзыв, добавляем сообщение для регистрации
          if (rate === "bad") {
@@ -851,7 +850,8 @@ const ChatProvider = ({ children }) => {
                               text: t("feedback.badFeedbackPromptText"), // "Для регистрации заполните форму ниже"
                               isUser: false,
                               isFeedback: false,
-                              badFeedbackPrompt: true, // флаг для рендера нового компонента
+                              badFeedbackPrompt: true,
+                              isCustomMessage: true,
                            },
                         ],
                      };

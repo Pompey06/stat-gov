@@ -59,6 +59,7 @@
 
 .bot-response {
    padding-top: 30px;
+   flex-direction: column;
 }
 
 .message-link {

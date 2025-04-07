@@ -4,12 +4,22 @@ import downloadIcon from "../../../assets/pdf.svg";
 import "./Message.css";
 import { useTranslation } from "react-i18next";
 import chatI18n from "../../../i18n";
-//import { useApi } from "../../../context/ChatContext";
+import FeedbackMessage from "../FeeadbackMessage/FeedbackMessage";
 
-export default function Message({ text, isUser, isButton, onClick, filePath, filePaths, isGreeting }) {
+export default function Message({
+   text,
+   isUser,
+   isButton,
+   onClick,
+   filePath,
+   filePaths,
+   isGreeting,
+   botMessageIndex,
+   isHtml,
+   isCustomMessage = false,
+   isAssistantResponse = false, // новый флаг для ответов от assistant/ask
+}) {
    const { t } = useTranslation(undefined, { i18n: chatI18n });
-   // Преобразуем все пути к файлам в массив
-
    const api = axios.create({
       baseURL: import.meta.env.VITE_API_URL,
       withCredentials: true,
@@ -17,7 +27,7 @@ export default function Message({ text, isUser, isButton, onClick, filePath, fil
 
    const allFilePaths = React.useMemo(() => {
       if (filePaths && Array.isArray(filePaths)) {
-         return filePaths.filter((path) => typeof path === "string"); // Фильтруем только строки
+         return filePaths.filter((path) => typeof path === "string");
       } else if (filePath) {
          return typeof filePath === "string"
             ? [filePath]
@@ -28,11 +38,8 @@ export default function Message({ text, isUser, isButton, onClick, filePath, fil
       return [];
    }, [filePath, filePaths]);
 
-   // Функция для обработки текста с переносами строк
    function renderTextWithLineBreaks(text) {
       if (!text) return null;
-
-      // Разбиваем текст по переносам строк
       return text.split("\n").map((line, index, array) => (
          <React.Fragment key={index}>
             {linkifyText(line)}
@@ -43,26 +50,17 @@ export default function Message({ text, isUser, isButton, onClick, filePath, fil
 
    function linkifyText(text) {
       if (!text) return null;
-
-      // Комбинированное регулярное выражение для поиска как Markdown-ссылок, так и обычных URL
       const combinedRegex = /(\[([^\]]+)\]\(([^)]+)\))|(https?:\/\/[^\s]+?)([),.?!]+)?(\s|$)/g;
-
       const elements = [];
       let lastIndex = 0;
       let match;
-
       while ((match = combinedRegex.exec(text)) !== null) {
-         // Добавляем текст до совпадения
          if (match.index > lastIndex) {
             elements.push(text.substring(lastIndex, match.index));
          }
-
-         // Проверяем, какой тип совпадения мы нашли
          if (match[1]) {
-            // Это Markdown-ссылка [текст](url)
             const linkText = match[2];
             const url = match[3];
-
             elements.push(
                <a
                   key={`md-${match.index}`}
@@ -75,11 +73,9 @@ export default function Message({ text, isUser, isButton, onClick, filePath, fil
                </a>
             );
          } else {
-            // Это обычный URL
             const url = match[4];
             const trailing = match[5] || "";
             const space = match[6] || "";
-
             elements.push(
                <a
                   key={`url-${match.index}`}
@@ -91,43 +87,32 @@ export default function Message({ text, isUser, isButton, onClick, filePath, fil
                   {url}
                </a>
             );
-
             elements.push(trailing + space);
          }
-
          lastIndex = combinedRegex.lastIndex;
       }
-
-      // Если осталось что-то после последнего совпадения
       if (lastIndex < text.length) {
          elements.push(text.substring(lastIndex));
       }
-
       return elements;
    }
 
-   // Проверяем, содержит ли текст переносы строк
    const hasLineBreaks = !isUser && text && text.includes("\n");
 
-   // Функция для скачивания файла
    const handleDownload = async (e, path) => {
       e.preventDefault();
       if (!path || typeof path !== "string") {
          console.error("Invalid file path:", path);
          return;
       }
-
       try {
          const response = await api.get(`/knowledge/get-file`, {
             params: { path: path },
             responseType: "blob",
          });
-
-         // Создаем URL для blob-данных
          const url = window.URL.createObjectURL(new Blob([response.data]));
          const link = document.createElement("a");
          link.href = url;
-         // Извлекаем имя файла из пути
          const fileName = path.split("/").pop() || "file";
          link.setAttribute("download", fileName);
          document.body.appendChild(link);
@@ -138,7 +123,6 @@ export default function Message({ text, isUser, isButton, onClick, filePath, fil
       }
    };
 
-   // Функция для получения имени файла из пути
    const getFileName = (path) => {
       if (!path || typeof path !== "string") return "file";
       try {
@@ -150,16 +134,13 @@ export default function Message({ text, isUser, isButton, onClick, filePath, fil
    };
 
    const [copied, setCopied] = useState(false);
-
    const handleCopy = (e) => {
-      // Предотвращаем всплытие клика, чтобы не задевать onClick родительского контейнера
       e.stopPropagation();
       navigator.clipboard
          .writeText(text)
          .then(() => {
             setCopied(true);
             console.log("Текст скопирован в буфер обмена");
-            // Через 2 секунды возвращаем исходное состояние
             setTimeout(() => {
                setCopied(false);
             }, 1500);
@@ -182,9 +163,8 @@ export default function Message({ text, isUser, isButton, onClick, filePath, fil
          }`}
          onClick={isButton ? onClick : undefined}
       >
-         {/* Добавляем кнопку копирования для сообщений бота */}
-         {/* Кнопка копирования отображается только для ответов бота, не являющихся приветственными */}
-         {!isUser && !isGreeting && (
+         {/* Рендерим копировать-кнопку и FeedbackMessage только для сообщений с ответом бота от assistant/ask */}
+         {!isUser && !isGreeting && !isCustomMessage && isAssistantResponse && Number.isInteger(botMessageIndex) && (
             <button
                className="copy-button absolute top-2 right-2 flex items-center gap-1 px-2 py-1 text-sm text-gray-500 hover:bg-gray-200 transition-colors"
                onClick={handleCopy}
@@ -229,7 +209,6 @@ export default function Message({ text, isUser, isButton, onClick, filePath, fil
                )}
             </button>
          )}
-
          <div>
             {hasLineBreaks ? renderTextWithLineBreaks(text) : linkifyText(text)}
             {allFilePaths.length > 0 && (
@@ -252,6 +231,10 @@ export default function Message({ text, isUser, isButton, onClick, filePath, fil
                </div>
             )}
          </div>
+         {/* Рендерим FeedbackMessage только для ответов бота, созданных через assistant/ask */}
+         {!isUser && !isGreeting && !isCustomMessage && isAssistantResponse && Number.isInteger(botMessageIndex) && (
+            <FeedbackMessage messageIndex={botMessageIndex} />
+         )}
       </div>
    );
 }
