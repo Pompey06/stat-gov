@@ -465,9 +465,11 @@ const ChatProvider = ({ children }) => {
       }
    };
 
+   // Пример изменённой функции createMessage в ChatContext:
    async function createMessage(text, isFeedback = false, additionalParams = {}) {
       if (!text) return;
 
+      // Находим текущий чат
       const currentChat = chats.find(
          (c) => String(c.id) === String(currentChatId) || (c.id === null && c === chats[0])
       );
@@ -477,8 +479,8 @@ const ChatProvider = ({ children }) => {
          prompt: text,
          locale,
          category: currentCategory?.name || null,
-         subcategory: null, // Временно всегда null
-         subcategory_report: null, // Временно всегда null
+         subcategory: null, // временно всегда null
+         subcategory_report: null, // временно всегда null
       };
 
       if (currentChat && currentChat.id) {
@@ -487,124 +489,153 @@ const ChatProvider = ({ children }) => {
 
       setIsTyping(true);
 
+      // Шаг 1. Добавляем сообщение пользователя в чат
+      setChats((prevChats) =>
+         prevChats.map((chat) => {
+            if (String(chat.id) === String(currentChatId) || (chat.id === null && chat === prevChats[0])) {
+               return {
+                  ...chat,
+                  isEmpty: false,
+                  lastUpdated: new Date().toISOString(),
+                  messages: [...chat.messages.filter((msg) => !msg.isButton), { text, isUser: true, isFeedback }],
+               };
+            }
+            return chat;
+         })
+      );
+
+      // Шаг 2. Добавляем временное сообщение-ответ от ассистента с пустым текстом
+      // Это сообщение будет обновляться при стриминге
+      const tempAssistantMessage = {
+         text: "",
+         isUser: false,
+         isFeedback: false,
+         filePaths: [],
+         hasLineBreaks: false,
+         isAssistantResponse: true,
+         streaming: true, // Флаг, что сообщение находится в режиме стриминга
+      };
+
+      setChats((prevChats) =>
+         prevChats.map((chat) => {
+            if (String(chat.id) === String(currentChatId) || (chat.id === null && chat === prevChats[0])) {
+               return {
+                  ...chat,
+                  messages: [...chat.messages, tempAssistantMessage],
+               };
+            }
+            return chat;
+         })
+      );
+
       try {
-         // Добавляем сообщение пользователя
-         setChats((prev) =>
-            prev.map((chat) => {
-               if (String(chat.id) === String(currentChatId) || (chat.id === null && chat === prev[0])) {
-                  return {
-                     ...chat,
-                     isEmpty: false, // Устанавливаем, что чат больше не пустой
-                     lastUpdated: new Date().toISOString(),
-                     messages: [
-                        ...chat.messages.filter((message) => !message.isButton),
-                        {
-                           text,
-                           isUser: true,
-                           isFeedback,
-                        },
-                     ],
-                  };
-               }
-               return chat;
-            })
-         );
-
-         const formatBotResponse = (text) => {
-            // Не заменяем \n на <br />, а просто добавляем флаг
-            return {
-               text: text,
-               hasLineBreaks: text.includes("\n"),
-            };
-         };
-
-         // Отправляем запрос с новыми параметрами
-         const res = await api.post(`/assistant/ask`, null, { params });
-
-         // Получаем данные из ответа
-         const conversationId = res.data.conversation_id;
-         const conversationTitle = res.data.conversation_title;
-
-         if (!currentChatId) {
-            setCurrentChatId(conversationId);
+         // Шаг 3. Отправляем запрос через Fetch
+         const url = `${import.meta.env.VITE_API_URL}/assistant/ask?${new URLSearchParams(params).toString()}`;
+         const response = await fetch(url, {
+            method: "POST",
+            credentials: "include",
+         });
+         if (!response.ok) {
+            throw new Error("Network response was not ok");
          }
 
-         const filePaths = res.data.paths || [];
+         const reader = response.body.getReader();
+         const decoder = new TextDecoder();
+         let done = false;
+         let accumulatedText = "";
 
-         const formattedResponse = formatBotResponse(res.data.content);
-
-         setChats((prev) =>
-            prev.map((chat) => {
-               if (String(chat.id) === String(currentChatId) || (chat.id === null && chat === prev[0])) {
-                  const chatId = chat.id || conversationId;
-                  const newBotMessageIndex = chat.messages.length;
-
-                  let botCount = 0;
-                  chat.messages.forEach((msg) => {
-                     if (!msg.isUser && !msg.isFeedback) botCount++;
-                  });
-                  // Сохраняем filePath в localStorage, если он есть
-                  if (filePaths.length > 0) {
-                     filePaths.forEach((path, index) => {
-                        saveFilePath(chatId, botCount, path);
-                     });
+         // Функция для обновления только последнего сообщения чата
+         const updateLastMessage = (newText, streamingFlag = true) => {
+            setChats((prevChats) => {
+               // Создаем копию массива чатов
+               const updatedChats = [...prevChats];
+               // Ищем текущий чат по ID
+               const chatIndex = updatedChats.findIndex(
+                  (chat) => String(chat.id) === String(currentChatId) || (chat.id === null && chat === prevChats[0])
+               );
+               if (chatIndex !== -1) {
+                  const chat = updatedChats[chatIndex];
+                  // Если сообщений нет, ничего не делаем
+                  if (chat.messages.length === 0) return updatedChats;
+                  // Берем индекс последнего сообщения
+                  const lastIndex = chat.messages.length - 1;
+                  const lastMsg = chat.messages[lastIndex];
+                  // Обновляем, только если это streaming-сообщение
+                  if (lastMsg.streaming) {
+                     const updatedLastMsg = { ...lastMsg, text: newText + (streamingFlag ? " |" : "") };
+                     // Если поток завершен, убираем флаг streaming
+                     if (!streamingFlag) {
+                        updatedLastMsg.streaming = false;
+                     }
+                     const updatedMessages = [...chat.messages];
+                     updatedMessages[lastIndex] = updatedLastMsg;
+                     updatedChats[chatIndex] = { ...chat, messages: updatedMessages };
                   }
-
-                  const messages = [
-                     ...chat.messages,
-                     {
-                        text: formattedResponse.text,
-                        isUser: false,
-                        isFeedback: false,
-                        filePaths: filePaths,
-                        hasLineBreaks: formattedResponse.hasLineBreaks,
-                        isAssistantResponse: true,
-                     },
-                  ];
-
-                  //if (!hasFeedback(chatId, newBotMessageIndex)) {
-                  //   messages.push({
-                  //      text: t("feedback.requestFeedback"),
-                  //      isUser: false,
-                  //      isFeedback: true,
-                  //   });
-                  //}
-
-                  return {
-                     ...chat,
-                     id: chatId,
-                     title: chat.title || conversationTitle,
-                     isEmpty: false,
-                     showInitialButtons: false,
-                     buttonsWereHidden: true,
-                     messages,
-                  };
                }
-               return chat;
-            })
-         );
-      } catch (error) {
-         console.error("Детали ошибки:", {
-            status: error.response?.status,
-            statusText: error.response?.statusText,
-            data: error.response?.data,
-            params: error.config?.params,
-            url: error.config?.url,
-         });
+               return updatedChats;
+            });
+         };
 
+         // Шаг 4. Чтение потока
+         while (!done) {
+            const { value, done: doneReading } = await reader.read();
+            done = doneReading;
+            const chunk = decoder.decode(value, { stream: !done });
+            // Предполагаем, что чанки разделены переносами строки
+            const lines = chunk.split("\n");
+            for (const line of lines) {
+               const trimmed = line.trim();
+               if (!trimmed) continue;
+
+               if (trimmed.startsWith("0:")) {
+                  // Обработка текстового чанка
+                  const textFragment = trimmed.slice(2).replace(/^"|"$/g, "");
+                  accumulatedText += textFragment;
+                  updateLastMessage(accumulatedText, true);
+                  // Задержка для имитации печати
+                  await new Promise((resolve) => setTimeout(resolve, 50));
+               } else if (trimmed.startsWith("2:")) {
+                  // Обработка документа: парсим и обновляем filePaths
+                  try {
+                     const jsonStr = trimmed.slice(2);
+                     const jsonObj = JSON.parse(jsonStr);
+                     setChats((prevChats) =>
+                        prevChats.map((chat) => {
+                           if (
+                              String(chat.id) === String(currentChatId) ||
+                              (chat.id === null && chat === prevChats[0])
+                           ) {
+                              const updatedMessages = chat.messages.map((msg) => {
+                                 if (msg.streaming) {
+                                    return { ...msg, filePaths: jsonObj.documents || [] };
+                                 }
+                                 return msg;
+                              });
+                              return { ...chat, messages: updatedMessages };
+                           }
+                           return chat;
+                        })
+                     );
+                  } catch (error) {
+                     console.error("Ошибка парсинга документов:", error);
+                  }
+               } else if (trimmed.startsWith("d:")) {
+                  // Завершение потока — убираем курсор и флаг streaming
+                  updateLastMessage(accumulatedText, false);
+               }
+            }
+         }
+      } catch (error) {
+         console.error("Ошибка стриминга:", error);
          const errorMessage = {
             text: t("chatError.errorMessage"),
             isUser: false,
             isFeedback,
          };
-
-         setChats((prev) =>
-            prev.map((chat) => {
-               if (String(chat.id) === String(currentChatId) || (chat.id === null && chat === prev[0])) {
-                  return {
-                     ...chat,
-                     messages: [...chat.messages, errorMessage],
-                  };
+         setChats((prevChats) =>
+            prevChats.map((chat) => {
+               if (String(chat.id) === String(currentChatId) || (chat.id === null && chat === prevChats[0])) {
+                  return { ...chat, messages: [...chat.messages, errorMessage] };
                }
                return chat;
             })
