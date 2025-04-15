@@ -71,7 +71,6 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
             />
          </div>
 
-         {/* Убираем условие рендеринга, теперь управляем через CSS */}
          <div className="sidebar__buttons flex flex-col gap-2.5 mt-16">
             {/* Кнопка "Новый чат" */}
             <SidebarButton
@@ -189,7 +188,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
          {/* Модалка подтверждения удаления */}
          <DeleteChatModal isOpen={!!chatToDelete} onClose={closeDeleteModal} onConfirm={confirmDeleteChat} />
 
-         <div className="mt-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 text-sm leading-tight rounded-r shadow-sm">
+         <div className="mt-4 sidebar__warning p-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 text-sm leading-tight rounded-r shadow-sm">
             {t("sidebar.warning")}
          </div>
       </div>

@@ -47,10 +47,12 @@
    align-self: start;
 }
 
-.sidebar__buttons {
+.sidebar__buttons,
+.sidebar__warning {
    opacity: 1;
    transition: opacity 0.3s ease-in-out;
 }
+
 .logo__text {
    text-align: left;
    color: #000;
@@ -61,7 +63,8 @@
    text-transform: uppercase;
 }
 
-.sidebar--close .sidebar__buttons {
+.sidebar--close .sidebar__buttons,
+.sidebar--close .sidebar__warning {
    opacity: 0;
    visibility: hidden;
    transition: opacity 0.3s ease-in-out, visibility 0s linear 0.3s;
