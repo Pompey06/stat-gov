@@ -71,6 +71,7 @@ export default function MessageList({ isSidebarOpen, toggleSidebar }) {
             isHtml={!message.isUser}
             isCustomMessage={message.isCustomMessage}
             isAssistantResponse={message.isAssistantResponse || false}
+            streaming={message.streaming || false}
          >
             {/* Текст для начальных категорий */}
             {index === 0 && showInitialButtons && (
