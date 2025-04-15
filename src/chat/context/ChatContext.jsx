@@ -595,36 +595,29 @@ const ChatProvider = ({ children }) => {
                   // Задержка для имитации печати
                   await new Promise((resolve) => setTimeout(resolve, 50));
                } else if (trimmed.startsWith("2:")) {
-                  // Если префикс "2:" — это данные для документов
                   try {
                      const jsonStr = trimmed.slice(2);
                      const jsonObj = JSON.parse(jsonStr);
-                     // Обновляем только последнее сообщение текущего чата
-                     setChats((prevChats) => {
-                        const updatedChats = [...prevChats];
-                        // Находим текущий чат
-                        const chatIndex = updatedChats.findIndex(
-                           (chat) =>
-                              String(chat.id) === String(currentChatId) || (chat.id === null && chat === prevChats[0])
-                        );
-                        if (chatIndex !== -1) {
-                           const chat = updatedChats[chatIndex];
-                           if (chat.messages.length > 0) {
-                              const lastIndex = chat.messages.length - 1;
-                              const lastMsg = chat.messages[lastIndex];
-                              // Если последнее сообщение является ответом ассистента,
-                              // обновляем его filePaths
-                              if (lastMsg.isAssistantResponse) {
-                                 const updatedLastMsg = { ...lastMsg, filePaths: jsonObj.documents || [] };
-                                 updatedChats[chatIndex] = {
-                                    ...chat,
-                                    messages: [...chat.messages.slice(0, lastIndex), updatedLastMsg],
-                                 };
-                              }
+                     // Обновляем сообщение, для которого еще не установлены файлы
+                     setChats((prevChats) =>
+                        prevChats.map((chat) => {
+                           // Если это текущий чат
+                           if (
+                              String(chat.id) === String(currentChatId) ||
+                              (chat.id === null && chat === prevChats[0])
+                           ) {
+                              const updatedMessages = chat.messages.map((msg) => {
+                                 // Обновляем первое сообщение ассистента, у которого filePaths не заполнены
+                                 if (msg.isAssistantResponse && (!msg.filePaths || msg.filePaths.length === 0)) {
+                                    return { ...msg, filePaths: jsonObj.documents || [] };
+                                 }
+                                 return msg;
+                              });
+                              return { ...chat, messages: updatedMessages };
                            }
-                        }
-                        return updatedChats;
-                     });
+                           return chat;
+                        })
+                     );
                   } catch (error) {
                      console.error("Ошибка парсинга документов:", error);
                   }

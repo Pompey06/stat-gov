@@ -170,9 +170,8 @@ export default function Message({
 
          <div>
             {hasLineBreaks ? renderTextWithLineBreaks(text) : linkifyText(text)}
-            {allFilePaths.length > 0 && (
-               <div className="mt-2">
-                  <div className="sources-label">{t("chat.sources")}</div>
+            {!streaming && allFilePaths.length > 0 && (
+               <div className="mt-2 fade-in">
                   <div className="file-download-container">
                      {allFilePaths.map((path, index) => {
                         if (!path || typeof path !== "string") return null;
