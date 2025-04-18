@@ -544,36 +544,24 @@ const ChatProvider = ({ children }) => {
          let done = false;
          let accumulatedText = "";
 
-         // Функция для обновления только последнего сообщения чата
          const updateLastMessage = (newText, streamingFlag = true) => {
-            setChats((prevChats) => {
-               // Создаем копию массива чатов
-               const updatedChats = [...prevChats];
-               // Ищем текущий чат по ID
-               const chatIndex = updatedChats.findIndex(
-                  (chat) => String(chat.id) === String(currentChatId) || (chat.id === null && chat === prevChats[0])
-               );
-               if (chatIndex !== -1) {
-                  const chat = updatedChats[chatIndex];
-                  // Если сообщений нет, ничего не делаем
-                  if (chat.messages.length === 0) return updatedChats;
-                  // Берем индекс последнего сообщения
-                  const lastIndex = chat.messages.length - 1;
-                  const lastMsg = chat.messages[lastIndex];
-                  // Обновляем, только если это streaming-сообщение
-                  if (lastMsg.streaming) {
-                     const updatedLastMsg = { ...lastMsg, text: newText + (streamingFlag ? " |" : "") };
-                     // Если поток завершен, убираем флаг streaming
-                     if (!streamingFlag) {
-                        updatedLastMsg.streaming = false;
-                     }
-                     const updatedMessages = [...chat.messages];
-                     updatedMessages[lastIndex] = updatedLastMsg;
-                     updatedChats[chatIndex] = { ...chat, messages: updatedMessages };
-                  }
-               }
-               return updatedChats;
-            });
+            setChats((prevChats) =>
+               prevChats.map((chat) => {
+                  // Ищем в этом чате сообщение с флагом streaming
+                  const idx = chat.messages.findIndex((msg) => msg.streaming);
+                  if (idx === -1) return chat;
+                  const streamingMsg = chat.messages[idx];
+                  // Обновляем текст и флаг
+                  const updatedMsg = {
+                     ...streamingMsg,
+                     text: newText + (streamingFlag ? " |" : ""),
+                     streaming: streamingFlag,
+                  };
+                  const updatedMessages = [...chat.messages];
+                  updatedMessages[idx] = updatedMsg;
+                  return { ...chat, messages: updatedMessages };
+               })
+            );
          };
 
          // Шаг 4. Чтение потока
@@ -596,30 +584,41 @@ const ChatProvider = ({ children }) => {
                   await new Promise((resolve) => setTimeout(resolve, 50));
                } else if (trimmed.startsWith("2:")) {
                   try {
-                     const jsonStr = trimmed.slice(2);
-                     const jsonObj = JSON.parse(jsonStr);
-                     // Обновляем сообщение, для которого еще не установлены файлы
-                     setChats((prevChats) =>
-                        prevChats.map((chat) => {
-                           // Если это текущий чат
-                           if (
-                              String(chat.id) === String(currentChatId) ||
-                              (chat.id === null && chat === prevChats[0])
-                           ) {
-                              const updatedMessages = chat.messages.map((msg) => {
-                                 // Обновляем первое сообщение ассистента, у которого filePaths не заполнены
-                                 if (msg.isAssistantResponse && (!msg.filePaths || msg.filePaths.length === 0)) {
-                                    return { ...msg, filePaths: jsonObj.documents || [] };
-                                 }
-                                 return msg;
-                              });
+                     const jsonObj = JSON.parse(trimmed.slice(2));
+
+                     if (jsonObj.type === "conversation") {
+                        const { id: convId, title: convTitle } = jsonObj.conversation;
+                        setCurrentChatId(convId);
+                        setChats((prevChats) =>
+                           prevChats.map((chat) =>
+                              String(chat.id) === String(currentChatId) || chat.id === null
+                                 ? { ...chat, id: convId, title: convTitle }
+                                 : chat
+                           )
+                        );
+                     } else if (jsonObj.type === "relevant_documents") {
+                        // Привязываем файлы к тому сообщению, которое еще в режиме streaming
+                        setChats((prevChats) =>
+                           prevChats.map((chat) => {
+                              // ищем индекс сообщения-стриминга
+                              const idx = chat.messages.findIndex((msg) => msg.streaming);
+                              if (idx === -1) return chat;
+                              // клонируем массив сообщений
+                              const updatedMessages = [...chat.messages];
+                              // обновляем только streaming-сообщение, добавляя filePaths
+                              const streamingMsg = updatedMessages[idx];
+                              updatedMessages[idx] = {
+                                 ...streamingMsg,
+                                 filePaths: jsonObj.documents || [],
+                              };
                               return { ...chat, messages: updatedMessages };
-                           }
-                           return chat;
-                        })
-                     );
+                           })
+                        );
+                     } else if (jsonObj.type === "status") {
+                        console.log("Status chunk:", jsonObj.status);
+                     }
                   } catch (error) {
-                     console.error("Ошибка парсинга документов:", error);
+                     console.error("Ошибка парсинга JSON 2-чанка:", error);
                   }
                } else if (trimmed.startsWith("d:")) {
                   // Завершение потока — убираем курсор и флаг streaming
