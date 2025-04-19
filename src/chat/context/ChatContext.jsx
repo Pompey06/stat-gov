@@ -852,6 +852,8 @@ const ChatProvider = ({ children }) => {
    //   window.updateChatLastUpdated = updateChatLastUpdated;
    //}
 
+   //window.updateChatLastUpdated("68021ab9ed98616d690aeca4", "2025-04-01T00:00:00.000Z"); - как меняем дату через консоль
+
    //и ещё для проверки удаления неактивных чатов нужно autoDeleteInactiveChats передать в sidebar и раскоментировать вызов внутри handleNewChat
 
    return (
