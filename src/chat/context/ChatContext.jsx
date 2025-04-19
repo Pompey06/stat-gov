@@ -474,13 +474,12 @@ const ChatProvider = ({ children }) => {
          (c) => String(c.id) === String(currentChatId) || (c.id === null && c === chats[0])
       );
 
-      // Формируем параметры запроса, подставляя дополнительные параметры из вызова
       const { category: apCategory, subcategory: apSubcategory, subcategory_report: apSubReport } = additionalParams;
 
       const params = {
          prompt: text,
          locale,
-         category: currentCategory?.name || null,
+         category: apCategory ?? currentCategory?.name ?? null,
          subcategory: apSubcategory ?? currentSubcategory?.name ?? null,
          subcategory_report: apSubReport ?? null,
       };
@@ -651,14 +650,12 @@ const ChatProvider = ({ children }) => {
    const handleButtonClick = (selectedItem) => {
       console.log("Selected item:", selectedItem);
 
-      // Устанавливаем категорию
-      const categoryData = selectedItem.category || selectedItem;
-      setCategoryFilter(categoryData.name);
-      setCurrentCategory(categoryData);
-
-      // Обработка выбора подкатегории
+      // 1. Подкатегория
       if (selectedItem.isSubcategory) {
+         const categoryData = selectedItem.category || currentCategory;
+         setCurrentCategory(categoryData);
          setCurrentSubcategory(selectedItem);
+         setCategoryFilter(categoryData.name);
          createMessage(selectedItem.text, false, {
             category: categoryData.name,
             subcategory: selectedItem.name,
@@ -667,8 +664,10 @@ const ChatProvider = ({ children }) => {
          return;
       }
 
-      // Обработка выбора отчёта
+      // 2. Отчёт
       if (selectedItem.isReport) {
+         const categoryData = currentCategory;
+         setCategoryFilter(categoryData.name);
          createMessage(selectedItem.text, false, {
             category: categoryData.name,
             subcategory: currentSubcategory?.name ?? null,
@@ -677,20 +676,40 @@ const ChatProvider = ({ children }) => {
          return;
       }
 
-      // Показываем FAQ-кнопки после выбора категории
+      // 3. FAQ
+      if (selectedItem.isFaq) {
+         const categoryData = currentCategory;
+         setCategoryFilter(categoryData.name);
+         createMessage(selectedItem.text, false, {
+            category: categoryData.name,
+            subcategory: currentSubcategory?.name ?? null,
+            subcategory_report: null,
+         });
+         return;
+      }
+
+      // 4. Категория
+      const categoryData = selectedItem.category || selectedItem;
+      setCurrentCategory(categoryData);
+      setCurrentSubcategory(null);
+      setCategoryFilter(categoryData.name);
+
       if (categoryData.faq && categoryData.faq.length > 0) {
+         // Показываем FAQ-кнопки
          setChats((prev) =>
             prev.map((chat) => {
                if (String(chat.id) === String(currentChatId) || (chat.id === null && chat === prev[0])) {
                   const faqButtons = categoryData.faq.map((faq) => ({
-                     text: locale === "ru" ? faq.question : translationsKz[faq.question] || faq.question,
+                     text:
+                        locale === "ru"
+                           ? faq.question
+                           : (translationsKz && translationsKz[faq.question]) || faq.question,
                      isUser: true,
                      isFeedback: false,
                      isButton: true,
                      isFaq: true,
                      faqData: faq,
                   }));
-
                   return {
                      ...chat,
                      showInitialButtons: false,
@@ -701,17 +720,21 @@ const ChatProvider = ({ children }) => {
                return chat;
             })
          );
-         return;
-      }
-
-      // Обработка выбора FAQ
-      if (selectedItem.isFaq) {
-         createMessage(selectedItem.text, false, {
-            category: categoryData.name,
-            subcategory: currentSubcategory?.name ?? null,
-            subcategory_report: null,
-         });
-         return;
+      } else {
+         // Нет FAQ — просто скрываем кнопки
+         setChats((prev) =>
+            prev.map((chat) => {
+               if (String(chat.id) === String(currentChatId) || (chat.id === null && chat === prev[0])) {
+                  return {
+                     ...chat,
+                     showInitialButtons: false,
+                     buttonsWereHidden: true,
+                     messages: [chat.messages[0]],
+                  };
+               }
+               return chat;
+            })
+         );
       }
    };
 
