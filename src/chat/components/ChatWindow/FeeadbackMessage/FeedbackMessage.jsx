@@ -45,8 +45,8 @@ export default function FeedbackMessage({ messageIndex }) {
       <div className="feedback-message message mb-8 bg-white flex font-light flex-col items-start">
          {!feedbackExists && (
             <>
-               <p className="text-black text-[12px] mb-2">{t("feedback.requestFeedback")}</p>
-               <div className="flex gap-[12px] feedback-message__btns">
+               {/*<p className="text-black text-[12px] mb-2">{t("feedback.requestFeedback")}</p>*/}
+               <div className="flex gap-[6px] feedback-message__btns">
                   <button
                      className="feedback-button items-center flex gap-[8px] bg-transparent text-black hover:text-white transition-colors duration-300"
                      onMouseEnter={() => setHoveredButton("good")}
