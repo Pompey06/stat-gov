@@ -114,7 +114,8 @@
       overflow-y: auto; /* Возвращаем скролл для мобильной версии в закрытом состоянии */
    }
 
-   .sidebar--close .sidebar__buttons {
+   .sidebar--close .sidebar__buttons,
+   .sidebar--close .sidebar__warning {
       opacity: 1;
       visibility: visible;
    }

@@ -480,7 +480,7 @@ const ChatProvider = ({ children }) => {
       const params = {
          prompt: text,
          locale,
-         category: apCategory ?? currentCategory?.name ?? null,
+         category: currentCategory?.name || null,
          subcategory: apSubcategory ?? currentSubcategory?.name ?? null,
          subcategory_report: apSubReport ?? null,
       };

@@ -100,7 +100,7 @@
 .icon-check {
    width: 24px;
    height: 24px;
-   margin-top: 16px;
+   margin-top: 8px;
 }
 
 .chat-window-start__content {
@@ -134,7 +134,6 @@
    .user,
    .ai {
       padding: 16px;
-      padding-top: 28px;
       margin-bottom: 16px;
       font-size: 16px;
    }

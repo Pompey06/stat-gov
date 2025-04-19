@@ -9,9 +9,9 @@ import chatI18n from "../../../i18n";
 export function BaseModal({ isOpen, onClose, title, children, modalClassName = "" }) {
    const { t } = useTranslation(undefined, { i18n: chatI18n });
    return (
-      <Dialog open={isOpen} onClose={onClose} className="relative z-10">
+      <Dialog open={isOpen} onClose={onClose} className="relative z-100">
          <DialogBackdrop className="fixed inset-0 bg-gray-500/75 transition-opacity" />
-         <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+         <div className="fixed inset-0 z-100 w-screen overflow-y-auto">
             <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
                <DialogPanel
                   className={`relative modal__wrapper transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl ${modalClassName}`}

@@ -53,6 +53,7 @@
       /*padding: 16px;
       margin-bottom: 8px;*/
       font-size: 14px;
+      max-width: 56px;
    }
    /*.feedback-button {
       padding: 8px 40px;
