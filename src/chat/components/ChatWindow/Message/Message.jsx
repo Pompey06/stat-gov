@@ -8,7 +8,6 @@ import FeedbackMessage from "../FeeadbackMessage/FeedbackMessage";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
-import { motion } from "framer-motion";
 import copyIcon from "../../../assets/copy.svg";
 import checkIcon from "../../../assets/checkmark.svg";
 
@@ -173,21 +172,19 @@ export default function Message({
          {/* Рендерим копировать-кнопку и FeedbackMessage только для сообщений с ответом бота от assistant/ask */}
 
          <div>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-               <ReactMarkdown
-                  remarkPlugins={[remarkGfm, remarkBreaks]}
-                  components={{
-                     // Все <a> рендерим с нашим классом, чтобы сработал .message-link из CSS
-                     a: ({ href, children, ...props }) => (
-                        <a href={href} className="message-link" {...props}>
-                           {children}
-                        </a>
-                     ),
-                  }}
-               >
-                  {text}
-               </ReactMarkdown>
-            </motion.div>
+            <ReactMarkdown
+               remarkPlugins={[remarkGfm, remarkBreaks]}
+               components={{
+                  // Все <a> рендерим с нашим классом, чтобы сработал .message-link из CSS
+                  a: ({ href, children, ...props }) => (
+                     <a href={href} className="message-link" {...props}>
+                        {children}
+                     </a>
+                  ),
+               }}
+            >
+               {text}
+            </ReactMarkdown>
             {/*{hasLineBreaks ? renderTextWithLineBreaks(text) : linkifyText(text)}*/}
             {!streaming && allFilePaths.length > 0 && (
                <div className="mt-2 fade-in">
