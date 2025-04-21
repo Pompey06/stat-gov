@@ -596,33 +596,32 @@ const ChatProvider = ({ children }) => {
                      const jsonObj = JSON.parse(trimmed.slice(2));
 
                      if (jsonObj.type === "conversation") {
+                        // ваша существующая логика для conversation
                         const { id: convId, title: convTitle } = jsonObj.conversation;
                         setCurrentChatId(convId);
-                        setChats((prevChats) =>
-                           prevChats.map((chat) =>
+                        setChats((prev) =>
+                           prev.map((chat) =>
                               String(chat.id) === String(currentChatId) || chat.id === null
                                  ? { ...chat, id: convId, title: convTitle }
                                  : chat
                            )
                         );
                      } else if (jsonObj.type === "relevant_documents") {
-                        // Привязываем файлы к тому сообщению, которое еще в режиме streaming
+                        // ваша существующая логика для документов
                         setChats((prevChats) =>
                            prevChats.map((chat) => {
-                              // ищем индекс сообщения-стриминга
                               const idx = chat.messages.findIndex((msg) => msg.streaming);
                               if (idx === -1) return chat;
-                              // клонируем массив сообщений
-                              const updatedMessages = [...chat.messages];
-                              // обновляем только streaming-сообщение, добавляя filePaths
-                              const streamingMsg = updatedMessages[idx];
-                              updatedMessages[idx] = {
-                                 ...streamingMsg,
-                                 filePaths: jsonObj.documents || [],
-                              };
-                              return { ...chat, messages: updatedMessages };
+                              const updated = [...chat.messages];
+                              updated[idx] = { ...updated[idx], filePaths: jsonObj.documents || [] };
+                              return { ...chat, messages: updated };
                            })
                         );
+                     } else if (jsonObj.type === "final_text") {
+                        // когда приходит окончательный текст — сразу заменяем сообщение
+                        const final = jsonObj.final_text;
+                        // флаг streaming снимается внутри updateLastMessage
+                        updateLastMessage(final, false);
                      } else if (jsonObj.type === "status") {
                         console.log("Status chunk:", jsonObj.status);
                      }
