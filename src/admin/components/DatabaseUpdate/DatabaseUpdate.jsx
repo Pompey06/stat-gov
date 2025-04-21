@@ -126,7 +126,7 @@ const DatabaseUpdate = ({ credentials }) => {
       }
       const encodedCredentials = btoa(`${credentials.login}:${credentials.password}`);
       try {
-         const response = await api.get("/knowledge/qa.csv", {
+         const response = await api.get("/knowledge/", {
             headers: {
                Authorization: `Basic ${encodedCredentials}`,
             },
@@ -135,7 +135,7 @@ const DatabaseUpdate = ({ credentials }) => {
          const url = window.URL.createObjectURL(new Blob([response.data]));
          const link = document.createElement("a");
          link.href = url;
-         link.setAttribute("download", "qa.csv");
+         link.setAttribute("download", "knowledge.xlsx");
          document.body.appendChild(link);
          link.click();
          document.body.removeChild(link);
@@ -158,34 +158,69 @@ const DatabaseUpdate = ({ credentials }) => {
       setUploadStarted(false);
    };
 
-   // Обработчик загрузки файла (POST запрос) для второго блока
    const handleUpload = async () => {
       if (!newQAFile) return;
       if (!credentials) {
          console.error("Учётные данные не заданы");
          return;
       }
+
       setUploadStarted(true);
+      setUploadProgress(0);
+
+      const startTime = Date.now();
+      let totalDuration = null;
+      let resolveSimulation;
+      const simulationDone = new Promise((res) => {
+         resolveSimulation = res;
+      });
+      let frameId;
+
+      // Функция анимации прогресса
+      const animate = () => {
+         const elapsed = Date.now() - startTime;
+         const pct = Math.min(100, (elapsed / totalDuration) * 100);
+         setUploadProgress(Math.round(pct));
+         if (elapsed < totalDuration) {
+            frameId = requestAnimationFrame(animate);
+         } else {
+            setUploadProgress(100);
+            resolveSimulation();
+         }
+      };
+
       const encodedCredentials = btoa(`${credentials.login}:${credentials.password}`);
       const formData = new FormData();
-      formData.append("qa_file", newQAFile);
+      formData.append("knowledge_file", newQAFile);
+
       try {
-         const response = await api.post("/knowledge/fill-db", formData, {
+         // Запускаем запрос
+         const uploadPromise = api.post("/knowledge/", formData, {
             headers: {
                Authorization: `Basic ${encodedCredentials}`,
                "Content-Type": "multipart/form-data",
             },
-            onUploadProgress: (progressEvent) => {
-               const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-               setUploadProgress(percent);
+            onUploadProgress: (e) => {
+               // Как только все байты ушли — фиксируем длительность передачи
+               if (e.loaded === e.total && totalDuration === null) {
+                  const uploadDuration = Date.now() - startTime;
+                  totalDuration = uploadDuration + 15000; // +15 сек
+                  frameId = requestAnimationFrame(animate);
+               }
             },
          });
-         console.log("Файл успешно загружен", response.data);
+
+         // Ждём и запроса, и завершения анимации
+         await Promise.all([uploadPromise, simulationDone]);
+
+         // Очистка
+         cancelAnimationFrame(frameId);
          setNewQAFile(null);
-         setUploadProgress(0);
          setUploadStarted(false);
+         setUploadProgress(0);
       } catch (error) {
          console.error("Ошибка при загрузке файла:", error);
+         if (frameId) cancelAnimationFrame(frameId);
          setUploadStarted(false);
       }
    };

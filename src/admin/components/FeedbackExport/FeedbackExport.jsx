@@ -11,33 +11,31 @@ import ru from "date-fns/locale/ru";
 import { useApi } from "../Context/Context";
 import { useTranslation } from "react-i18next";
 
-// Кастомный инпут для DatePicker с иконками календаря и крестика для очистки
-const CustomDateInput = forwardRef(({ value, onClick, placeholder, onClear }, ref) => {
-   return (
-      <div className="custom-date-input">
-         <img src={calendarIcon} alt="Calendar" className="calendar-icon" />
-         <input
-            onClick={onClick}
-            value={value}
-            placeholder={placeholder}
-            ref={ref}
-            readOnly
-            className="date-input-field"
+// Кастомный инпут для DatePicker
+const CustomDateInput = forwardRef(({ value, onClick, placeholder, onClear }, ref) => (
+   <div className="custom-date-input">
+      <img src={calendarIcon} alt="Calendar" className="calendar-icon" />
+      <input
+         onClick={onClick}
+         value={value}
+         placeholder={placeholder}
+         ref={ref}
+         readOnly
+         className="date-input-field"
+      />
+      {value && (
+         <img
+            src={clearIcon}
+            alt="Clear"
+            className="clear-icon"
+            onClick={(e) => {
+               e.stopPropagation();
+               onClear();
+            }}
          />
-         {value && (
-            <img
-               src={clearIcon}
-               alt="Clear"
-               className="clear-icon"
-               onClick={(e) => {
-                  e.stopPropagation();
-                  onClear();
-               }}
-            />
-         )}
-      </div>
-   );
-});
+      )}
+   </div>
+));
 
 CustomDateInput.propTypes = {
    value: PropTypes.string,
@@ -45,7 +43,6 @@ CustomDateInput.propTypes = {
    placeholder: PropTypes.string,
    onClear: PropTypes.func.isRequired,
 };
-
 CustomDateInput.displayName = "CustomDateInput";
 
 const FeedbackExport = ({ credentials }) => {
@@ -55,26 +52,32 @@ const FeedbackExport = ({ credentials }) => {
    const [endDate, setEndDate] = useState(null);
 
    const handleDownload = async () => {
-      if (!startDate || !endDate) {
-         console.error("Обе даты должны быть выбраны");
-         return;
-      }
       if (!credentials) {
          console.error("Учётные данные не заданы");
          return;
       }
       const encodedCredentials = btoa(`${credentials.login}:${credentials.password}`);
+
+      // Локальное форматирование дат, чтобы не было смещения UTC
+      const formatDate = (date) => {
+         const y = date.getFullYear();
+         const m = String(date.getMonth() + 1).padStart(2, "0");
+         const d = String(date.getDate()).padStart(2, "0");
+         return `${y}-${m}-${d}`;
+      };
+
       try {
+         const params = {
+            from_date: startDate ? formatDate(startDate) : null,
+            to_date: endDate ? formatDate(endDate) : null,
+         };
+
          const response = await api.get("/conversation/export.xlsx", {
-            headers: {
-               Authorization: `Basic ${encodedCredentials}`,
-            },
-            params: {
-               from_date: startDate.toISOString().split("T")[0],
-               to_date: endDate.toISOString().split("T")[0],
-            },
+            headers: { Authorization: `Basic ${encodedCredentials}` },
+            params,
             responseType: "blob",
          });
+
          const url = window.URL.createObjectURL(new Blob([response.data]));
          const link = document.createElement("a");
          link.href = url;
@@ -82,6 +85,7 @@ const FeedbackExport = ({ credentials }) => {
          document.body.appendChild(link);
          link.click();
          document.body.removeChild(link);
+
          setStartDate(null);
          setEndDate(null);
       } catch (error) {
@@ -99,7 +103,7 @@ const FeedbackExport = ({ credentials }) => {
                <DatePicker
                   locale={ru}
                   selected={startDate}
-                  onChange={(date) => setStartDate(date)}
+                  onChange={setStartDate}
                   placeholderText={t("feedbackExport.datePlaceholder")}
                   dateFormat="dd.MM.yyyy"
                   maxDate={endDate}
@@ -116,7 +120,7 @@ const FeedbackExport = ({ credentials }) => {
                <DatePicker
                   locale={ru}
                   selected={endDate}
-                  onChange={(date) => setEndDate(date)}
+                  onChange={setEndDate}
                   placeholderText={t("feedbackExport.datePlaceholder")}
                   dateFormat="dd.MM.yyyy"
                   minDate={startDate}
@@ -129,7 +133,7 @@ const FeedbackExport = ({ credentials }) => {
                />
             </div>
          </div>
-         <Button type="button" onClick={handleDownload} className="download-button" disabled={!startDate || !endDate}>
+         <Button type="button" onClick={handleDownload} className="download-button">
             {t("feedbackExport.downloadButton")}
          </Button>
       </div>
