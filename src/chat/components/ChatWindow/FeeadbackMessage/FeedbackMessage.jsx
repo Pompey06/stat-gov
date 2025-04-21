@@ -48,11 +48,16 @@ export default function FeedbackMessage({ messageIndex }) {
                {/*<p className="text-black text-[12px] mb-2">{t("feedback.requestFeedback")}</p>*/}
                <div className="flex gap-[6px] feedback-message__btns">
                   <button
+                     type="button"
                      className="feedback-button items-center flex gap-[8px] bg-transparent text-black hover:text-white transition-colors duration-300"
+                     style={{ touchAction: "manipulation" }}
                      onMouseEnter={() => setHoveredButton("good")}
                      onMouseLeave={() => setHoveredButton(null)}
                      onTouchStart={() => setHoveredButton("good")}
-                     onTouchEnd={() => setHoveredButton(null)}
+                     onTouchEnd={() => {
+                        setHoveredButton(null);
+                        openModal("good");
+                     }}
                      onClick={() => openModal("good")}
                   >
                      <img
@@ -72,11 +77,16 @@ export default function FeedbackMessage({ messageIndex }) {
                   </button>
 
                   <button
+                     type="button"
                      className="feedback-button items-center flex gap-[8px] bg-transparent text-black hover:text-white transition-colors duration-300"
+                     style={{ touchAction: "manipulation" }}
                      onMouseEnter={() => setHoveredButton("bad")}
                      onMouseLeave={() => setHoveredButton(null)}
                      onTouchStart={() => setHoveredButton("bad")}
-                     onTouchEnd={() => setHoveredButton(null)}
+                     onTouchEnd={() => {
+                        setHoveredButton(null);
+                        openModal("bad");
+                     }}
                      onClick={() => openModal("bad")}
                   >
                      <img

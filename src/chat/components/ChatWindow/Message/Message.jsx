@@ -214,9 +214,12 @@ export default function Message({
                Number.isInteger(botMessageIndex) && (
                   <>
                      <button
+                        type="button"
                         className="copy-button flex items-center gap-1 text-sm text-gray-500 hover:bg-gray-200 transition-colors"
                         onClick={handleCopy}
+                        onTouchEnd={handleCopy}
                         title={t("copyButton.copy")}
+                        style={{ touchAction: "manipulation" }}
                      >
                         {copied ? (
                            <img src={checkIcon} alt="Check" className="icon-check" />
@@ -224,6 +227,7 @@ export default function Message({
                            <img src={copyIcon} alt="Copy" className="icon-xs" />
                         )}
                      </button>
+
                      <FeedbackMessage messageIndex={botMessageIndex} />
                   </>
                )}

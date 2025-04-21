@@ -115,6 +115,11 @@
    animation: fadeIn 0.5s ease-out forwards;
 }
 
+.copy-button,
+.feedback-button {
+   touch-action: manipulation; /* ускоряет распознавание тапа на мобильных */
+}
+
 @keyframes fadeIn {
    from {
       opacity: 0;
