@@ -530,12 +530,20 @@ const ChatProvider = ({ children }) => {
       );
 
       try {
-         // Шаг 3. Отправляем запрос через Fetch
-         const url = `${import.meta.env.VITE_API_URL}/assistant/ask?${new URLSearchParams(params).toString()}`;
+         // Шаг 3. Отправляем запрос через Fetch, ОТФИЛЬТРОВАВ null-значения
+         const searchParams = new URLSearchParams();
+         Object.entries(params).forEach(([key, value]) => {
+            // добавляем только непустые параметры
+            if (value !== null && value !== undefined) {
+               searchParams.append(key, value);
+            }
+         });
+         const url = `${import.meta.env.VITE_API_URL}/assistant/ask?${searchParams.toString()}`;
          const response = await fetch(url, {
             method: "POST",
             credentials: "include",
          });
+
          if (!response.ok) {
             throw new Error("Network response was not ok");
          }
