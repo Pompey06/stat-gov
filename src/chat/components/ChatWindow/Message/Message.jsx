@@ -5,6 +5,10 @@ import "./Message.css";
 import { useTranslation } from "react-i18next";
 import chatI18n from "../../../i18n";
 import FeedbackMessage from "../FeeadbackMessage/FeedbackMessage";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
+import { motion } from "framer-motion";
 import copyIcon from "../../../assets/copy.svg";
 import checkIcon from "../../../assets/checkmark.svg";
 
@@ -41,66 +45,66 @@ export default function Message({
       return [];
    }, [filePath, filePaths]);
 
-   function renderTextWithLineBreaks(text) {
-      if (!text) return null;
-      return text.split("\n").map((line, index, array) => (
-         <React.Fragment key={index}>
-            {linkifyText(line)}
-            {index < array.length - 1 && <br />}
-         </React.Fragment>
-      ));
-   }
+   //function renderTextWithLineBreaks(text) {
+   //   if (!text) return null;
+   //   return text.split("\n").map((line, index, array) => (
+   //      <React.Fragment key={index}>
+   //         {linkifyText(line)}
+   //         {index < array.length - 1 && <br />}
+   //      </React.Fragment>
+   //   ));
+   //}
 
-   function linkifyText(text) {
-      if (!text) return null;
-      const combinedRegex = /(\[([^\]]+)\]\(([^)]+)\))|(https?:\/\/[^\s]+?)([),.?!]+)?(\s|$)/g;
-      const elements = [];
-      let lastIndex = 0;
-      let match;
-      while ((match = combinedRegex.exec(text)) !== null) {
-         if (match.index > lastIndex) {
-            elements.push(text.substring(lastIndex, match.index));
-         }
-         if (match[1]) {
-            const linkText = match[2];
-            const url = match[3];
-            elements.push(
-               <a
-                  key={`md-${match.index}`}
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="message-link"
-               >
-                  {linkText}
-               </a>
-            );
-         } else {
-            const url = match[4];
-            const trailing = match[5] || "";
-            const space = match[6] || "";
-            elements.push(
-               <a
-                  key={`url-${match.index}`}
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="message-link"
-               >
-                  {url}
-               </a>
-            );
-            elements.push(trailing + space);
-         }
-         lastIndex = combinedRegex.lastIndex;
-      }
-      if (lastIndex < text.length) {
-         elements.push(text.substring(lastIndex));
-      }
-      return elements;
-   }
+   //function linkifyText(text) {
+   //   if (!text) return null;
+   //   const combinedRegex = /(\[([^\]]+)\]\(([^)]+)\))|(https?:\/\/[^\s]+?)([),.?!]+)?(\s|$)/g;
+   //   const elements = [];
+   //   let lastIndex = 0;
+   //   let match;
+   //   while ((match = combinedRegex.exec(text)) !== null) {
+   //      if (match.index > lastIndex) {
+   //         elements.push(text.substring(lastIndex, match.index));
+   //      }
+   //      if (match[1]) {
+   //         const linkText = match[2];
+   //         const url = match[3];
+   //         elements.push(
+   //            <a
+   //               key={`md-${match.index}`}
+   //               href={url}
+   //               target="_blank"
+   //               rel="noopener noreferrer"
+   //               className="message-link"
+   //            >
+   //               {linkText}
+   //            </a>
+   //         );
+   //      } else {
+   //         const url = match[4];
+   //         const trailing = match[5] || "";
+   //         const space = match[6] || "";
+   //         elements.push(
+   //            <a
+   //               key={`url-${match.index}`}
+   //               href={url}
+   //               target="_blank"
+   //               rel="noopener noreferrer"
+   //               className="message-link"
+   //            >
+   //               {url}
+   //            </a>
+   //         );
+   //         elements.push(trailing + space);
+   //      }
+   //      lastIndex = combinedRegex.lastIndex;
+   //   }
+   //   if (lastIndex < text.length) {
+   //      elements.push(text.substring(lastIndex));
+   //   }
+   //   return elements;
+   //}
 
-   const hasLineBreaks = !isUser && text && text.includes("\n");
+   //const hasLineBreaks = !isUser && text && text.includes("\n");
 
    const handleDownload = async (e, path) => {
       e.preventDefault();
@@ -169,7 +173,22 @@ export default function Message({
          {/* Рендерим копировать-кнопку и FeedbackMessage только для сообщений с ответом бота от assistant/ask */}
 
          <div>
-            {hasLineBreaks ? renderTextWithLineBreaks(text) : linkifyText(text)}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+               <ReactMarkdown
+                  remarkPlugins={[remarkGfm, remarkBreaks]}
+                  components={{
+                     // Все <a> рендерим с нашим классом, чтобы сработал .message-link из CSS
+                     a: ({ href, children, ...props }) => (
+                        <a href={href} className="message-link" {...props}>
+                           {children}
+                        </a>
+                     ),
+                  }}
+               >
+                  {text}
+               </ReactMarkdown>
+            </motion.div>
+            {/*{hasLineBreaks ? renderTextWithLineBreaks(text) : linkifyText(text)}*/}
             {!streaming && allFilePaths.length > 0 && (
                <div className="mt-2 fade-in">
                   <div className="file-download-container">
