@@ -554,16 +554,17 @@ const ChatProvider = ({ children }) => {
          let accumulatedText = "";
 
          const updateLastMessage = (newText, streamingFlag = true) => {
+            // Преобразуем экранированные "\n" в реальные переводы строк
+            const formattedText = newText.replace(/\\n/g, "\n");
+
             setChats((prevChats) =>
                prevChats.map((chat) => {
-                  // Ищем в этом чате сообщение с флагом streaming
                   const idx = chat.messages.findIndex((msg) => msg.streaming);
                   if (idx === -1) return chat;
                   const streamingMsg = chat.messages[idx];
-                  // Обновляем текст и флаг
                   const updatedMsg = {
                      ...streamingMsg,
-                     text: newText + (streamingFlag ? " |" : ""),
+                     text: formattedText + (streamingFlag ? " |" : ""),
                      streaming: streamingFlag,
                   };
                   const updatedMessages = [...chat.messages];
