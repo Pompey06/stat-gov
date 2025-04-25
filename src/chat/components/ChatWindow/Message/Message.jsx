@@ -8,6 +8,7 @@ import FeedbackMessage from "../FeeadbackMessage/FeedbackMessage";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
+import copy from "copy-to-clipboard";
 import copyIcon from "../../../assets/copy.svg";
 import checkIcon from "../../../assets/checkmark.svg";
 
@@ -140,20 +141,53 @@ export default function Message({
    };
 
    const [copied, setCopied] = useState(false);
+   //const handleCopy = (e) => {
+   //   e.stopPropagation();
+   //   navigator.clipboard
+   //      .writeText(text)
+   //      .then(() => {
+   //         setCopied(true);
+   //         console.log("Текст скопирован в буфер обмена");
+   //         setTimeout(() => {
+   //            setCopied(false);
+   //         }, 1500);
+   //      })
+   //      .catch((err) => {
+   //         console.error("Ошибка при копировании текста:", err);
+   //      });
+   //};
+
    const handleCopy = (e) => {
       e.stopPropagation();
-      navigator.clipboard
-         .writeText(text)
-         .then(() => {
+
+      // Пытаемся через стандартный Clipboard API
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+         navigator.clipboard
+            .writeText(text)
+            .then(() => {
+               setCopied(true);
+               setTimeout(() => setCopied(false), 1500);
+            })
+            .catch(() => {
+               // Если не получилось, fallback через библиотеку
+               const ok = copy(text);
+               if (ok) {
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 1500);
+               } else {
+                  console.error("Не удалось скопировать текст");
+               }
+            });
+      } else {
+         // Во всех остальных случаях — сразу через библиотеку
+         const ok = copy(text);
+         if (ok) {
             setCopied(true);
-            console.log("Текст скопирован в буфер обмена");
-            setTimeout(() => {
-               setCopied(false);
-            }, 1500);
-         })
-         .catch((err) => {
-            console.error("Ошибка при копировании текста:", err);
-         });
+            setTimeout(() => setCopied(false), 1500);
+         } else {
+            console.error("Не удалось скопировать текст");
+         }
+      }
    };
 
    return (
