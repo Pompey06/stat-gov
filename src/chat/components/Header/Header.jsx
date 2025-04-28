@@ -1,20 +1,23 @@
 import React from "react";
 import "./Header.css";
 import newBurgerIcon from "../../assets/newBurgerIcon.svg";
-//import { useTranslation } from "react-i18next";
 import { useContext } from "react";
-import { ChatContext } from "../../context/ChatContext"; // Путь к ChatProvider
-//import chatI18n from "../../i18n";
+import { ChatContext } from "../../context/ChatContext";
 
 const Header = ({ isSidebarOpen, toggleSidebar }) => {
-   //const { i18n } = useTranslation(undefined, { i18n: chatI18n });
-   const { updateLocale } = useContext(ChatContext); // Получаем функцию из контекста
+   const { updateLocale } = useContext(ChatContext);
 
-   const [language, setLanguage] = React.useState("русc"); // Текущий язык
+   // Текущий язык по-умолчанию — казахский
+   const [language, setLanguage] = React.useState("қаз");
+
+   // При монтировании устанавливаем казахский в контексте
+   React.useEffect(() => {
+      updateLocale("қаз");
+   }, []);
 
    const handleLanguageChange = (lang) => {
       setLanguage(lang);
-      updateLocale(lang); // Вызываем функцию для обновления языка
+      updateLocale(lang);
    };
 
    return (
@@ -24,8 +27,9 @@ const Header = ({ isSidebarOpen, toggleSidebar }) => {
             src={isSidebarOpen ? newBurgerIcon : newBurgerIcon}
             alt="Menu"
             className={`header__burger-icon ${isSidebarOpen ? "hidden" : "block"} md:hidden`}
-            onClick={toggleSidebar} // Вызываем toggleSidebar при клике
+            onClick={toggleSidebar}
          />
+
          <div className="flex language">
             <button
                className={`language__button rounded ${

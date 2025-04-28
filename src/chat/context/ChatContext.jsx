@@ -295,7 +295,7 @@ const ChatProvider = ({ children }) => {
                   messages: [
                      chat.messages[0],
                      ...fetchedCategories.slice(0, 4).map((cat) => ({
-                        text: locale === "ru" ? cat.name : translationsKz[cat.name] || cat.name,
+                        text: i18n.language === "қаз" ? translationsKz[cat.name] || cat.name : cat.name,
                         isUser: true,
                         isFeedback: false,
                         isButton: true,
@@ -318,7 +318,7 @@ const ChatProvider = ({ children }) => {
                (String(chat.id) === String(currentChatId) || (chat.id === null && currentChatId === null))
             ) {
                const categoryButtons = categories.slice(0, 4).map((cat) => ({
-                  text: locale === "ru" ? cat.name : translationsKz[cat.name] || cat.name,
+                  text: i18n.language === "қаз" ? translationsKz[cat.name] || cat.name : cat.name,
                   isUser: true,
                   isFeedback: false,
                   isButton: true,
@@ -369,6 +369,13 @@ const ChatProvider = ({ children }) => {
          fetchInitialMessages();
       }
    }, [currentChatId]);
+
+   useEffect(() => {
+      // если мы в дефолтном (пустом) чате и категории уже есть
+      if (currentChatId === null && !currentCategory && !currentSubcategory && categories.length > 0) {
+         updateChatWithExistingCategories();
+      }
+   }, [i18n.language, categories]);
 
    const createNewChat = () => {
       setCurrentCategory(null);
