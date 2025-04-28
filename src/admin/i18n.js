@@ -21,6 +21,10 @@ const resources = {
             uploadCompleteMessage:
                "Загрузка завершена, данные обновляются. Пожалуйста, подождите — это может занять от 2 до 5 минут.",
             uploadErrorMessage: "Извините, произошла ошибка. Попробуйте ещё раз.",
+            createdInstructions: "Создано инструкций: <1>{{count}}</1>",
+            deletedInstructions: "Удалено инструкций: <1>{{count}}</1>",
+            createdQAPairs: "Создано пар «вопрос–ответ»: <1>{{count}}</1>",
+            deletedQAPairs: "Удалено пар «вопрос–ответ»: <1>{{count}}</1>",
          },
          feedbackExport: {
             title: "Выгрузка списка чатов и отзывов",
@@ -51,6 +55,10 @@ const resources = {
             uploadCompleteMessage:
                "Жүктеу аяқталды, деректер жаңартылуда. Өтінеміз, күте тұрыңыз — бұл 2-ден 5 минутқа дейін созылуы мүмкін.",
             uploadErrorMessage: "Кешіріңіз, қате орын алды. Қайтадан көріңізші.",
+            createdInstructions: "Жасалған нұсқаулар: <1>{{count}}</1>",
+            deletedInstructions: "Жойылған нұсқаулар: <1>{{count}}</1>",
+            createdQAPairs: "Қосылған «сұрақ–жауап» жұптары: <1>{{count}}</1>",
+            deletedQAPairs: "Жойылған «сұрақ–жауап» жұптары: <1>{{count}}</1>",
          },
          feedbackExport: {
             title: "Чаттар мен пікірлер тізімін шығару",

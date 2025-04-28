@@ -1,7 +1,7 @@
 // src/components/DatabaseUpdate/DatabaseUpdate.jsx
 import { useState } from "react";
 import PropTypes from "prop-types";
-import { useTranslation } from "react-i18next";
+import { useTranslation, Trans } from "react-i18next";
 import Button from "../Button/Button";
 import uploadIcon from "../../assets/uploadIcon.svg";
 import fileIcon from "../../assets/csv.svg";
@@ -85,7 +85,7 @@ export const FileUploadBlock = ({
             </>
          )}
          <Button type="button" className="upload-button" onClick={onButtonClick}>
-            {buttonText ? buttonText : t("databaseUpdate.uploadButtonText")}
+            {buttonText || t("databaseUpdate.uploadButtonText")}
          </Button>
       </div>
    );
@@ -111,41 +111,37 @@ const DatabaseUpdate = ({ credentials }) => {
    const [newQAFile, setNewQAFile] = useState(null);
    const [uploadProgress, setUploadProgress] = useState(0);
    const [uploadStarted, setUploadStarted] = useState(false);
-
-   // <-- Добавил это состояние -->
    const [uploadStatus, setUploadStatus] = useState(null); // null | "success" | "error"
+   const [uploadResult, setUploadResult] = useState(null); // holds response.data
 
    const handleExport = async () => {
       if (!credentials) {
          console.error("Учётные данные не заданы");
          return;
       }
-      const encodedCredentials = btoa(`${credentials.login}:${credentials.password}`);
+      const encoded = btoa(`${credentials.login}:${credentials.password}`);
       try {
-         const response = await api.get("/knowledge/", {
-            headers: {
-               Authorization: `Basic ${encodedCredentials}`,
-            },
+         const res = await api.get("/knowledge/", {
+            headers: { Authorization: `Basic ${encoded}` },
             responseType: "blob",
          });
-         const url = window.URL.createObjectURL(new Blob([response.data]));
+         const url = window.URL.createObjectURL(new Blob([res.data]));
          const link = document.createElement("a");
          link.href = url;
          link.setAttribute("download", "knowledge.xlsx");
          document.body.appendChild(link);
          link.click();
          document.body.removeChild(link);
-      } catch (error) {
-         console.error("Ошибка при экспорте файла:", error);
+      } catch (err) {
+         console.error("Ошибка при экспорте файла:", err);
       }
    };
 
    const handleNewQAFileSelect = (file) => {
-      console.log("Выбран файл для новых вопросов и ответов:", file);
       setNewQAFile(file);
       setUploadProgress(0);
-      // <-- сбрасываем статус при выборе нового файла -->
       setUploadStatus(null);
+      setUploadResult(null);
    };
 
    const handleNewQAFileRemove = () => {
@@ -153,19 +149,16 @@ const DatabaseUpdate = ({ credentials }) => {
       setUploadProgress(0);
       setUploadStarted(false);
       setUploadStatus(null);
+      setUploadResult(null);
    };
 
    const handleUpload = async () => {
-      if (!newQAFile) return;
-      if (!credentials) {
-         console.error("Учётные данные не заданы");
-         return;
-      }
+      if (!newQAFile || !credentials) return;
 
       setUploadStarted(true);
       setUploadProgress(0);
-      // <-- сброс статуса перед новой загрузкой -->
       setUploadStatus(null);
+      setUploadResult(null);
 
       const startTime = Date.now();
       let totalDuration = null;
@@ -175,6 +168,7 @@ const DatabaseUpdate = ({ credentials }) => {
       });
       let frameId;
 
+      // progress animation
       const animate = () => {
          const elapsed = Date.now() - startTime;
          const pct = Math.min(100, (elapsed / totalDuration) * 100);
@@ -187,14 +181,14 @@ const DatabaseUpdate = ({ credentials }) => {
          }
       };
 
-      const encodedCredentials = btoa(`${credentials.login}:${credentials.password}`);
+      const encoded = btoa(`${credentials.login}:${credentials.password}`);
       const formData = new FormData();
       formData.append("knowledge_file", newQAFile);
 
       try {
          const uploadPromise = api.post("/knowledge/", formData, {
             headers: {
-               Authorization: `Basic ${encodedCredentials}`,
+               Authorization: `Basic ${encoded}`,
                "Content-Type": "multipart/form-data",
             },
             onUploadProgress: (e) => {
@@ -206,33 +200,31 @@ const DatabaseUpdate = ({ credentials }) => {
             },
          });
 
-         await Promise.all([uploadPromise, simulationDone]);
-
+         const [response] = await Promise.all([uploadPromise, simulationDone]);
          cancelAnimationFrame(frameId);
 
-         // <-- при успехе -->
+         setUploadResult(response.data);
          setUploadStatus("success");
          setTimeout(() => {
             setUploadStatus(null);
             setNewQAFile(null);
             setUploadStarted(false);
             setUploadProgress(0);
-         }, 3000);
-      } catch (error) {
-         console.error("Ошибка при загрузке файла:", error);
+         }, 20000);
+      } catch (err) {
+         console.error("Ошибка при загрузке файла:", err);
          if (frameId) cancelAnimationFrame(frameId);
-         // <-- при ошибке -->
          setUploadStatus("error");
          setTimeout(() => {
             setUploadStatus(null);
             setUploadStarted(false);
-         }, 3000);
+         }, 20000);
       }
    };
 
    return (
       <div className="database-update">
-         {/* Первый блок: выгрузка старой базы данных */}
+         {/* Первый блок: выгрузка старой базы */}
          <FileUploadBlock
             title={t("databaseUpdate.oldDbTitle")}
             subtitle={t("databaseUpdate.oldDbSubtitle")}
@@ -242,11 +234,39 @@ const DatabaseUpdate = ({ credentials }) => {
             onButtonClick={handleExport}
          />
 
-         {/* Второй блок: либо сообщение, либо блок загрузки */}
-         {uploadStatus === "success" ? (
-            <div className="upload-message">{t("databaseUpdate.uploadCompleteMessage")}</div>
+         {uploadStatus === "success" && uploadResult ? (
+            <div className="upload-message">
+               <p>
+                  <Trans
+                     i18nKey="databaseUpdate.createdInstructions"
+                     count={uploadResult.instructions_created}
+                     components={[<strong key="count" />]}
+                  />
+               </p>
+               <p>
+                  <Trans
+                     i18nKey="databaseUpdate.deletedInstructions"
+                     count={uploadResult.instructions_deleted}
+                     components={[<strong key="count" />]}
+                  />
+               </p>
+               <p>
+                  <Trans
+                     i18nKey="databaseUpdate.createdQAPairs"
+                     count={uploadResult.qa_created}
+                     components={[<strong key="count" />]}
+                  />
+               </p>
+               <p>
+                  <Trans
+                     i18nKey="databaseUpdate.deletedQAPairs"
+                     count={uploadResult.qa_deleted}
+                     components={[<strong key="count" />]}
+                  />
+               </p>
+            </div>
          ) : uploadStatus === "error" ? (
-            <div className="upload-message error"> {t("databaseUpdate.uploadErrorMessage")}</div>
+            <div className="upload-message error">{t("databaseUpdate.uploadErrorMessage")}</div>
          ) : (
             <FileUploadBlock
                title={t("databaseUpdate.newQATitle")}

@@ -145,6 +145,12 @@
    margin-top: 60px;
    margin-bottom: 32px;
 }
+.upload-message p {
+   margin: 8px 0;
+}
+.upload-message p strong {
+   color: #0086bf;
+}
 .upload-message.error {
    color: #b00020;
    border: none;
