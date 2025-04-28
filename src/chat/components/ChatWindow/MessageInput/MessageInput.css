@@ -39,10 +39,6 @@
    margin-top: 10px;
 }
 
-.bottom__wrapper {
-   padding: 0px 34px 10px 16px;
-}
-
 @media (max-width: 700px) {
    .message-input-container {
       padding-right: 7px;
@@ -51,5 +47,6 @@
    }
    .message-input input {
       font-size: 14px;
+      padding: 10px 15px;
    }
 }
