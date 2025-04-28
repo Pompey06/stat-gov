@@ -15,6 +15,10 @@
    background-color: transparent;
 }
 
+.send-icon {
+   width: 26px;
+}
+
 .message-input-container {
    display: flex;
    align-items: center;
