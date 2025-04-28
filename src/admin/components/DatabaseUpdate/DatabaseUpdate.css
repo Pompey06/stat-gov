@@ -136,6 +136,20 @@
    color: #333;
 }
 
+.upload-message {
+   padding: 40px;
+   font-size: 18px;
+   text-align: center;
+   color: #0b0b0b;
+   border-radius: 8px;
+   margin-top: 60px;
+   margin-bottom: 32px;
+}
+.upload-message.error {
+   color: #b00020;
+   border: none;
+}
+
 @media (max-width: 1024px) {
    .database-update {
       padding: 20px;
@@ -167,6 +181,9 @@
 @media (max-width: 550px) {
    .upload-progress {
       width: 85%;
+   }
+   .upload-message {
+      font-size: 14px;
    }
 }
 

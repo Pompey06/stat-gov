@@ -18,6 +18,9 @@ const resources = {
             uploadButtonText: "Загрузить",
             exportButtonText: "Выгрузить",
             lastUpdate: "Последнее обновление",
+            uploadCompleteMessage:
+               "Загрузка завершена, данные обновляются. Пожалуйста, подождите — это может занять от 2 до 5 минут.",
+            uploadErrorMessage: "Извините, произошла ошибка. Попробуйте ещё раз.",
          },
          feedbackExport: {
             title: "Выгрузка списка чатов и отзывов",
@@ -45,6 +48,9 @@ const resources = {
             uploadButtonText: "Жүктеу",
             exportButtonText: "Шығару",
             lastUpdate: "Соңғы жаңарту",
+            uploadCompleteMessage:
+               "Жүктеу аяқталды, деректер жаңартылуда. Өтінеміз, күте тұрыңыз — бұл 2-ден 5 минутқа дейін созылуы мүмкін.",
+            uploadErrorMessage: "Кешіріңіз, қате орын алды. Қайтадан көріңізші.",
          },
          feedbackExport: {
             title: "Чаттар мен пікірлер тізімін шығару",

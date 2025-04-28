@@ -24,22 +24,18 @@ export const FileUploadBlock = ({
 }) => {
    const { t } = useTranslation(undefined, { i18n: adminI18n });
 
-   // Обработчик выбора файла через input
    const handleFileChange = (e) => {
-      if (onFileSelect && e.target.files && e.target.files[0]) {
+      if (onFileSelect && e.target.files?.[0]) {
          onFileSelect(e.target.files[0]);
       }
    };
-
-   // Обработчик drag-and-drop
    const handleDrop = (e) => {
       e.preventDefault();
       e.stopPropagation();
-      if (onFileSelect && e.dataTransfer.files && e.dataTransfer.files[0]) {
+      if (onFileSelect && e.dataTransfer.files?.[0]) {
          onFileSelect(e.dataTransfer.files[0]);
       }
    };
-
    const handleDragOver = (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -52,24 +48,22 @@ export const FileUploadBlock = ({
          {!hideFileUploadField && (
             <>
                {selectedFile ? (
-                  <>
-                     <div className="file-preview">
-                        <div className="file-preview-header">
-                           <img src={fileIcon} alt="File Icon" className="file-preview-icon" />
-                           <div className="file-preview-info">
-                              <p className="file-name">{selectedFile.name}</p>
-                              <p className="file-size">{(selectedFile.size / 1024).toFixed(2)} KB</p>
-                           </div>
-                           <img src={crossIcon} alt="Remove file" className="file-remove-icon" onClick={onFileRemove} />
+                  <div className="file-preview">
+                     <div className="file-preview-header">
+                        <img src={fileIcon} alt="File Icon" className="file-preview-icon" />
+                        <div className="file-preview-info">
+                           <p className="file-name">{selectedFile.name}</p>
+                           <p className="file-size">{(selectedFile.size / 1024).toFixed(2)} KB</p>
                         </div>
-                        {uploadProgress !== null && (
-                           <div className="upload-progress">
-                              <div className="upload-progress-bar" style={{ width: `${uploadProgress}%` }}></div>
-                              <span className="upload-progress-text">{uploadProgress}%</span>
-                           </div>
-                        )}
+                        <img src={crossIcon} alt="Remove file" className="file-remove-icon" onClick={onFileRemove} />
                      </div>
-                  </>
+                     {uploadProgress !== null && (
+                        <div className="upload-progress">
+                           <div className="upload-progress-bar" style={{ width: `${uploadProgress}%` }}></div>
+                           <span className="upload-progress-text">{uploadProgress}%</span>
+                        </div>
+                     )}
+                  </div>
                ) : (
                   <div
                      className="file-upload-field"
@@ -80,7 +74,6 @@ export const FileUploadBlock = ({
                      <img src={uploadIcon} alt="Upload" className="upload-icon" />
                      <p className="upload-field-format">xlsx</p>
                      <p className="upload-field-text">{fileFieldText}</p>
-                     {/* Скрытый input для выбора файла */}
                      <input
                         type="file"
                         id={`${title}-fileInput`}
@@ -114,11 +107,14 @@ FileUploadBlock.propTypes = {
 const DatabaseUpdate = ({ credentials }) => {
    const { t } = useTranslation(undefined, { i18n: adminI18n });
    const api = useApi();
+
    const [newQAFile, setNewQAFile] = useState(null);
    const [uploadProgress, setUploadProgress] = useState(0);
    const [uploadStarted, setUploadStarted] = useState(false);
 
-   // Обработчик экспорта для первого блока (выгрузка старой базы данных)
+   // <-- Добавил это состояние -->
+   const [uploadStatus, setUploadStatus] = useState(null); // null | "success" | "error"
+
    const handleExport = async () => {
       if (!credentials) {
          console.error("Учётные данные не заданы");
@@ -144,18 +140,19 @@ const DatabaseUpdate = ({ credentials }) => {
       }
    };
 
-   // Обработчик выбора файла для второго блока (новые вопросы и ответы)
    const handleNewQAFileSelect = (file) => {
       console.log("Выбран файл для новых вопросов и ответов:", file);
       setNewQAFile(file);
       setUploadProgress(0);
+      // <-- сбрасываем статус при выборе нового файла -->
+      setUploadStatus(null);
    };
 
-   // Обработчик удаления выбранного файла
    const handleNewQAFileRemove = () => {
       setNewQAFile(null);
       setUploadProgress(0);
       setUploadStarted(false);
+      setUploadStatus(null);
    };
 
    const handleUpload = async () => {
@@ -167,6 +164,8 @@ const DatabaseUpdate = ({ credentials }) => {
 
       setUploadStarted(true);
       setUploadProgress(0);
+      // <-- сброс статуса перед новой загрузкой -->
+      setUploadStatus(null);
 
       const startTime = Date.now();
       let totalDuration = null;
@@ -176,7 +175,6 @@ const DatabaseUpdate = ({ credentials }) => {
       });
       let frameId;
 
-      // Функция анимации прогресса
       const animate = () => {
          const elapsed = Date.now() - startTime;
          const pct = Math.min(100, (elapsed / totalDuration) * 100);
@@ -194,40 +192,47 @@ const DatabaseUpdate = ({ credentials }) => {
       formData.append("knowledge_file", newQAFile);
 
       try {
-         // Запускаем запрос
          const uploadPromise = api.post("/knowledge/", formData, {
             headers: {
                Authorization: `Basic ${encodedCredentials}`,
                "Content-Type": "multipart/form-data",
             },
             onUploadProgress: (e) => {
-               // Как только все байты ушли — фиксируем длительность передачи
                if (e.loaded === e.total && totalDuration === null) {
                   const uploadDuration = Date.now() - startTime;
-                  totalDuration = uploadDuration + 15000; // +15 сек
+                  totalDuration = uploadDuration + 15000;
                   frameId = requestAnimationFrame(animate);
                }
             },
          });
 
-         // Ждём и запроса, и завершения анимации
          await Promise.all([uploadPromise, simulationDone]);
 
-         // Очистка
          cancelAnimationFrame(frameId);
-         setNewQAFile(null);
-         setUploadStarted(false);
-         setUploadProgress(0);
+
+         // <-- при успехе -->
+         setUploadStatus("success");
+         setTimeout(() => {
+            setUploadStatus(null);
+            setNewQAFile(null);
+            setUploadStarted(false);
+            setUploadProgress(0);
+         }, 3000);
       } catch (error) {
          console.error("Ошибка при загрузке файла:", error);
          if (frameId) cancelAnimationFrame(frameId);
-         setUploadStarted(false);
+         // <-- при ошибке -->
+         setUploadStatus("error");
+         setTimeout(() => {
+            setUploadStatus(null);
+            setUploadStarted(false);
+         }, 3000);
       }
    };
 
    return (
       <div className="database-update">
-         {/* Первый блок: выгрузка старой базы данных (поле загрузки скрыто) */}
+         {/* Первый блок: выгрузка старой базы данных */}
          <FileUploadBlock
             title={t("databaseUpdate.oldDbTitle")}
             subtitle={t("databaseUpdate.oldDbSubtitle")}
@@ -236,17 +241,24 @@ const DatabaseUpdate = ({ credentials }) => {
             buttonText={t("databaseUpdate.exportButtonText")}
             onButtonClick={handleExport}
          />
-         {/* Второй блок: загрузка новых вопросов и ответов */}
-         <FileUploadBlock
-            title={t("databaseUpdate.newQATitle")}
-            subtitle={t("databaseUpdate.newQASubtitle")}
-            fileFieldText={t("databaseUpdate.newQAFileFieldText")}
-            onFileSelect={handleNewQAFileSelect}
-            selectedFile={newQAFile}
-            onFileRemove={handleNewQAFileRemove}
-            onButtonClick={handleUpload}
-            uploadProgress={uploadStarted ? uploadProgress : null}
-         />
+
+         {/* Второй блок: либо сообщение, либо блок загрузки */}
+         {uploadStatus === "success" ? (
+            <div className="upload-message">{t("databaseUpdate.uploadCompleteMessage")}</div>
+         ) : uploadStatus === "error" ? (
+            <div className="upload-message error"> {t("databaseUpdate.uploadErrorMessage")}</div>
+         ) : (
+            <FileUploadBlock
+               title={t("databaseUpdate.newQATitle")}
+               subtitle={t("databaseUpdate.newQASubtitle")}
+               fileFieldText={t("databaseUpdate.newQAFileFieldText")}
+               onFileSelect={handleNewQAFileSelect}
+               selectedFile={newQAFile}
+               onFileRemove={handleNewQAFileRemove}
+               onButtonClick={handleUpload}
+               uploadProgress={uploadStarted ? uploadProgress : null}
+            />
+         )}
       </div>
    );
 };
