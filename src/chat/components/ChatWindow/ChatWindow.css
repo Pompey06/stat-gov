@@ -50,6 +50,14 @@
    align-self: center;
 }
 
+.sidebar .language {
+   width: max-content;
+   margin-top: auto;
+}
+
+.chat-window-start .bottom__wrapper {
+   padding: 0;
+}
 @media (max-width: 1400px) {
    .chat-window-start .bottom__wrapper {
       width: 100%;

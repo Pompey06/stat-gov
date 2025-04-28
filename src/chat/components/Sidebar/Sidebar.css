@@ -64,7 +64,8 @@
 }
 
 .sidebar--close .sidebar__buttons,
-.sidebar--close .sidebar__warning {
+.sidebar--close .sidebar__warning,
+.sidebar--close .language {
    opacity: 0;
    visibility: hidden;
    transition: opacity 0.3s ease-in-out, visibility 0s linear 0.3s;
@@ -115,7 +116,8 @@
    }
 
    .sidebar--close .sidebar__buttons,
-   .sidebar--close .sidebar__warning {
+   .sidebar--close .sidebar__warning,
+   .sidebar--close .language {
       opacity: 1;
       visibility: visible;
    }
