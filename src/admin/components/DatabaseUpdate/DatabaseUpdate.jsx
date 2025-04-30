@@ -1,5 +1,4 @@
-// src/components/DatabaseUpdate/DatabaseUpdate.jsx
-import { useState } from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { useTranslation, Trans } from "react-i18next";
 import Button from "../Button/Button";
@@ -10,7 +9,9 @@ import "./DatabaseUpdate.css";
 import { useApi } from "../../components/Context/Context";
 import adminI18n from "../../i18n";
 
-export const FileUploadBlock = ({
+// Если вы вынесли FileUploadBlock в отдельный файл, убедитесь, что он импортирован:
+// import { FileUploadBlock } from "./FileUploadBlock";
+const FileUploadBlock = ({
    title,
    subtitle,
    fileFieldText,
@@ -21,6 +22,7 @@ export const FileUploadBlock = ({
    selectedFile,
    onFileRemove,
    uploadProgress,
+   loading = false,
 }) => {
    const { t } = useTranslation(undefined, { i18n: adminI18n });
 
@@ -59,7 +61,7 @@ export const FileUploadBlock = ({
                      </div>
                      {uploadProgress !== null && (
                         <div className="upload-progress">
-                           <div className="upload-progress-bar" style={{ width: `${uploadProgress}%` }}></div>
+                           <div className="upload-progress-bar" style={{ width: `${uploadProgress}%` }} />
                            <span className="upload-progress-text">{uploadProgress}%</span>
                         </div>
                      )}
@@ -84,8 +86,8 @@ export const FileUploadBlock = ({
                )}
             </>
          )}
-         <Button type="button" className="upload-button" onClick={onButtonClick}>
-            {buttonText || t("databaseUpdate.uploadButtonText")}
+         <Button type="button" className="db-upload-button" onClick={onButtonClick} disabled={loading}>
+            {loading ? <span className="loader loader_inline" /> : buttonText || t("databaseUpdate.uploadButtonText")}
          </Button>
       </div>
    );
@@ -102,6 +104,7 @@ FileUploadBlock.propTypes = {
    selectedFile: PropTypes.object,
    onFileRemove: PropTypes.func,
    uploadProgress: PropTypes.number,
+   loading: PropTypes.bool,
 };
 
 const DatabaseUpdate = ({ credentials }) => {
@@ -111,14 +114,18 @@ const DatabaseUpdate = ({ credentials }) => {
    const [newQAFile, setNewQAFile] = useState(null);
    const [uploadProgress, setUploadProgress] = useState(0);
    const [uploadStarted, setUploadStarted] = useState(false);
-   const [uploadStatus, setUploadStatus] = useState(null); // null | "success" | "error"
-   const [uploadResult, setUploadResult] = useState(null); // holds response.data
+   const [uploadStatus, setUploadStatus] = useState(null);
+   const [uploadResult, setUploadResult] = useState(null);
+
+   // ← Здесь объявляем isExporting
+   const [isExporting, setIsExporting] = useState(false);
 
    const handleExport = async () => {
       if (!credentials) {
          console.error("Учётные данные не заданы");
          return;
       }
+      setIsExporting(true);
       const encoded = btoa(`${credentials.login}:${credentials.password}`);
       try {
          const res = await api.get("/knowledge/", {
@@ -134,6 +141,8 @@ const DatabaseUpdate = ({ credentials }) => {
          document.body.removeChild(link);
       } catch (err) {
          console.error("Ошибка при экспорте файла:", err);
+      } finally {
+         setIsExporting(false);
       }
    };
 
@@ -168,7 +177,6 @@ const DatabaseUpdate = ({ credentials }) => {
       });
       let frameId;
 
-      // progress animation
       const animate = () => {
          const elapsed = Date.now() - startTime;
          const pct = Math.min(100, (elapsed / totalDuration) * 100);
@@ -224,7 +232,6 @@ const DatabaseUpdate = ({ credentials }) => {
 
    return (
       <div className="database-update">
-         {/* Первый блок: выгрузка старой базы */}
          <FileUploadBlock
             title={t("databaseUpdate.oldDbTitle")}
             subtitle={t("databaseUpdate.oldDbSubtitle")}
@@ -232,6 +239,7 @@ const DatabaseUpdate = ({ credentials }) => {
             hideFileUploadField={true}
             buttonText={t("databaseUpdate.exportButtonText")}
             onButtonClick={handleExport}
+            loading={isExporting}
          />
 
          {uploadStatus === "success" && uploadResult ? (
