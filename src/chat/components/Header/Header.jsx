@@ -3,20 +3,17 @@ import "./Header.css";
 import newBurgerIcon from "../../assets/newBurgerIcon.svg";
 import { useContext } from "react";
 import { ChatContext } from "../../context/ChatContext";
+import { useTranslation } from "react-i18next";
+import chatI18n from "../../i18n";
 
 const Header = ({ isSidebarOpen, toggleSidebar }) => {
+   const { i18n } = useTranslation(undefined, { i18n: chatI18n });
    const { updateLocale } = useContext(ChatContext);
 
    // Текущий язык по-умолчанию — казахский
-   const [language, setLanguage] = React.useState("қаз");
-
-   // При монтировании устанавливаем казахский в контексте
-   React.useEffect(() => {
-      updateLocale("қаз");
-   }, []);
+   const currentLang = i18n.language;
 
    const handleLanguageChange = (lang) => {
-      setLanguage(lang);
       updateLocale(lang);
    };
 
@@ -33,7 +30,7 @@ const Header = ({ isSidebarOpen, toggleSidebar }) => {
          <div className="flex language">
             <button
                className={`language__button rounded ${
-                  language === "русc" ? "bg-blue text-white" : "bg-gray color-blue"
+                  currentLang === "русc" ? "bg-blue text-white" : "bg-gray color-blue"
                }`}
                onClick={() => handleLanguageChange("русc")}
             >
@@ -41,7 +38,7 @@ const Header = ({ isSidebarOpen, toggleSidebar }) => {
             </button>
             <button
                className={`language__button rounded ${
-                  language === "қаз" ? "bg-blue text-white" : "bg-gray color-blue"
+                  currentLang === "қаз" ? "bg-blue text-white" : "bg-gray color-blue"
                }`}
                onClick={() => handleLanguageChange("қаз")}
             >

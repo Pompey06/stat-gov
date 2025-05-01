@@ -12,7 +12,7 @@ import chatI18n from "../../i18n";
 import DeleteChatModal from "../ChatWindow/Modal/DeleteChatModal";
 
 export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
-   const { t } = useTranslation(undefined, { i18n: chatI18n });
+   const { t, i18n } = useTranslation(undefined, { i18n: chatI18n });
    const [isMobile, setIsMobile] = useState(window.innerWidth < 700);
 
    const { chats, currentChatId, createNewChat, switchChat, deleteChat, updateLocale } = useContext(ChatContext);
@@ -21,13 +21,9 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
    const currentChat = chats.find((c) => String(c.id) === String(currentChatId)) || chats[0];
    const isEmptyChat = currentChat.isEmpty && currentChat.messages.length <= 5;
 
-   // Язык по умолчанию — казахский
-   const [language, setLanguage] = useState("қаз");
-   useEffect(() => {
-      updateLocale("қаз");
-   }, []);
+   const currentLang = i18n.language;
+
    const handleLanguageChange = (lang) => {
-      setLanguage(lang);
       updateLocale(lang);
    };
 
@@ -165,7 +161,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
             <div className="flex language">
                <button
                   className={`language__button rounded ${
-                     language === "русc" ? "bg-blue text-white" : "bg-gray color-blue"
+                     currentLang === "русc" ? "bg-blue text-white" : "bg-gray color-blue"
                   }`}
                   onClick={() => handleLanguageChange("русc")}
                >
@@ -173,7 +169,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
                </button>
                <button
                   className={`language__button rounded ${
-                     language === "қаз" ? "bg-blue text-white" : "bg-gray color-blue"
+                     currentLang === "қаз" ? "bg-blue text-white" : "bg-gray color-blue"
                   }`}
                   onClick={() => handleLanguageChange("қаз")}
                >
