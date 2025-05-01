@@ -1,4 +1,5 @@
 // src/components/FeedbackExport.jsx
+
 import { useState, forwardRef } from "react";
 import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
@@ -36,7 +37,6 @@ const CustomDateInput = forwardRef(({ value, onClick, placeholder, onClear }, re
       )}
    </div>
 ));
-
 CustomDateInput.propTypes = {
    value: PropTypes.string,
    onClick: PropTypes.func.isRequired,
@@ -51,14 +51,16 @@ const FeedbackExport = ({ credentials }) => {
    const [startDate, setStartDate] = useState(null);
    const [endDate, setEndDate] = useState(null);
 
+   // ← новое состояние загрузки
+   const [isDownloading, setIsDownloading] = useState(false);
+
    const handleDownload = async () => {
       if (!credentials) {
          console.error("Учётные данные не заданы");
          return;
       }
+      setIsDownloading(true);
       const encodedCredentials = btoa(`${credentials.login}:${credentials.password}`);
-
-      // Локальное форматирование дат, чтобы не было смещения UTC
       const formatDate = (date) => {
          const y = date.getFullYear();
          const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -71,13 +73,11 @@ const FeedbackExport = ({ credentials }) => {
             from_date: startDate ? formatDate(startDate) : null,
             to_date: endDate ? formatDate(endDate) : null,
          };
-
          const response = await api.get("/conversation/export.xlsx", {
             headers: { Authorization: `Basic ${encodedCredentials}` },
             params,
             responseType: "blob",
          });
-
          const url = window.URL.createObjectURL(new Blob([response.data]));
          const link = document.createElement("a");
          link.href = url;
@@ -85,11 +85,12 @@ const FeedbackExport = ({ credentials }) => {
          document.body.appendChild(link);
          link.click();
          document.body.removeChild(link);
-
          setStartDate(null);
          setEndDate(null);
       } catch (error) {
          console.error("Ошибка при скачивании файла:", error);
+      } finally {
+         setIsDownloading(false);
       }
    };
 
@@ -133,8 +134,17 @@ const FeedbackExport = ({ credentials }) => {
                />
             </div>
          </div>
-         <Button type="button" onClick={handleDownload} className="download-button">
-            {t("feedbackExport.downloadButton")}
+         <Button
+            type="button"
+            onClick={handleDownload}
+            className="download-button"
+            disabled={isDownloading} // ← дизейбл во время загрузки
+         >
+            {isDownloading ? (
+               <span className="loader loader_inline" /> // ← спиннер
+            ) : (
+               t("feedbackExport.downloadButton")
+            )}
          </Button>
       </div>
    );
