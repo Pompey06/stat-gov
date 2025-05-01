@@ -12,8 +12,8 @@ chatI18n.use(initReactI18next).init({
       русc: { translation: translationRu },
       қаз: { translation: translationKz },
    },
-   lng: "қаз", // Язык по умолчанию
-   fallbackLng: "русc", // Резервный язык
+   lng: localStorage.getItem("locale") || "қаз",
+   fallbackLng: localStorage.getItem("locale") || "қаз",
    interpolation: {
       escapeValue: false, // React уже экранирует строки
    },

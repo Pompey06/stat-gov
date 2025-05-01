@@ -113,6 +113,7 @@ const ChatProvider = ({ children }) => {
       const newLocale = lang === "қаз" ? "kz" : "ru";
       setLocale(newLocale);
       i18n.changeLanguage(lang);
+      localStorage.setItem("locale", lang);
    };
 
    const fetchChatHistory = async (chatId) => {
