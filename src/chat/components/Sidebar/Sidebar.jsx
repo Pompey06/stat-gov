@@ -17,16 +17,6 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
 
    const { chats, currentChatId, createNewChat, switchChat, deleteChat, updateLocale } = useContext(ChatContext);
 
-   // Определяем, текущий ли это стартовый (пустой) чат
-   const currentChat = chats.find((c) => String(c.id) === String(currentChatId)) || chats[0];
-   const isEmptyChat = currentChat.isEmpty && currentChat.messages.length <= 5;
-
-   const currentLang = i18n.language;
-
-   const handleLanguageChange = (lang) => {
-      updateLocale(lang);
-   };
-
    useEffect(() => {
       const handleResize = () => {
          setIsMobile(window.innerWidth < 700);
@@ -156,27 +146,6 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
          <div className="mt-4 sidebar__warning p-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 text-sm leading-tight rounded-r shadow-sm">
             {t("sidebar.warning")}
          </div>
-
-         {isEmptyChat && (
-            <div className="flex language">
-               <button
-                  className={`language__button rounded ${
-                     currentLang === "русc" ? "bg-blue text-white" : "bg-gray color-blue"
-                  }`}
-                  onClick={() => handleLanguageChange("русc")}
-               >
-                  русc
-               </button>
-               <button
-                  className={`language__button rounded ${
-                     currentLang === "қаз" ? "bg-blue text-white" : "bg-gray color-blue"
-                  }`}
-                  onClick={() => handleLanguageChange("қаз")}
-               >
-                  қаз
-               </button>
-            </div>
-         )}
       </div>
    );
 }

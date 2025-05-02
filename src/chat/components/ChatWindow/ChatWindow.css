@@ -12,6 +12,25 @@
    display: none;
 }
 
+.language {
+   border: 1px solid #0068bf;
+   border-radius: 5px;
+}
+
+.language__button {
+   line-height: 1;
+   padding: 5px 16px;
+}
+
+.chat-window-start {
+   position: relative;
+}
+
+.chat-window-start .language {
+   position: absolute;
+   right: 14px;
+   top: 14px;
+}
 .chat-window-start .message-input-container {
    border: none;
 }
