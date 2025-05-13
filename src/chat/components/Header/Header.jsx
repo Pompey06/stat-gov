@@ -30,19 +30,19 @@ const Header = ({ isSidebarOpen, toggleSidebar }) => {
          <div className="flex language">
             <button
                className={`language__button rounded ${
-                  currentLang === "русc" ? "bg-blue text-white" : "bg-gray color-blue"
-               }`}
-               onClick={() => handleLanguageChange("русc")}
-            >
-               русc
-            </button>
-            <button
-               className={`language__button rounded ${
                   currentLang === "қаз" ? "bg-blue text-white" : "bg-gray color-blue"
                }`}
                onClick={() => handleLanguageChange("қаз")}
             >
                қаз
+            </button>
+            <button
+               className={`language__button rounded ${
+                  currentLang === "русc" ? "bg-blue text-white" : "bg-gray color-blue"
+               }`}
+               onClick={() => handleLanguageChange("русc")}
+            >
+               русc
             </button>
          </div>
       </div>
