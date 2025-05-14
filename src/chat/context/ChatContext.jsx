@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
 import {
@@ -22,6 +22,7 @@ const ChatProvider = ({ children }) => {
    const [categories, setCategories] = useState([]);
    const [currentCategory, setCurrentCategory] = useState(null);
    const [currentSubcategory, setCurrentSubcategory] = useState(null);
+   const streamingIndexRef = useRef(null);
 
    const api = axios.create({
       baseURL: import.meta.env.VITE_API_URL,
@@ -627,10 +628,9 @@ const ChatProvider = ({ children }) => {
                            })
                         );
                      } else if (jsonObj.type === "final_text") {
-                        // когда приходит окончательный текст — сразу заменяем сообщение
+                        // когда приходит окончательный текст — обновляем текст, но не снимаем флаг streaming
                         const final = jsonObj.final_text;
-                        // флаг streaming снимается внутри updateLastMessage
-                        updateLastMessage(final, false);
+                        updateLastMessage(final, true);
                      } else if (jsonObj.type === "status") {
                         console.log("Status chunk:", jsonObj.status);
                      }
