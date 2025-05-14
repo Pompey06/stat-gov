@@ -15,8 +15,8 @@
 
 .feedback-button {
    border-radius: 10px;
-   border: 1px solid #0068bf;
-   background: #fff;
+   /*border: 1px solid #0068bf;
+   background: #fff;*/
    color: #0068bf;
    font-size: 12px;
    padding: 2px;
@@ -26,26 +26,14 @@
 }
 
 .feedback-button:hover {
-   background: #0068bf;
+   /*background: #0068bf;
    color: #fff;
-   border-color: #0068bf;
+   border-color: #0068bf;*/
 }
 
 .feedback-button img {
    width: 19px;
    transition: opacity 0.5s ease, transform 0.5s ease;
-}
-
-@media (max-width: 930px) {
-   /*.feedback-message__btns {
-      flex-direction: column;
-      gap: 12px;
-   }*/
-
-   /*.feedback-button {
-      padding: 10px 50px;
-      margin: 4px 0;
-   }*/
 }
 
 @media (max-width: 700px) {

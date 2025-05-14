@@ -3,9 +3,9 @@ import { ChatContext } from "../../../context/ChatContext";
 import FeedbackModal from "../Modal/FeedbackModal";
 import "./Feedbackmessage.css";
 import badIcon from "../../../assets/bad.svg";
-import badIconHover from "../../../assets/bad-white.svg";
+//import badIconHover from "../../../assets/bad-white.svg";
 import goodIcon from "../../../assets/good.svg";
-import goodIconHover from "../../../assets/good-white.svg";
+//import goodIconHover from "../../../assets/good-white.svg";
 import { useTranslation } from "react-i18next";
 import { hasFeedback } from "../../../utils/feedbackStorage";
 import chatI18n from "../../../i18n";
@@ -14,7 +14,7 @@ export default function FeedbackMessage({ messageIndex }) {
    const { currentChatId, sendFeedback } = useContext(ChatContext);
    const { t } = useTranslation(undefined, { i18n: chatI18n });
    const [modalType, setModalType] = useState(null);
-   const [hoveredButton, setHoveredButton] = useState(null);
+   //const [hoveredButton, setHoveredButton] = useState(null);
    const [selectedMessageIndex, setSelectedMessageIndex] = useState(null);
 
    const feedbackExists = hasFeedback(currentChatId, messageIndex);
@@ -46,66 +46,26 @@ export default function FeedbackMessage({ messageIndex }) {
          {!feedbackExists && (
             <>
                {/*<p className="text-black text-[12px] mb-2">{t("feedback.requestFeedback")}</p>*/}
+
                <div className="flex gap-[6px] feedback-message__btns">
                   <button
                      type="button"
-                     className="feedback-button items-center flex gap-[8px] bg-transparent text-black hover:text-white transition-colors duration-300"
+                     className="feedback-button items-center flex gap-[8px] bg-transparent text-black"
                      style={{ touchAction: "manipulation" }}
-                     onMouseEnter={() => setHoveredButton("good")}
-                     onMouseLeave={() => setHoveredButton(null)}
-                     onTouchStart={() => setHoveredButton("good")}
-                     onTouchEnd={() => {
-                        setHoveredButton(null);
-                        openModal("good");
-                     }}
                      onClick={() => openModal("good")}
                   >
-                     <img
-                        className={`transition-opacity duration-300 ${
-                           hoveredButton === "good" ? "opacity-0" : "opacity-100"
-                        }`}
-                        src={goodIcon}
-                        alt={t("feedback.goodAlt")}
-                     />
-                     <img
-                        className={`absolute transition-opacity duration-300 ${
-                           hoveredButton === "good" ? "opacity-100" : "opacity-0"
-                        }`}
-                        src={goodIconHover}
-                        alt={t("feedback.goodAltHover")}
-                     />
+                     <img src={goodIcon} alt={t("feedback.goodAlt")} />
                   </button>
 
                   <button
                      type="button"
-                     className="feedback-button items-center flex gap-[8px] bg-transparent text-black hover:text-white transition-colors duration-300"
+                     className="feedback-button items-center flex gap-[8px] bg-transparent text-black"
                      style={{ touchAction: "manipulation" }}
-                     onMouseEnter={() => setHoveredButton("bad")}
-                     onMouseLeave={() => setHoveredButton(null)}
-                     onTouchStart={() => setHoveredButton("bad")}
-                     onTouchEnd={() => {
-                        setHoveredButton(null);
-                        openModal("bad");
-                     }}
                      onClick={() => openModal("bad")}
                   >
-                     <img
-                        className={`transition-opacity duration-300 ${
-                           hoveredButton === "bad" ? "opacity-0" : "opacity-100"
-                        }`}
-                        src={badIcon}
-                        alt={t("feedback.badAlt")}
-                     />
-                     <img
-                        className={`absolute transition-opacity duration-300 ${
-                           hoveredButton === "bad" ? "opacity-100" : "opacity-0"
-                        }`}
-                        src={badIconHover}
-                        alt={t("feedback.badAltHover")}
-                     />
+                     <img src={badIcon} alt={t("feedback.badAlt")} />
                   </button>
                </div>
-
                <FeedbackModal
                   isOpen={modalType === "good"}
                   onClose={closeModal}
