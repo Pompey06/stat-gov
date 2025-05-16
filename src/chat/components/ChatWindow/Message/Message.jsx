@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+// src/components/Message/Message.jsx
+
+import React, { useState, useContext } from "react";
 import axios from "axios";
 import downloadIcon from "../../../assets/pdf.svg";
 import "./Message.css";
@@ -11,6 +13,7 @@ import remarkBreaks from "remark-breaks";
 import copy from "copy-to-clipboard";
 import copyIcon from "../../../assets/copy.svg";
 import checkIcon from "../../../assets/checkmark.svg";
+import { ChatContext } from "../../../context/ChatContext";
 
 export default function Message({
    text,
@@ -21,16 +24,16 @@ export default function Message({
    filePaths,
    isGreeting,
    botMessageIndex,
-   isHtml,
    streaming,
    isCustomMessage = false,
-   isAssistantResponse = false, // новый флаг для ответов от assistant/ask
+   isAssistantResponse = false,
 }) {
    const { t } = useTranslation(undefined, { i18n: chatI18n });
    const api = axios.create({
       baseURL: import.meta.env.VITE_API_URL,
       withCredentials: true,
    });
+   const { downloadForm } = useContext(ChatContext);
 
    const allFilePaths = React.useMemo(() => {
       if (filePaths && Array.isArray(filePaths)) {
@@ -45,67 +48,6 @@ export default function Message({
       return [];
    }, [filePath, filePaths]);
 
-   //function renderTextWithLineBreaks(text) {
-   //   if (!text) return null;
-   //   return text.split("\n").map((line, index, array) => (
-   //      <React.Fragment key={index}>
-   //         {linkifyText(line)}
-   //         {index < array.length - 1 && <br />}
-   //      </React.Fragment>
-   //   ));
-   //}
-
-   //function linkifyText(text) {
-   //   if (!text) return null;
-   //   const combinedRegex = /(\[([^\]]+)\]\(([^)]+)\))|(https?:\/\/[^\s]+?)([),.?!]+)?(\s|$)/g;
-   //   const elements = [];
-   //   let lastIndex = 0;
-   //   let match;
-   //   while ((match = combinedRegex.exec(text)) !== null) {
-   //      if (match.index > lastIndex) {
-   //         elements.push(text.substring(lastIndex, match.index));
-   //      }
-   //      if (match[1]) {
-   //         const linkText = match[2];
-   //         const url = match[3];
-   //         elements.push(
-   //            <a
-   //               key={`md-${match.index}`}
-   //               href={url}
-   //               target="_blank"
-   //               rel="noopener noreferrer"
-   //               className="message-link"
-   //            >
-   //               {linkText}
-   //            </a>
-   //         );
-   //      } else {
-   //         const url = match[4];
-   //         const trailing = match[5] || "";
-   //         const space = match[6] || "";
-   //         elements.push(
-   //            <a
-   //               key={`url-${match.index}`}
-   //               href={url}
-   //               target="_blank"
-   //               rel="noopener noreferrer"
-   //               className="message-link"
-   //            >
-   //               {url}
-   //            </a>
-   //         );
-   //         elements.push(trailing + space);
-   //      }
-   //      lastIndex = combinedRegex.lastIndex;
-   //   }
-   //   if (lastIndex < text.length) {
-   //      elements.push(text.substring(lastIndex));
-   //   }
-   //   return elements;
-   //}
-
-   //const hasLineBreaks = !isUser && text && text.includes("\n");
-
    const handleDownload = async (e, path) => {
       e.preventDefault();
       if (!path || typeof path !== "string") {
@@ -114,7 +56,7 @@ export default function Message({
       }
       try {
          const response = await api.get(`/knowledge/get-file`, {
-            params: { path: path },
+            params: { path },
             responseType: "blob",
          });
          const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -141,26 +83,8 @@ export default function Message({
    };
 
    const [copied, setCopied] = useState(false);
-   //const handleCopy = (e) => {
-   //   e.stopPropagation();
-   //   navigator.clipboard
-   //      .writeText(text)
-   //      .then(() => {
-   //         setCopied(true);
-   //         console.log("Текст скопирован в буфер обмена");
-   //         setTimeout(() => {
-   //            setCopied(false);
-   //         }, 1500);
-   //      })
-   //      .catch((err) => {
-   //         console.error("Ошибка при копировании текста:", err);
-   //      });
-   //};
-
    const handleCopy = (e) => {
       e.stopPropagation();
-
-      // Пытаемся через стандартный Clipboard API
       if (navigator.clipboard && navigator.clipboard.writeText) {
          navigator.clipboard
             .writeText(text)
@@ -169,7 +93,6 @@ export default function Message({
                setTimeout(() => setCopied(false), 1500);
             })
             .catch(() => {
-               // Если не получилось, fallback через библиотеку
                const ok = copy(text);
                if (ok) {
                   setCopied(true);
@@ -179,7 +102,6 @@ export default function Message({
                }
             });
       } else {
-         // Во всех остальных случаях — сразу через библиотеку
          const ok = copy(text);
          if (ok) {
             setCopied(true);
@@ -203,13 +125,10 @@ export default function Message({
          }`}
          onClick={isButton ? onClick : undefined}
       >
-         {/* Рендерим копировать-кнопку и FeedbackMessage только для сообщений с ответом бота от assistant/ask */}
-
          <div>
             <ReactMarkdown
                remarkPlugins={[remarkGfm, remarkBreaks]}
                components={{
-                  // Все <a> рендерим с нашим классом, чтобы сработал .message-link из CSS
                   a: ({ href, children, ...props }) => (
                      <a href={href} className="message-link" {...props}>
                         {children}
@@ -219,22 +138,18 @@ export default function Message({
             >
                {text}
             </ReactMarkdown>
-            {/*{hasLineBreaks ? renderTextWithLineBreaks(text) : linkifyText(text)}*/}
+
             {!streaming && allFilePaths.length > 0 && (
                <div className="mt-2 fade-in">
                   <div className="file-download-container">
-                     {allFilePaths.map((path, index) => {
-                        if (!path || typeof path !== "string") return null;
-                        const fileName = getFileName(path);
-                        return (
-                           <div key={index} className="file-item">
-                              <a href="#" onClick={(e) => handleDownload(e, path)} className="file-download-link">
-                                 <img src={downloadIcon} alt="Download file" className="file-icon" />
-                                 <span className="file-name">{fileName}</span>
-                              </a>
-                           </div>
-                        );
-                     })}
+                     {allFilePaths.map((path, index) => (
+                        <div key={index} className="file-item">
+                           <a href="#" onClick={(e) => handleDownload(e, path)} className="file-download-link">
+                              <img src={downloadIcon} alt="Download file" className="file-icon" />
+                              <span className="file-name">{getFileName(path)}</span>
+                           </a>
+                        </div>
+                     ))}
                   </div>
                </div>
             )}
@@ -261,7 +176,6 @@ export default function Message({
                            <img src={copyIcon} alt="Copy" className="icon-xs" />
                         )}
                      </button>
-
                      <FeedbackMessage messageIndex={botMessageIndex} />
                   </>
                )}

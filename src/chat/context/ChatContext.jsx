@@ -895,12 +895,72 @@ const ChatProvider = ({ children }) => {
 
    //и ещё для проверки удаления неактивных чатов нужно autoDeleteInactiveChats передать в sidebar и раскоментировать вызов внутри handleNewChat
 
+   // 1) Получение списка форм по БИН
+   const fetchFormsByBin = async (bin) => {
+      try {
+         const res = await api.get("/begunok/form", {
+            params: {
+               bin,
+               year: new Date().getFullYear(),
+               lang: i18n.language === "қаз" ? "kk" : "ru",
+            },
+         });
+         return res.data;
+      } catch (err) {
+         console.error("Error fetching forms by BIN:", err);
+         throw err;
+      }
+   };
+
+   // 2) Добавление в чат «кнопочных» сообщений
+   const addButtonMessages = (buttons) => {
+      setChats((prev) =>
+         prev.map((chat) => {
+            if (String(chat.id) === String(currentChatId)) {
+               return { ...chat, messages: [...chat.messages, ...buttons] };
+            }
+            return chat;
+         })
+      );
+   };
+
+   // 3) Заказ и автоматическое скачивание PDF по заданному БИН и formVersionId
+   const downloadForm = async (bin, formVersionId) => {
+      const lang = i18n.language === "қаз" ? "kk" : "ru";
+      try {
+         // POST /begunok/order_report
+         const orderRes = await api.post("/begunok/order_report", null, {
+            params: { bin, year: new Date().getFullYear(), lang, formVersionId },
+         });
+         const { order_id, filename } = orderRes.data;
+
+         // GET /begunok/report
+         const reportRes = await api.get("/begunok/report", {
+            params: { order_id, lang },
+            responseType: "blob",
+         });
+
+         // Скачать PDF
+         const url = window.URL.createObjectURL(new Blob([reportRes.data]));
+         const link = document.createElement("a");
+         link.href = url;
+         link.download = filename;
+         document.body.appendChild(link);
+         link.click();
+         link.remove();
+      } catch (err) {
+         console.error("Error downloading form report:", err);
+         addBotMessage("Ошибка при скачивании формы. Попробуйте позже.");
+      }
+   };
+
    return (
       <ChatContext.Provider
          value={{
             chats,
             currentChatId,
             isTyping,
+            setIsTyping,
             createNewChat,
             switchChat,
             createMessage,
@@ -912,8 +972,12 @@ const ChatProvider = ({ children }) => {
                chats.find((c) => String(c.id) === String(currentChatId) || (c.id === null && c === chats[0]))
                   ?.showInitialButtons || false,
             updateLocale,
+            fetchFormsByBin,
+            addButtonMessages,
+            downloadForm,
             deleteChat,
             addBotMessage,
+            setChats,
             removeBadFeedbackMessage,
          }}
       >

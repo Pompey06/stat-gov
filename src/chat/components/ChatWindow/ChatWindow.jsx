@@ -1,8 +1,7 @@
-// Внутри ChatWindow.jsx, замените блок с кнопкой переключения языка на точную копию из Sidebar:
-
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import MessageList from "./MessageList/MessageList";
 import MessageInput from "./MessageInput/MessageInput";
+import BinModal from "../ChatWindow/Modal/BinModal";
 import { ChatContext } from "../../context/ChatContext";
 import Header from "../Header/Header";
 import "./ChatWindow.css";
@@ -11,15 +10,65 @@ import { useTranslation } from "react-i18next";
 
 export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
    const { i18n } = useTranslation(undefined, { i18n: chatI18n });
-   const { chats, currentChatId, locale, updateLocale } = useContext(ChatContext);
+   const {
+      chats,
+      currentChatId,
+      updateLocale,
+      addBotMessage,
+      fetchFormsByBin,
+      addButtonMessages,
+      downloadForm,
+      setIsTyping,
+   } = useContext(ChatContext);
+
    const { t } = useTranslation(undefined, { i18n: chatI18n });
+   const [isBinModalOpen, setBinModalOpen] = useState(false);
    const currentChat = chats.find((c) => c.id === currentChatId) || chats[0];
    const isEmptyChat = currentChat.isEmpty && currentChat.messages.length <= 5;
-
+   const { createMessage } = useContext(ChatContext);
    const currentLang = i18n.language;
 
    const handleLanguageChange = (lang) => {
       updateLocale(lang);
+   };
+
+   const handleBinSubmit = async (bin) => {
+      // Закрываем модалку
+      setBinModalOpen(false);
+
+      // 1) Сразу показываем текстовое сообщение
+      addBotMessage(`Найден перечень статистических форм для БИН ${bin}:`);
+
+      // 2) Включаем индикатор «печатает…»
+      setIsTyping(true);
+
+      try {
+         // 3) Делаем запрос
+         const forms = await fetchFormsByBin(bin);
+
+         // 4) После ответа добавляем единое сообщение-«вложение»
+         addButtonMessages([
+            {
+               text: "",
+               isUser: false,
+               isAssistantResponse: true,
+               streaming: false,
+               attachments: forms.map((f) => ({
+                  id: f.formVersionId,
+                  formIndex: f.formIndex,
+                  formName: f.formName,
+               })),
+               runnerBin: bin,
+            },
+         ]);
+      } catch (err) {
+         console.error(err);
+         // При ошибке показываем сообщение об этом
+         addBotMessage("Ошибка при получении перечня форм. Попробуйте позже.");
+      } finally {
+         // 5) Выключаем «печатает…»
+         setIsTyping(false);
+      }
    };
 
    if (isEmptyChat) {
@@ -51,6 +100,19 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
             <MessageInput />
 
             <MessageList isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+
+            <div className="special-button-container">
+               <button className="btn special" onClick={() => setBinModalOpen(true)}>
+                  {t("binModal.specialFormsButton")}
+               </button>
+            </div>
+
+            <BinModal
+               isOpen={isBinModalOpen}
+               onClose={() => setBinModalOpen(false)}
+               onSubmitBin={handleBinSubmit}
+               createMessage={createMessage}
+            />
          </div>
       );
    }
