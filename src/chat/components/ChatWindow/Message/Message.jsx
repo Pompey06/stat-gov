@@ -156,22 +156,21 @@ export default function Message({
             )}
 
             {attachments && attachments.length > 0 && (
-               <div className="mt-2 fade-in">
-                  <div className="attachment-container">
-                     {attachments.map((att, idx) => (
-                        <div key={idx} className="attachment-item">
-                           <button
-                              className="attachment-button underline"
-                              onClick={(e) => {
-                                 e.preventDefault();
-                                 downloadForm(runnerBin, att.formVersionId);
-                              }}
-                           >
-                              {att.formName}
-                           </button>
-                        </div>
-                     ))}
-                  </div>
+               <div className="file-download-container fade-in">
+                  {attachments.map((att) => (
+                     <div key={att.formVersionId} className="file-item">
+                        <button
+                           className="file-download-link"
+                           onClick={(e) => {
+                              e.preventDefault();
+                              downloadForm(runnerBin, att.formVersionId);
+                           }}
+                        >
+                           <img src={downloadIcon} alt="PDF" className="file-icon" />
+                           <span className="file-name">{att.formName}</span>
+                        </button>
+                     </div>
+                  ))}
                </div>
             )}
          </div>

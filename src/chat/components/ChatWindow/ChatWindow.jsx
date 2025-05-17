@@ -19,6 +19,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
       addButtonMessages,
       downloadForm,
       setIsTyping,
+      setChats,
    } = useContext(ChatContext);
 
    const { t } = useTranslation(undefined, { i18n: chatI18n });
@@ -35,6 +36,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
    // src/components/ChatWindow/ChatWindow.jsx
    // Замените ваш handleBinSubmit на этот
 
+   // src/components/ChatWindow/ChatWindow.jsx
    const handleBinSubmit = async (bin) => {
       // 1) Закрываем модалку
       setBinModalOpen(false);
@@ -44,20 +46,26 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
       setIsTyping(true);
 
       try {
-         // 4) Получаем массив форм
+         // 4) Запрашиваем формы
          const forms = await fetchFormsByBin(bin);
 
-         // 5) Показываем вложения (forms) в отдельном сообщении
-         addButtonMessages([
-            {
-               text: "", // пустой текст, сам заголовок уже в предыдущем сообщении
-               isUser: false,
-               isAssistantResponse: true,
-               streaming: false,
-               attachments: forms,
-               runnerBin: bin,
-            },
-         ]);
+         // 5) Добавляем attachments к последнему сообщению в текущем чате
+         setChats((prev) =>
+            prev.map((chat) => {
+               const isCurrent =
+                  String(chat.id) === String(currentChatId) || (chat.id === null && currentChatId === null);
+               if (!isCurrent) return chat;
+
+               const msgs = [...chat.messages];
+               const lastIdx = msgs.length - 1;
+               msgs[lastIdx] = {
+                  ...msgs[lastIdx],
+                  attachments: forms,
+                  runnerBin: bin,
+               };
+               return { ...chat, messages: msgs };
+            })
+         );
       } catch (err) {
          console.error(err);
          addBotMessage("Ошибка при получении перечня форм. Попробуйте позже.");
