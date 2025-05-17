@@ -10,17 +10,8 @@ import { useTranslation } from "react-i18next";
 
 export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
    const { i18n } = useTranslation(undefined, { i18n: chatI18n });
-   const {
-      chats,
-      currentChatId,
-      updateLocale,
-      addBotMessage,
-      fetchFormsByBin,
-      addButtonMessages,
-      downloadForm,
-      setIsTyping,
-      setChats,
-   } = useContext(ChatContext);
+   const { chats, currentChatId, updateLocale, addBotMessage, setIsInBinFlow, fetchFormsByBin, setIsTyping, setChats } =
+      useContext(ChatContext);
 
    const { t } = useTranslation(undefined, { i18n: chatI18n });
    const [isBinModalOpen, setBinModalOpen] = useState(false);
@@ -34,24 +25,38 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
    };
 
    // src/components/ChatWindow/ChatWindow.jsx
-   // Замените ваш handleBinSubmit на этот
-
-   // src/components/ChatWindow/ChatWindow.jsx
    const handleBinSubmit = async (bin) => {
-      // 1) Закрываем модалку
       setBinModalOpen(false);
-      // 2) Сразу показываем заголовок
+      setIsInBinFlow(true);
+
+      setChats((prevChats) =>
+         prevChats.map((chat) => {
+            const isCurrent = String(chat.id) === String(currentChatId) || (chat.id === null && currentChatId === null);
+            return isCurrent ? { ...chat, isBinChat: true } : chat;
+         })
+      );
+
+      // Спрячем все кнопки и пометим чат как «не пустой»
+      setChats((prevChats) =>
+         prevChats.map((chat) => {
+            const isCurrent = String(chat.id) === String(currentChatId) || (chat.id === null && currentChatId === null);
+            if (!isCurrent) return chat;
+            return {
+               ...chat,
+               isEmpty: false, // ← помечаем, что чат уже не пуст
+               messages: chat.messages.filter((msg) => !msg.isButton),
+            };
+         })
+      );
+
       addBotMessage(`Найден перечень статистических форм для БИН ${bin}:`);
-      // 3) Включаем «печатает…»
       setIsTyping(true);
 
       try {
-         // 4) Запрашиваем формы
          const forms = await fetchFormsByBin(bin);
 
-         // 5) Добавляем attachments к последнему сообщению в текущем чате
-         setChats((prev) =>
-            prev.map((chat) => {
+         setChats((prevChats) =>
+            prevChats.map((chat) => {
                const isCurrent =
                   String(chat.id) === String(currentChatId) || (chat.id === null && currentChatId === null);
                if (!isCurrent) return chat;
@@ -63,14 +68,13 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
                   attachments: forms,
                   runnerBin: bin,
                };
-               return { ...chat, messages: msgs };
+               return { ...chat, messages: msgs, isBinChat: true };
             })
          );
       } catch (err) {
          console.error(err);
          addBotMessage("Ошибка при получении перечня форм. Попробуйте позже.");
       } finally {
-         // 6) Выключаем «печатает…»
          setIsTyping(false);
       }
    };

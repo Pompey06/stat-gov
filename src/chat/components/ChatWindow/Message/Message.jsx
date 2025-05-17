@@ -36,7 +36,7 @@ export default function Message({
       withCredentials: true,
    });
    const { downloadForm } = useContext(ChatContext);
-
+   const [downloadingId, setDownloadingId] = useState(null);
    const allFilePaths = React.useMemo(() => {
       if (filePaths && Array.isArray(filePaths)) {
          return filePaths.filter((path) => typeof path === "string");
@@ -159,15 +159,46 @@ export default function Message({
                <div className="file-download-container fade-in">
                   {attachments.map((att) => (
                      <div key={att.formVersionId} className="file-item">
+                        <div className="mb-1 text-sm text-gray-600">
+                           <p>
+                              <strong>Срок:&nbsp;</strong>
+                              {att.formDate}
+                           </p>
+                           <p>
+                              <strong>Кому:&nbsp;</strong>
+                              {att.formDestination}
+                           </p>
+                           <p>
+                              <strong>Описание:&nbsp;</strong>
+                              {att.formDescription}
+                           </p>
+                        </div>
+
                         <button
                            className="file-download-link"
-                           onClick={(e) => {
+                           disabled={downloadingId === att.formVersionId}
+                           onClick={async (e) => {
                               e.preventDefault();
-                              downloadForm(runnerBin, att.formVersionId);
+                              setDownloadingId(att.formVersionId);
+                              try {
+                                 await downloadForm(runnerBin, att.formVersionId);
+                              } catch (err) {
+                                 console.error(err);
+                              } finally {
+                                 setDownloadingId(null);
+                              }
                            }}
                         >
-                           <img src={downloadIcon} alt="PDF" className="file-icon" />
-                           <span className="file-name">{att.formName}</span>
+                           {downloadingId === att.formVersionId ? (
+                              <div className="loader" />
+                           ) : (
+                              <>
+                                 <img src={downloadIcon} alt="PDF" className="file-icon" />
+                                 <span className="file-name">
+                                    {att.formIndex} {att.formName}
+                                 </span>
+                              </>
+                           )}
                         </button>
                      </div>
                   ))}

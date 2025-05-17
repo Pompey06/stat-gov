@@ -23,7 +23,7 @@ const ChatProvider = ({ children }) => {
    const [currentCategory, setCurrentCategory] = useState(null);
    const [currentSubcategory, setCurrentSubcategory] = useState(null);
    const streamingIndexRef = useRef(null);
-
+   const [isInBinFlow, setIsInBinFlow] = useState(false);
    const api = axios.create({
       baseURL: import.meta.env.VITE_API_URL,
       withCredentials: true, // <-- добавлено
@@ -46,6 +46,7 @@ const ChatProvider = ({ children }) => {
       showInitialButtons: true,
       buttonsWereHidden: false,
       buttonsWereShown: false,
+      isBinChat: false,
    });
 
    function autoDeleteInactiveChats() {
@@ -380,11 +381,23 @@ const ChatProvider = ({ children }) => {
    }, [i18n.language, categories]);
 
    const createNewChat = () => {
+      const currentChat = chats.find(
+         (c) => String(c.id) === String(currentChatId) || (c.id === null && currentChatId === null)
+      );
+      if (currentChat?.isBinChat) {
+         // сбрасываем режим BIN и создаём новый дефолтный чат
+         setIsInBinFlow(false);
+         const newChat = createDefaultChat();
+         // помещаем его в начало, чтобы find(c => c.id===null) вернул именно его
+         setChats((prev) => [newChat, ...prev]);
+         // явно делаем его активным
+         setCurrentChatId(newChat.id); // newChat.id === null, но гарантированно первый
+         fetchInitialMessages();
+         return;
+      }
       setCurrentCategory(null);
       setCurrentSubcategory(null);
       setCategoryFilter(null);
-      // Находим текущий чат
-      const currentChat = chats.find((c) => String(c.id) === String(currentChatId));
 
       // Если мы в пустом чате - перезагружаем его состояние
       if (currentChat?.isEmpty) {
@@ -979,6 +992,8 @@ const ChatProvider = ({ children }) => {
             addBotMessage,
             setChats,
             removeBadFeedbackMessage,
+            isInBinFlow,
+            setIsInBinFlow,
          }}
       >
          {children}
