@@ -32,41 +32,37 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
       updateLocale(lang);
    };
 
+   // src/components/ChatWindow/ChatWindow.jsx
+   // Замените ваш handleBinSubmit на этот
+
    const handleBinSubmit = async (bin) => {
-      // Закрываем модалку
+      // 1) Закрываем модалку
       setBinModalOpen(false);
-
-      // 1) Сразу показываем текстовое сообщение
+      // 2) Сразу показываем заголовок
       addBotMessage(`Найден перечень статистических форм для БИН ${bin}:`);
-
-      // 2) Включаем индикатор «печатает…»
+      // 3) Включаем «печатает…»
       setIsTyping(true);
 
       try {
-         // 3) Делаем запрос
+         // 4) Получаем массив форм
          const forms = await fetchFormsByBin(bin);
 
-         // 4) После ответа добавляем единое сообщение-«вложение»
+         // 5) Показываем вложения (forms) в отдельном сообщении
          addButtonMessages([
             {
-               text: "",
+               text: "", // пустой текст, сам заголовок уже в предыдущем сообщении
                isUser: false,
                isAssistantResponse: true,
                streaming: false,
-               attachments: forms.map((f) => ({
-                  id: f.formVersionId,
-                  formIndex: f.formIndex,
-                  formName: f.formName,
-               })),
+               attachments: forms,
                runnerBin: bin,
             },
          ]);
       } catch (err) {
          console.error(err);
-         // При ошибке показываем сообщение об этом
          addBotMessage("Ошибка при получении перечня форм. Попробуйте позже.");
       } finally {
-         // 5) Выключаем «печатает…»
+         // 6) Выключаем «печатает…»
          setIsTyping(false);
       }
    };

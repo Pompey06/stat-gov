@@ -72,6 +72,8 @@ export default function MessageList({ isSidebarOpen, toggleSidebar }) {
             isCustomMessage={message.isCustomMessage}
             isAssistantResponse={message.isAssistantResponse || false}
             streaming={message.streaming || false}
+            attachments={message.attachments}
+            runnerBin={message.runnerBin}
          >
             {/* Текст для начальных категорий */}
             {index === 0 && showInitialButtons && (

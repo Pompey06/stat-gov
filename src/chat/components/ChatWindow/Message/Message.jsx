@@ -25,6 +25,8 @@ export default function Message({
    isGreeting,
    botMessageIndex,
    streaming,
+   attachments,
+   runnerBin,
    isCustomMessage = false,
    isAssistantResponse = false,
 }) {
@@ -138,7 +140,6 @@ export default function Message({
             >
                {text}
             </ReactMarkdown>
-
             {!streaming && allFilePaths.length > 0 && (
                <div className="mt-2 fade-in">
                   <div className="file-download-container">
@@ -148,6 +149,26 @@ export default function Message({
                               <img src={downloadIcon} alt="Download file" className="file-icon" />
                               <span className="file-name">{getFileName(path)}</span>
                            </a>
+                        </div>
+                     ))}
+                  </div>
+               </div>
+            )}
+
+            {attachments && attachments.length > 0 && (
+               <div className="mt-2 fade-in">
+                  <div className="attachment-container">
+                     {attachments.map((att, idx) => (
+                        <div key={idx} className="attachment-item">
+                           <button
+                              className="attachment-button underline"
+                              onClick={(e) => {
+                                 e.preventDefault();
+                                 downloadForm(runnerBin, att.formVersionId);
+                              }}
+                           >
+                              {att.formName}
+                           </button>
                         </div>
                      ))}
                   </div>
