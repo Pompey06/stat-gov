@@ -97,6 +97,7 @@
       "foundForms": "БИН үшін статистикалық формалар тізімі табылды: {{bin}}:",
       "labelDeadline": "Мерзім",
       "labelRecipient": "Кімге",
-      "labelDescription": "Сипаттама"
+      "labelDescription": "Сипаттама",
+      "invalidBin": "Дұрыс 12 саннан тұратын БИН енгізіңіз"
    }
 }

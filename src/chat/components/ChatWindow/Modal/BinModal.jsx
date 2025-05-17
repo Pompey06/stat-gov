@@ -6,22 +6,23 @@ import chatI18n from "../../../i18n";
 export default function BinModal({ isOpen, onClose, onSubmitBin, createMessage }) {
    const { t } = useTranslation(undefined, { i18n: chatI18n });
    const [bin, setBin] = useState("");
+   const [error, setError] = useState("");
 
    const handleConfirm = () => {
       const trimmed = bin.trim();
-      // проверяем ровно 12 цифр
       if (/^\d{12}$/.test(trimmed)) {
+         setError("");
          onSubmitBin(trimmed);
+         setBin("");
+         onClose();
       } else {
-         // всё остальное шлём как обычный чат
-         createMessage(trimmed);
+         setError(t("binModal.invalidBin"));
       }
-      setBin("");
-      onClose();
    };
 
    const handleCancel = () => {
       setBin("");
+      setError("");
       onClose();
    };
 
@@ -30,10 +31,16 @@ export default function BinModal({ isOpen, onClose, onSubmitBin, createMessage }
          <input
             type="text"
             value={bin}
-            onChange={(e) => setBin(e.target.value)}
+            onChange={(e) => {
+               setBin(e.target.value);
+               if (error) setError("");
+            }}
             placeholder="БИН"
-            className="registration-input w-full mb-4"
+            className={`registration-input w-full mb-4 ${error ? "border-1 border-red-500 ring-1 ring-red-500" : ""}`}
          />
+
+         {error && <div className="text-red-600 text-sm mb-4">{error}</div>}
+
          <div className="mt-6 flex justify-end gap-2">
             <button
                type="button"
