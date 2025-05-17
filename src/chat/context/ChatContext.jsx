@@ -622,13 +622,22 @@ const ChatProvider = ({ children }) => {
                         // ваша существующая логика для conversation
                         const { id: convId, title: convTitle } = jsonObj.conversation;
                         setCurrentChatId(convId);
-                        setChats((prev) =>
-                           prev.map((chat) =>
-                              String(chat.id) === String(currentChatId) || chat.id === null
-                                 ? { ...chat, id: convId, title: convTitle }
-                                 : chat
-                           )
-                        );
+                        setChats((prevChats) => {
+                           // 1) Найдём индекс чата, где сейчас идёт стрим
+                           const idx = prevChats.findIndex((chat) => chat.messages.some((msg) => msg.streaming));
+                           if (idx === -1) {
+                              // на всякий случай, если что-то пошло не так
+                              return prevChats;
+                           }
+                           // 2) Сформируем новую версию только этого чата
+                           const updated = {
+                              ...prevChats[idx],
+                              id: convId,
+                              title: convTitle,
+                           };
+                           // 3) Воссоздадим массив, заменив только элемент idx
+                           return [...prevChats.slice(0, idx), updated, ...prevChats.slice(idx + 1)];
+                        });
                      } else if (jsonObj.type === "relevant_documents") {
                         // ваша существующая логика для документов
                         setChats((prevChats) =>
