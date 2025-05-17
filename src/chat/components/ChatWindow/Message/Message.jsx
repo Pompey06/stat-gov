@@ -161,15 +161,15 @@ export default function Message({
                      <div key={att.formVersionId} className="file-item">
                         <div className="mb-1 text-sm text-gray-600">
                            <p>
-                              <strong>Срок:&nbsp;</strong>
+                              <strong>{t("binModal.labelDeadline")}:&nbsp;</strong>
                               {att.formDate}
                            </p>
                            <p>
-                              <strong>Кому:&nbsp;</strong>
+                              <strong>{t("binModal.labelRecipient")}:&nbsp;</strong>
                               {att.formDestination}
                            </p>
                            <p>
-                              <strong>Описание:&nbsp;</strong>
+                              <strong>{t("binModal.labelDescription")}:&nbsp;</strong>
                               {att.formDescription}
                            </p>
                         </div>

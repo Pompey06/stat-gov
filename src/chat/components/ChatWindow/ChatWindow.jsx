@@ -49,7 +49,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
          })
       );
 
-      addBotMessage(`Найден перечень статистических форм для БИН ${bin}:`);
+      addBotMessage(t("binModal.foundForms", { bin }));
       setIsTyping(true);
 
       try {
