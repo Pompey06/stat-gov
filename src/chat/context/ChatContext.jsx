@@ -921,28 +921,83 @@ const ChatProvider = ({ children }) => {
    // В вашем ChatContext.js
    // Обновлённая версия fetchFormsByBin, теперь принимает год из модалки
 
-   //const fetchFormsByBin = async (bin, year) => {
-   //   try {
-   //      const res = await api.get("/begunok/form", {
-   //         params: {
-   //            bin,
-   //            year,
-   //            lang: i18n.language === "қаз" ? "kk" : "ru",
-   //         },
-   //      });
-   //      return res.data;
-   //   } catch (err) {
-   //      console.error("Error fetching forms by BIN:", err);
-   //      throw err;
-   //   }
-   //};
-
    const fetchFormsByBin = async (bin, year = new Date().getFullYear()) => {
-      console.log("⚙️ [MOCK] fetchFormsByBin called with BIN:", bin, "year:", year);
-      // Здесь можно симулировать задержку:
-      // await new Promise(res => setTimeout(res, 300));
-      return mockForms;
+      const lang = i18n.language === "қаз" ? "kk" : "ru";
+
+      try {
+         // 1) Немедленно получаем перечень форм
+         const res = await api.get("/begunok/form", {
+            params: { bin, year, lang },
+         });
+         const forms = res.data;
+
+         // 2) Параллельно в фоне запускаем предзаказ (order_report)
+         (async () => {
+            try {
+               // Делаем все POST /order_report
+               const enriched = await Promise.all(
+                  forms.map(async (att) => {
+                     try {
+                        const orderRes = await api.post("/begunok/order_report", null, {
+                           params: {
+                              bin,
+                              year,
+                              lang,
+                              formVersionId: att.formVersionId,
+                           },
+                        });
+                        return {
+                           ...att,
+                           order_id: orderRes.data.order_id,
+                           filename: orderRes.data.filename,
+                        };
+                     } catch (err) {
+                        console.error("[pre-order_report error] formVersionId=", att.formVersionId, err);
+                        return att;
+                     }
+                  })
+               );
+
+               // 3) Когда все ответы получены — обновляем state так,
+               //    чтобы у уже отрисованных карточек attachments добавились order_id и filename
+               setChats((prevChats) =>
+                  prevChats.map((chat) => {
+                     // находим текущий чат
+                     const isCurrent =
+                        String(chat.id) === String(currentChatId) || (chat.id === null && currentChatId === null);
+                     if (!isCurrent) return chat;
+
+                     // обновляем именно тот message, в котором лежат attachments
+                     const msgs = chat.messages.map((msg) =>
+                        msg.attachments
+                           ? {
+                                ...msg,
+                                attachments: enriched,
+                             }
+                           : msg
+                     );
+                     return { ...chat, messages: msgs };
+                  })
+               );
+            } catch (err) {
+               console.error("[pre-order_report outer error]", err);
+            }
+         })();
+
+         // 4) Возвращаем исходный список сразу — UI отрисует его без задержки
+         return forms;
+      } catch (err) {
+         console.error("Error fetching forms by BIN:", err);
+         throw err;
+      }
    };
+
+   //const fetchFormsByBin = async (bin, year = new Date().getFullYear()) => {
+   //   console.log("⚙️ [MOCK] fetchFormsByBin called with BIN:", bin, "year:", year);
+   //   // Здесь можно симулировать задержку:
+   //   // await new Promise(res => setTimeout(res, 300));
+   //   return mockForms;
+   //};
 
    // 2) Добавление в чат «кнопочных» сообщений
    const addButtonMessages = (buttons) => {
@@ -956,19 +1011,12 @@ const ChatProvider = ({ children }) => {
       );
    };
 
-   // 3) Заказ и автоматическое скачивание PDF по заданному БИН и formVersionId
-   const downloadForm = async (bin, formVersionId) => {
+   const downloadForm = async (bin, formVersionId, orderId, filename) => {
       const lang = i18n.language === "қаз" ? "kk" : "ru";
       try {
-         // POST /begunok/order_report
-         const orderRes = await api.post("/begunok/order_report", null, {
-            params: { bin, year: new Date().getFullYear(), lang, formVersionId },
-         });
-         const { order_id, filename } = orderRes.data;
-
-         // GET /begunok/report
+         // GET /begunok/report по заранее сохранённому order_id
          const reportRes = await api.get("/begunok/report", {
-            params: { order_id, lang },
+            params: { order_id: orderId, lang },
             responseType: "blob",
          });
 

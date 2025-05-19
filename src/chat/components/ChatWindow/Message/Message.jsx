@@ -1,6 +1,6 @@
 // src/components/Message/Message.jsx
 
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import downloadIcon from "../../../assets/pdf.svg";
 import "./Message.css";
@@ -35,8 +35,9 @@ export default function Message({
       baseURL: import.meta.env.VITE_API_URL,
       withCredentials: true,
    });
-   const { downloadForm } = useContext(ChatContext);
+   const { downloadForm, chats, currentChatId } = useContext(ChatContext);
    const [downloadingId, setDownloadingId] = useState(null);
+   const [pendingDownloads, setPendingDownloads] = useState([]);
    const allFilePaths = React.useMemo(() => {
       if (filePaths && Array.isArray(filePaths)) {
          return filePaths.filter((path) => typeof path === "string");
@@ -111,6 +112,45 @@ export default function Message({
          } else {
             console.error("Не удалось скопировать текст");
          }
+      }
+   };
+
+   // Находит в стейте чат и его attachments по formVersionId
+   const getAttachment = (formVersionId) => {
+      const currentChat = chats.find(
+         (c) => String(c.id) === String(currentChatId) || (c.id === null && currentChatId === null)
+      );
+      if (!currentChat) return null;
+      const msg = currentChat.messages.find((m) => m.attachments);
+      return msg?.attachments?.find((a) => a.formVersionId === formVersionId) || null;
+   };
+
+   useEffect(() => {
+      if (pendingDownloads.length === 0) return;
+      pendingDownloads.forEach(async (formVersionId) => {
+         const att = getAttachment(formVersionId);
+         if (att?.order_id) {
+            try {
+               await downloadForm(runnerBin, att.formVersionId, att.order_id, att.filename);
+            } catch (err) {
+               console.error(err);
+            } finally {
+               setDownloadingId(null);
+               setPendingDownloads((prev) => prev.filter((id) => id !== formVersionId));
+            }
+         }
+      });
+   }, [chats, pendingDownloads]);
+
+   const handleDownloadClick = (e, att) => {
+      e.preventDefault();
+      setDownloadingId(att.formVersionId);
+      if (att.order_id) {
+         // сразу скачиваем
+         downloadForm(runnerBin, att.formVersionId, att.order_id, att.filename).finally(() => setDownloadingId(null));
+      } else {
+         // ставим в очередь ожидания предзаказа
+         setPendingDownloads((prev) => [...prev, att.formVersionId]);
       }
    };
 
@@ -193,17 +233,7 @@ export default function Message({
                         <button
                            className="file-download-link"
                            disabled={downloadingId === att.formVersionId}
-                           onClick={async (e) => {
-                              e.preventDefault();
-                              setDownloadingId(att.formVersionId);
-                              try {
-                                 await downloadForm(runnerBin, att.formVersionId);
-                              } catch (err) {
-                                 console.error(err);
-                              } finally {
-                                 setDownloadingId(null);
-                              }
-                           }}
+                           onClick={(e) => handleDownloadClick(e, att)}
                         >
                            {downloadingId === att.formVersionId ? (
                               <div className="loader" />
