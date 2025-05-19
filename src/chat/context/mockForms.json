@@ -1,0 +1,102 @@
+[
+   {
+      "formIndex": "1-инвест (годовая)",
+      "formName": "",
+      "formDate": "",
+      "formDestination": "аываодыоваждывоажлдвоыаж",
+      "formDescription": "",
+      "formSelectResult": "",
+      "formVersionId": 1104,
+      "checkedFactLabel": true
+   },
+   {
+      "formIndex": "2-МП (квартальная)",
+      "formName": "",
+      "formDate": "",
+      "formDestination": "",
+      "formDescription": "",
+      "formSelectResult": "",
+      "formVersionId": 1010,
+      "checkedFactLabel": false
+   },
+   {
+      "formIndex": "1-ТС (месячная)",
+      "formName": "",
+      "formDate": "",
+      "formDestination": "",
+      "formDescription": "тестовое описание",
+      "formSelectResult": "",
+      "formVersionId": 3140,
+      "checkedFactLabel": true
+   },
+   {
+      "formIndex": "1-инвест (месячная)",
+      "formName": "об инвестициях в основной капитал",
+      "formDate": "до 2 числа (включительно) после отчетного периода",
+      "formDestination": "Представляют юридические лица и (или) их структурные и обособленные подразделения, осуществляющие инвестиционную деятельность, независимо от численности работающих",
+      "formDescription": "",
+      "formSelectResult": "",
+      "formVersionId": 1014,
+      "checkedFactLabel": true
+   },
+   {
+      "formIndex": "4-ОС (годовая)",
+      "formName": "",
+      "formDate": "",
+      "formDestination": "",
+      "formDescription": "",
+      "formSelectResult": "",
+      "formVersionId": 11176,
+      "checkedFactLabel": false
+   },
+   {
+      "formIndex": "2-услуги (годовая)",
+      "formName": "",
+      "formDate": "",
+      "formDestination": "",
+      "formDescription": "",
+      "formSelectResult": "",
+      "formVersionId": 3626,
+      "checkedFactLabel": false
+   },
+   {
+      "formIndex": "7-ТПЗ (годовая)",
+      "formName": "",
+      "formDate": "тут тоже тест текст",
+      "formDestination": "",
+      "formDescription": "",
+      "formSelectResult": "",
+      "formVersionId": 3786,
+      "checkedFactLabel": true
+   },
+   {
+      "formIndex": "1-Т (годовая)",
+      "formName": "",
+      "formDate": "",
+      "formDestination": "",
+      "formDescription": "",
+      "formSelectResult": "",
+      "formVersionId": 11163,
+      "checkedFactLabel": false
+   },
+   {
+      "formIndex": "1-ПФ (годовая)",
+      "formName": "",
+      "formDate": "",
+      "formDestination": "",
+      "formDescription": "",
+      "formSelectResult": "",
+      "formVersionId": 1005,
+      "checkedFactLabel": false
+   },
+   {
+      "formIndex": "1-Т (Условия труда) (годовая)",
+      "formName": "",
+      "formDate": "",
+      "formDestination": "а прошлый пусть прм пустой бкдеавы",
+      "formDescription": "",
+      "formSelectResult": "",
+      "formVersionId": 11165,
+      "checkedFactLabel": false
+   }
+]

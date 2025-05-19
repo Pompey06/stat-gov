@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useRef } from "react";
 import axios from "axios";
+import mockForms from "./mockForms.json";
 import { useTranslation } from "react-i18next";
 import {
    hasFeedback,
@@ -920,20 +921,27 @@ const ChatProvider = ({ children }) => {
    // В вашем ChatContext.js
    // Обновлённая версия fetchFormsByBin, теперь принимает год из модалки
 
-   const fetchFormsByBin = async (bin, year) => {
-      try {
-         const res = await api.get("/begunok/form", {
-            params: {
-               bin,
-               year,
-               lang: i18n.language === "қаз" ? "kk" : "ru",
-            },
-         });
-         return res.data;
-      } catch (err) {
-         console.error("Error fetching forms by BIN:", err);
-         throw err;
-      }
+   //const fetchFormsByBin = async (bin, year) => {
+   //   try {
+   //      const res = await api.get("/begunok/form", {
+   //         params: {
+   //            bin,
+   //            year,
+   //            lang: i18n.language === "қаз" ? "kk" : "ru",
+   //         },
+   //      });
+   //      return res.data;
+   //   } catch (err) {
+   //      console.error("Error fetching forms by BIN:", err);
+   //      throw err;
+   //   }
+   //};
+
+   const fetchFormsByBin = async (bin, year = new Date().getFullYear()) => {
+      console.log("⚙️ [MOCK] fetchFormsByBin called with BIN:", bin, "year:", year);
+      // Здесь можно симулировать задержку:
+      // await new Promise(res => setTimeout(res, 300));
+      return mockForms;
    };
 
    // 2) Добавление в чат «кнопочных» сообщений

@@ -159,21 +159,31 @@ export default function Message({
                <div className="file-download-container fade-in">
                   {attachments.map((att) => (
                      <div key={att.formVersionId} className="file-item">
-                        <div className="mb-1 text-sm text-gray-600">
-                           <p>
-                              <strong>{t("binModal.labelDeadline")}:&nbsp;</strong>
-                              {att.formDate}
-                           </p>
-                           <p>
-                              <strong>{t("binModal.labelRecipient")}:&nbsp;</strong>
-                              {att.formDestination}
-                           </p>
-                           <p>
-                              <strong>{t("binModal.labelDescription")}:&nbsp;</strong>
-                              {att.formDescription}
-                           </p>
-                        </div>
+                        {/* Показываем этот контейнер лишь когда хотя бы одно поле непустое */}
+                        {(att.formDate || att.formDestination || att.formDescription) && (
+                           <div className="mb-1 text-sm text-gray-600">
+                              {att.formDate && (
+                                 <p>
+                                    <strong>{t("binModal.labelDeadline")}:&nbsp;</strong>
+                                    {att.formDate}
+                                 </p>
+                              )}
+                              {att.formDestination && (
+                                 <p>
+                                    <strong>{t("binModal.labelRecipient")}:&nbsp;</strong>
+                                    {att.formDestination}
+                                 </p>
+                              )}
+                              {att.formDescription && (
+                                 <p>
+                                    <strong>{t("binModal.labelDescription")}:&nbsp;</strong>
+                                    {att.formDescription}
+                                 </p>
+                              )}
+                           </div>
+                        )}
 
+                        {/* Кнопка скачивания остаётся всегда */}
                         <button
                            className="file-download-link"
                            disabled={downloadingId === att.formVersionId}
