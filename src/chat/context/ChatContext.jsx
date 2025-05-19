@@ -1011,27 +1011,13 @@ const ChatProvider = ({ children }) => {
       );
    };
 
-   const downloadForm = async (bin, formVersionId, orderId, filename) => {
+   const downloadForm = (bin, formVersionId, orderId, filename) => {
       const lang = i18n.language === "қаз" ? "kk" : "ru";
-      try {
-         // GET /begunok/report по заранее сохранённому order_id
-         const reportRes = await api.get("/begunok/report", {
-            params: { order_id: orderId, lang },
-            responseType: "blob",
-         });
-
-         // Скачать PDF
-         const url = window.URL.createObjectURL(new Blob([reportRes.data]));
-         const link = document.createElement("a");
-         link.href = url;
-         link.download = filename;
-         document.body.appendChild(link);
-         link.click();
-         link.remove();
-      } catch (err) {
-         console.error("Error downloading form report:", err);
-         addBotMessage("Ошибка при скачивании формы. Попробуйте позже.");
-      }
+      const baseUrl = import.meta.env.VITE_API_URL;
+      // Формируем прямой URL к отчету
+      const url = `${baseUrl}/begunok/report?order_id=${orderId}&lang=${lang}`;
+      // Открываем в новой вкладке — браузер сам отрендерит inline PDF
+      window.open(url, "_blank");
    };
 
    return (

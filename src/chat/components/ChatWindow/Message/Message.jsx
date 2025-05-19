@@ -30,14 +30,15 @@ export default function Message({
    isCustomMessage = false,
    isAssistantResponse = false,
 }) {
-   const { t } = useTranslation(undefined, { i18n: chatI18n });
+   const { t, i18n } = useTranslation(undefined, { i18n: chatI18n });
+   const [fileReadyMap, setFileReadyMap] = useState({});
    const api = axios.create({
       baseURL: import.meta.env.VITE_API_URL,
       withCredentials: true,
    });
    const { downloadForm, chats, currentChatId } = useContext(ChatContext);
+   const [fileBlobMap, setFileBlobMap] = useState({});
    const [downloadingId, setDownloadingId] = useState(null);
-   const [pendingDownloads, setPendingDownloads] = useState([]);
    const allFilePaths = React.useMemo(() => {
       if (filePaths && Array.isArray(filePaths)) {
          return filePaths.filter((path) => typeof path === "string");
@@ -74,6 +75,32 @@ export default function Message({
          console.error("Ошибка загрузки файла:", error);
       }
    };
+
+   useEffect(() => {
+      attachments?.forEach(async (att) => {
+         if (!att?.order_id) return;
+
+         const lang = i18n.language === "қаз" ? "kk" : "ru";
+         const response = await api.get("/begunok/report", {
+            params: { order_id: att.order_id, lang },
+            responseType: "blob",
+         });
+
+         if (response.status === 200 && response.data.type === "application/pdf") {
+            const blobUrl = URL.createObjectURL(response.data);
+
+            setFileReadyMap((prev) => ({
+               ...prev,
+               [att.formVersionId]: true,
+            }));
+
+            setFileBlobMap((prev) => ({
+               ...prev,
+               [att.formVersionId]: blobUrl,
+            }));
+         }
+      });
+   }, [attachments]);
 
    const getFileName = (path) => {
       if (!path || typeof path !== "string") return "file";
@@ -125,32 +152,17 @@ export default function Message({
       return msg?.attachments?.find((a) => a.formVersionId === formVersionId) || null;
    };
 
-   useEffect(() => {
-      if (pendingDownloads.length === 0) return;
-      pendingDownloads.forEach(async (formVersionId) => {
-         const att = getAttachment(formVersionId);
-         if (att?.order_id) {
-            try {
-               await downloadForm(runnerBin, att.formVersionId, att.order_id, att.filename);
-            } catch (err) {
-               console.error(err);
-            } finally {
-               setDownloadingId(null);
-               setPendingDownloads((prev) => prev.filter((id) => id !== formVersionId));
-            }
-         }
-      });
-   }, [chats, pendingDownloads]);
-
    const handleDownloadClick = (e, att) => {
       e.preventDefault();
-      setDownloadingId(att.formVersionId);
-      if (att.order_id) {
-         // сразу скачиваем
-         downloadForm(runnerBin, att.formVersionId, att.order_id, att.filename).finally(() => setDownloadingId(null));
-      } else {
-         // ставим в очередь ожидания предзаказа
-         setPendingDownloads((prev) => [...prev, att.formVersionId]);
+      const blobUrl = fileBlobMap[att.formVersionId];
+      if (!blobUrl) {
+         console.error("Файл ещё не готов");
+         return;
+      }
+
+      const win = window.open(blobUrl, "_blank");
+      if (!win) {
+         console.error("Браузер заблокировал всплывающее окно");
       }
    };
 
@@ -197,55 +209,61 @@ export default function Message({
 
             {attachments && attachments.length > 0 && (
                <div className="file-download-container fade-in">
-                  {attachments.map((att) => (
-                     <div key={att.formVersionId} className="file-item">
-                        {/* Общий блок меток */}
-                        {(att.formName || att.formDate || att.formDestination || att.formDescription) && (
-                           <div className="mb-1 text-sm text-gray-600">
-                              {att.formName && (
-                                 <p>
-                                    <strong>{t("binModal.labelName")}: </strong>
-                                    {att.formName}
-                                 </p>
-                              )}
-                              {att.formDate && (
-                                 <p>
-                                    <strong>{t("binModal.labelDeadline")}: </strong>
-                                    {att.formDate}
-                                 </p>
-                              )}
-                              {att.formDestination && (
-                                 <p>
-                                    <strong>{t("binModal.labelRecipient")}: </strong>
-                                    {att.formDestination}
-                                 </p>
-                              )}
-                              {att.formDescription && (
-                                 <p>
-                                    <strong>{t("binModal.labelDescription")}: </strong>
-                                    {att.formDescription}
-                                 </p>
-                              )}
-                           </div>
-                        )}
+                  {attachments.map((att) => {
+                     const isReady = fileReadyMap[att.formVersionId];
+                     const lang = i18n.language === "қаз" ? "kk" : "ru";
+                     const reportUrl = `${import.meta.env.VITE_API_URL}/begunok/report?order_id=${
+                        att.order_id
+                     }&lang=${lang}`;
 
-                        {/* Кнопка скачивания */}
-                        <button
-                           className="file-download-link"
-                           disabled={downloadingId === att.formVersionId}
-                           onClick={(e) => handleDownloadClick(e, att)}
-                        >
-                           {downloadingId === att.formVersionId ? (
-                              <div className="loader" />
+                     return (
+                        <div key={att.formVersionId} className="file-item">
+                           <div className="mb-1 text-sm text-gray-600">
+                              <p>
+                                 <strong>{t("binModal.labelName")}:</strong> {att.formName}
+                              </p>
+                              <p>
+                                 <strong>{t("binModal.labelDeadline")}:</strong> {att.formDate}
+                              </p>
+                              <p>
+                                 <strong>{t("binModal.labelRecipient")}:</strong> {att.formDestination}
+                              </p>
+                              <p>
+                                 <strong>{t("binModal.labelDescription")}:</strong> {att.formDescription}
+                              </p>
+                           </div>
+
+                           {!isReady ? (
+                              <div className="file-download-link flex items-center gap-2 text-sm text-gray-500">
+                                 <img src={downloadIcon} alt="Loading" className="file-icon" />
+                                 <span>
+                                    {t("binModal.preparing")}
+                                    <span className="typing-container file-typing ml-1">
+                                       <span className="dot one">.</span>
+                                       <span className="dot two">.</span>
+                                       <span className="dot three">.</span>
+                                    </span>
+                                 </span>
+                              </div>
                            ) : (
-                              <>
-                                 <img src={downloadIcon} alt="PDF" className="file-icon" />
-                                 <span className="file-name">{att.formIndex}</span>
-                              </>
+                              <button
+                                 className="file-download-link"
+                                 disabled={downloadingId === att.formVersionId}
+                                 onClick={(e) => handleDownloadClick(e, att)}
+                              >
+                                 {downloadingId === att.formVersionId ? (
+                                    <div className="loader" />
+                                 ) : (
+                                    <>
+                                       <img src={downloadIcon} alt="PDF" className="file-icon" />
+                                       <span className="file-name">{t("binModal.fileName")}</span>
+                                    </>
+                                 )}
+                              </button>
                            )}
-                        </button>
-                     </div>
-                  ))}
+                        </div>
+                     );
+                  })}
                </div>
             )}
          </div>
