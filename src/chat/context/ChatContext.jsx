@@ -917,13 +917,15 @@ const ChatProvider = ({ children }) => {
 
    //и ещё для проверки удаления неактивных чатов нужно autoDeleteInactiveChats передать в sidebar и раскоментировать вызов внутри handleNewChat
 
-   // 1) Получение списка форм по БИН
-   const fetchFormsByBin = async (bin) => {
+   // В вашем ChatContext.js
+   // Обновлённая версия fetchFormsByBin, теперь принимает год из модалки
+
+   const fetchFormsByBin = async (bin, year) => {
       try {
          const res = await api.get("/begunok/form", {
             params: {
                bin,
-               year: new Date().getFullYear(),
+               year,
                lang: i18n.language === "қаз" ? "kk" : "ru",
             },
          });

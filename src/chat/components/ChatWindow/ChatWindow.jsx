@@ -25,7 +25,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
    };
 
    // src/components/ChatWindow/ChatWindow.jsx
-   const handleBinSubmit = async (bin) => {
+   const handleBinSubmit = async (bin, year) => {
       setBinModalOpen(false);
       setIsInBinFlow(true);
 
@@ -53,7 +53,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
       setIsTyping(true);
 
       try {
-         const forms = await fetchFormsByBin(bin);
+         const forms = await fetchFormsByBin(bin, year);
 
          setChats((prevChats) =>
             prevChats.map((chat) => {
