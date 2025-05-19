@@ -98,6 +98,7 @@
       "labelDeadline": "Мерзім",
       "labelRecipient": "Кімге",
       "labelDescription": "Сипаттама",
+      "labelName": "Атауы",
       "invalidBin": "Дұрыс 12 саннан тұратын БИН енгізіңіз"
    }
 }
