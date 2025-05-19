@@ -29,6 +29,14 @@ export default function FeedbackMessage({ messageIndex }) {
       setSelectedMessageIndex(null);
    };
 
+   const handleGoodFeedback = async () => {
+      try {
+         await sendFeedback("good", "", messageIndex);
+      } catch (error) {
+         console.error("Ошибка при отправке хорошего отзыва:", error);
+      }
+   };
+
    const handleFeedbackSubmit = useCallback(
       async (text) => {
          try {
@@ -52,7 +60,7 @@ export default function FeedbackMessage({ messageIndex }) {
                      type="button"
                      className="feedback-button items-center flex gap-[8px] bg-transparent text-black"
                      style={{ touchAction: "manipulation" }}
-                     onClick={() => openModal("good")}
+                     onClick={handleGoodFeedback} // 👍 отправляем сразу
                   >
                      <img src={goodIcon} alt={t("feedback.goodAlt")} />
                   </button>
@@ -61,11 +69,12 @@ export default function FeedbackMessage({ messageIndex }) {
                      type="button"
                      className="feedback-button items-center flex gap-[8px] bg-transparent text-black"
                      style={{ touchAction: "manipulation" }}
-                     onClick={() => openModal("bad")}
+                     onClick={() => openModal("bad")} // 👎 остаётся с модалкой
                   >
                      <img src={badIcon} alt={t("feedback.badAlt")} />
                   </button>
                </div>
+
                <FeedbackModal
                   isOpen={modalType === "good"}
                   onClose={closeModal}
