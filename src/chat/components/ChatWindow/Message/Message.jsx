@@ -207,73 +207,78 @@ export default function Message({
                </div>
             )}
 
-            {attachments && attachments.length > 0 && (
+            {Array.isArray(attachments) && attachments.length > 0 && (
                <div className="file-download-container fade-in">
-                  {attachments.map((att) => {
-                     const isReady = fileReadyMap[att.formVersionId];
-                     const lang = i18n.language === "қаз" ? "kk" : "ru";
-                     const reportUrl = `${import.meta.env.VITE_API_URL}/begunok/report?order_id=${
-                        att.order_id
-                     }&lang=${lang}`;
+                  {/* Блоки с текстом от каждого файла */}
+                  {attachments.map((att, index) => {
+                     const hasAnyText = att.formName || att.formDate || att.formDestination || att.formDescription;
 
-                     return (
-                        <div key={att.formVersionId} className="file-item">
-                           {(att.formName || att.formDate || att.formDestination || att.formDescription) && (
-                              <div className="mb-1 text-sm text-gray-600">
-                                 {att.formName && (
-                                    <p>
-                                       <strong>{t("binModal.labelName")}:</strong> {att.formName}
-                                    </p>
-                                 )}
-                                 {att.formDate && (
-                                    <p>
-                                       <strong>{t("binModal.labelDeadline")}:</strong> {att.formDate}
-                                    </p>
-                                 )}
-                                 {att.formDestination && (
-                                    <p>
-                                       <strong>{t("binModal.labelRecipient")}:</strong> {att.formDestination}
-                                    </p>
-                                 )}
-                                 {att.formDescription && (
-                                    <p>
-                                       <strong>{t("binModal.labelDescription")}:</strong> {att.formDescription}
-                                    </p>
-                                 )}
-                              </div>
+                     return hasAnyText ? (
+                        <div key={att.formVersionId} className="mb-4 text-sm text-gray-600">
+                           {att.formIndex && (
+                              <p>
+                                 <strong>{t("binModal.labelIndex")}:</strong> {att.formIndex}
+                              </p>
                            )}
-
-                           {!isReady ? (
-                              <div className="file-download-link flex items-center gap-2 text-sm text-gray-500">
-                                 <img src={downloadIcon} alt="Loading" className="file-icon" />
-                                 <span>
-                                    {t("binModal.preparing")}
-                                    <span className="typing-container file-typing ml-1">
-                                       <span className="dot one">.</span>
-                                       <span className="dot two">.</span>
-                                       <span className="dot three">.</span>
-                                    </span>
-                                 </span>
-                              </div>
-                           ) : (
-                              <button
-                                 className="file-download-link"
-                                 disabled={downloadingId === att.formVersionId}
-                                 onClick={(e) => handleDownloadClick(e, att)}
-                              >
-                                 {downloadingId === att.formVersionId ? (
-                                    <div className="loader" />
-                                 ) : (
-                                    <>
-                                       <img src={downloadIcon} alt="PDF" className="file-icon" />
-                                       <span className="file-name">{t("binModal.fileName")}</span>
-                                    </>
-                                 )}
-                              </button>
+                           {att.formName && (
+                              <p>
+                                 <strong>{t("binModal.labelName")}:</strong> {att.formName}
+                              </p>
+                           )}
+                           {att.formDate && (
+                              <p>
+                                 <strong>{t("binModal.labelDeadline")}:</strong> {att.formDate}
+                              </p>
+                           )}
+                           {att.formDestination && (
+                              <p>
+                                 <strong>{t("binModal.labelRecipient")}:</strong> {att.formDestination}
+                              </p>
+                           )}
+                           {att.formDescription && (
+                              <p>
+                                 <strong>{t("binModal.labelDescription")}:</strong> {att.formDescription}
+                              </p>
                            )}
                         </div>
-                     );
+                     ) : null;
                   })}
+
+                  {/* Один файл (первый) */}
+                  {(() => {
+                     const att = attachments[0];
+                     const isReady = fileReadyMap[att.formVersionId];
+                     const isLoading = downloadingId === att.formVersionId;
+
+                     return !isReady ? (
+                        <div className="file-download-link flex items-center gap-2 text-sm text-gray-500">
+                           <img src={downloadIcon} alt="Loading" className="file-icon" />
+                           <span>
+                              {t("binModal.preparing")}
+                              <span className="typing-container file-typing ml-1">
+                                 <span className="dot one">.</span>
+                                 <span className="dot two">.</span>
+                                 <span className="dot three">.</span>
+                              </span>
+                           </span>
+                        </div>
+                     ) : (
+                        <button
+                           className="file-download-link"
+                           disabled={isLoading}
+                           onClick={(e) => handleDownloadClick(e, att)}
+                        >
+                           {isLoading ? (
+                              <div className="loader" />
+                           ) : (
+                              <>
+                                 <img src={downloadIcon} alt="PDF" className="file-icon" />
+                                 <span className="file-name">{t("binModal.fileName")}</span>
+                              </>
+                           )}
+                        </button>
+                     );
+                  })()}
                </div>
             )}
          </div>
