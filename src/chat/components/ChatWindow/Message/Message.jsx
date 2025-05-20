@@ -218,20 +218,30 @@ export default function Message({
 
                      return (
                         <div key={att.formVersionId} className="file-item">
-                           <div className="mb-1 text-sm text-gray-600">
-                              <p>
-                                 <strong>{t("binModal.labelName")}:</strong> {att.formName}
-                              </p>
-                              <p>
-                                 <strong>{t("binModal.labelDeadline")}:</strong> {att.formDate}
-                              </p>
-                              <p>
-                                 <strong>{t("binModal.labelRecipient")}:</strong> {att.formDestination}
-                              </p>
-                              <p>
-                                 <strong>{t("binModal.labelDescription")}:</strong> {att.formDescription}
-                              </p>
-                           </div>
+                           {(att.formName || att.formDate || att.formDestination || att.formDescription) && (
+                              <div className="mb-1 text-sm text-gray-600">
+                                 {att.formName && (
+                                    <p>
+                                       <strong>{t("binModal.labelName")}:</strong> {att.formName}
+                                    </p>
+                                 )}
+                                 {att.formDate && (
+                                    <p>
+                                       <strong>{t("binModal.labelDeadline")}:</strong> {att.formDate}
+                                    </p>
+                                 )}
+                                 {att.formDestination && (
+                                    <p>
+                                       <strong>{t("binModal.labelRecipient")}:</strong> {att.formDestination}
+                                    </p>
+                                 )}
+                                 {att.formDescription && (
+                                    <p>
+                                       <strong>{t("binModal.labelDescription")}:</strong> {att.formDescription}
+                                    </p>
+                                 )}
+                              </div>
+                           )}
 
                            {!isReady ? (
                               <div className="file-download-link flex items-center gap-2 text-sm text-gray-500">

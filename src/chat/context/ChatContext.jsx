@@ -994,8 +994,7 @@ const ChatProvider = ({ children }) => {
 
    //const fetchFormsByBin = async (bin, year = new Date().getFullYear()) => {
    //   console.log("⚙️ [MOCK] fetchFormsByBin called with BIN:", bin, "year:", year);
-   //   // Здесь можно симулировать задержку:
-   //   // await new Promise(res => setTimeout(res, 300));
+
    //   return mockForms;
    //};
 
