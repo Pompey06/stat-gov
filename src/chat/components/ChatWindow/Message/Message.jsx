@@ -77,30 +77,27 @@ export default function Message({
    };
 
    useEffect(() => {
-      attachments?.forEach(async (att) => {
-         if (!att?.order_id) return;
+      const att = attachments?.[0];
+      if (!att?.order_id) return;
 
-         const lang = i18n.language === "қаз" ? "kk" : "ru";
-         const response = await api.get("/begunok/report", {
-            params: { order_id: att.order_id, lang },
-            responseType: "blob",
-         });
+      (async () => {
+         try {
+            const lang = i18n.language === "қаз" ? "kk" : "ru";
+            const response = await api.get("/begunok/report", {
+               params: { order_id: att.order_id, lang },
+               responseType: "blob",
+            });
 
-         if (response.status === 200 && response.data.type === "application/pdf") {
-            const blobUrl = URL.createObjectURL(response.data);
-
-            setFileReadyMap((prev) => ({
-               ...prev,
-               [att.formVersionId]: true,
-            }));
-
-            setFileBlobMap((prev) => ({
-               ...prev,
-               [att.formVersionId]: blobUrl,
-            }));
+            if (response.status === 200 && response.data.type === "application/pdf") {
+               const blobUrl = URL.createObjectURL(response.data);
+               setFileReadyMap((prev) => ({ ...prev, [att.formVersionId]: true }));
+               setFileBlobMap((prev) => ({ ...prev, [att.formVersionId]: blobUrl }));
+            }
+         } catch (err) {
+            console.error("Ошибка загрузки отчёта:", err);
          }
-      });
-   }, [attachments]);
+      })();
+   }, [attachments, api]);
 
    const getFileName = (path) => {
       if (!path || typeof path !== "string") return "file";
