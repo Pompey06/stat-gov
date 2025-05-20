@@ -97,7 +97,7 @@ export default function Message({
             console.error("Ошибка загрузки отчёта:", err);
          }
       })();
-   }, [attachments, api]);
+   }, [attachments]);
 
    const getFileName = (path) => {
       if (!path || typeof path !== "string") return "file";

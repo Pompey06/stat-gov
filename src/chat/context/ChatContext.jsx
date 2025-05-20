@@ -921,58 +921,58 @@ const ChatProvider = ({ children }) => {
    // В вашем ChatContext.js
    // Обновлённая версия fetchFormsByBin, теперь принимает год из модалки
 
-   //const fetchFormsByBin = async (bin, year = new Date().getFullYear()) => {
-   //   const lang = i18n.language === "қаз" ? "kk" : "ru";
-
-   //   try {
-   //      // 1) Немедленно получаем перечень форм
-   //      const res = await api.get("/begunok/form", {
-   //         params: { bin, year, lang },
-   //      });
-   //      const forms = res.data;
-
-   //      // 2) Параллельно в фоне запускаем предзаказ (order_report)
-   //      (async () => {
-   //         try {
-   //            // Делаем предзаказ только для первой формы
-   //            if (forms.length > 0) {
-   //               const first = forms[0];
-   //               const orderRes = await api.post("/begunok/order_report", null, {
-   //                  params: { bin, year, lang, formVersionId: first.formVersionId },
-   //               });
-   //               const enriched = [
-   //                  { ...first, order_id: orderRes.data.order_id, filename: orderRes.data.filename },
-   //                  ...forms.slice(1),
-   //               ];
-
-   //               // Обновляем только attachments в сообщениях
-   //               setChats((prevChats) =>
-   //                  prevChats.map((chat) => {
-   //                     const msgs = chat.messages.map((msg) =>
-   //                        msg.attachments ? { ...msg, attachments: enriched } : msg
-   //                     );
-   //                     return { ...chat, messages: msgs };
-   //                  })
-   //               );
-   //            }
-   //         } catch (err) {
-   //            console.error("[pre-order_report error]", err);
-   //         }
-   //      })();
-
-   //      // 4) Возвращаем исходный список сразу — UI отрисует его без задержки
-   //      return forms;
-   //   } catch (err) {
-   //      console.error("Error fetching forms by BIN:", err);
-   //      throw err;
-   //   }
-   //};
-
    const fetchFormsByBin = async (bin, year = new Date().getFullYear()) => {
-      console.log("⚙️ [MOCK] fetchFormsByBin called with BIN:", bin, "year:", year);
+      const lang = i18n.language === "қаз" ? "kk" : "ru";
 
-      return mockForms;
+      try {
+         // 1) Немедленно получаем перечень форм
+         const res = await api.get("/begunok/form", {
+            params: { bin, year, lang },
+         });
+         const forms = res.data;
+
+         // 2) Параллельно в фоне запускаем предзаказ (order_report)
+         (async () => {
+            try {
+               // Делаем предзаказ только для первой формы
+               if (forms.length > 0) {
+                  const first = forms[0];
+                  const orderRes = await api.post("/begunok/order_report", null, {
+                     params: { bin, year, lang, formVersionId: first.formVersionId },
+                  });
+                  const enriched = [
+                     { ...first, order_id: orderRes.data.order_id, filename: orderRes.data.filename },
+                     ...forms.slice(1),
+                  ];
+
+                  // Обновляем только attachments в сообщениях
+                  setChats((prevChats) =>
+                     prevChats.map((chat) => {
+                        const msgs = chat.messages.map((msg) =>
+                           msg.attachments ? { ...msg, attachments: enriched } : msg
+                        );
+                        return { ...chat, messages: msgs };
+                     })
+                  );
+               }
+            } catch (err) {
+               console.error("[pre-order_report error]", err);
+            }
+         })();
+
+         // 4) Возвращаем исходный список сразу — UI отрисует его без задержки
+         return forms;
+      } catch (err) {
+         console.error("Error fetching forms by BIN:", err);
+         throw err;
+      }
    };
+
+   //const fetchFormsByBin = async (bin, year = new Date().getFullYear()) => {
+   //   console.log("⚙️ [MOCK] fetchFormsByBin called with BIN:", bin, "year:", year);
+
+   //   return mockForms;
+   //};
 
    // 2) Добавление в чат «кнопочных» сообщений
    const addButtonMessages = (buttons) => {
