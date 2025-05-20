@@ -1,18 +1,18 @@
 [
    {
       "formIndex": "1-инвест (годовая)",
-      "formName": "тест",
+      "formName": "",
       "formDate": "",
       "formDestination": "",
-      "formDescription": "тестовое описание",
+      "formDescription": "",
       "formSelectResult": "",
       "formVersionId": 1104,
       "checkedFactLabel": true
    },
    {
       "formIndex": "2-МП (квартальная)",
-      "formName": "тест",
-      "formDate": "20 число",
+      "formName": "",
+      "formDate": "",
       "formDestination": "",
       "formDescription": "",
       "formSelectResult": "",
@@ -43,7 +43,7 @@
       "formIndex": "4-ОС (годовая)",
       "formName": "",
       "formDate": "",
-      "formDestination": "тест",
+      "formDestination": "",
       "formDescription": "",
       "formSelectResult": "",
       "formVersionId": 11176,
@@ -53,7 +53,7 @@
       "formIndex": "2-услуги (годовая)",
       "formName": "",
       "formDate": "",
-      "formDestination": "тест",
+      "formDestination": "",
       "formDescription": "",
       "formSelectResult": "",
       "formVersionId": 3626,
@@ -63,14 +63,14 @@
       "formIndex": "7-ТПЗ (годовая)",
       "formName": "",
       "formDate": "",
-      "formDestination": "тест",
+      "formDestination": "",
       "formDescription": "",
       "formSelectResult": "",
       "formVersionId": 3786,
       "checkedFactLabel": true
    },
    {
-      "formIndex": "1-Т (годовая)",
+      "formIndex": "1-Т (го´Ð¾Ð²Ð°Ñ)",
       "formName": "",
       "formDate": "",
       "formDestination": "",
@@ -80,7 +80,7 @@
       "checkedFactLabel": false
    },
    {
-      "formIndex": "1-ПФ (годовая)",
+      "formIndex": "1-ÐÐ¤ (Ð³Ð¾Ð´Ð¾Ð²Ð°Ñ)",
       "formName": "",
       "formDate": "",
       "formDestination": "",
@@ -90,7 +90,7 @@
       "checkedFactLabel": false
    },
    {
-      "formIndex": "1-Т (Условия труда) (годовая)",
+      "formIndex": "1-Ð¢ (Ð£ÑÐ»Ð¾Ð²Ð¸Ñ ÑÑÑÐ´Ð°) (Ð³Ð¾Ð´Ð¾Ð²Ð°Ñ)",
       "formName": "",
       "formDate": "",
       "formDestination": "",

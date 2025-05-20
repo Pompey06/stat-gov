@@ -207,40 +207,33 @@ export default function Message({
             {Array.isArray(attachments) && attachments.length > 0 && (
                <div className="file-download-container fade-in">
                   {/* Блоки с текстом от каждого файла */}
-                  {attachments.map((att, index) => {
-                     const hasAnyText = att.formName || att.formDate || att.formDestination || att.formDescription;
-
-                     return hasAnyText ? (
-                        <div key={att.formVersionId} className="mb-4 text-sm text-gray-600">
-                           {att.formIndex && (
-                              <p>
-                                 <strong>{t("binModal.labelIndex")}:</strong> {att.formIndex}
-                              </p>
-                           )}
-                           {att.formName && (
-                              <p>
-                                 <strong>{t("binModal.labelName")}:</strong> {att.formName}
-                              </p>
-                           )}
-                           {att.formDate && (
-                              <p>
-                                 <strong>{t("binModal.labelDeadline")}:</strong> {att.formDate}
-                              </p>
-                           )}
-                           {att.formDestination && (
-                              <p>
-                                 <strong>{t("binModal.labelRecipient")}:</strong> {att.formDestination}
-                              </p>
-                           )}
-                           {att.formDescription && (
-                              <p>
-                                 <strong>{t("binModal.labelDescription")}:</strong> {att.formDescription}
-                              </p>
-                           )}
-                        </div>
-                     ) : null;
-                  })}
-
+                  {attachments.map((att) => (
+                     <div key={att.formVersionId} className="mb-4 text-sm text-gray-600">
+                        <p>
+                           <strong>{t("binModal.labelIndex")}:</strong> {att.formIndex}
+                        </p>
+                        {att.formName && (
+                           <p>
+                              <strong>{t("binModal.labelName")}:</strong> {att.formName}
+                           </p>
+                        )}
+                        {att.formDate && (
+                           <p>
+                              <strong>{t("binModal.labelDeadline")}:</strong> {att.formDate}
+                           </p>
+                        )}
+                        {att.formDestination && (
+                           <p>
+                              <strong>{t("binModal.labelRecipient")}:</strong> {att.formDestination}
+                           </p>
+                        )}
+                        {att.formDescription && (
+                           <p>
+                              <strong>{t("binModal.labelDescription")}:</strong> {att.formDescription}
+                           </p>
+                        )}
+                     </div>
+                  ))}
                   {/* Один файл (первый) */}
                   {(() => {
                      const att = attachments[0];
