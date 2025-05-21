@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import "./MessageInput.css";
 //import newSendIcon from "../../../assets/newSendIcon.svg";
 import sendIcon from "../../../assets/send.png";
@@ -8,17 +8,21 @@ import chatI18n from "../../../i18n";
 
 export default function MessageInput() {
    const { t } = useTranslation(undefined, { i18n: chatI18n });
-   const [message, setMessage] = useState("");
-
-   const { createMessage } = useContext(ChatContext);
+   const { inputPrefill, setInputPrefill, createMessage } = useContext(ChatContext);
+   const [message, setMessage] = useState(inputPrefill);
 
    const handleSend = async () => {
       // Если нет сообщения, можно дополнительно сделать проверку, не отправлять пустую строку
       if (!message.trim()) return;
       createMessage(message);
+      setInputPrefill("");
       console.log(t("messageInput.sentMessage"), message);
       setMessage("");
    };
+
+   useEffect(() => {
+      setMessage(inputPrefill);
+   }, [inputPrefill]);
 
    const handleKeyDown = (e) => {
       // Проверяем, что нажата клавиша Enter

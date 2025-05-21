@@ -23,6 +23,7 @@ const ChatProvider = ({ children }) => {
    const [categories, setCategories] = useState([]);
    const [currentCategory, setCurrentCategory] = useState(null);
    const [currentSubcategory, setCurrentSubcategory] = useState(null);
+   const [inputPrefill, setInputPrefill] = useState("");
    const streamingIndexRef = useRef(null);
    const [isInBinFlow, setIsInBinFlow] = useState(false);
    const api = axios.create({
@@ -243,6 +244,25 @@ const ChatProvider = ({ children }) => {
       loadAndCleanChats();
    }, []);
 
+   //const fetchInitialMessages = async () => {
+   //   // Проверяем, есть ли у нас уже загруженные категории
+   //   if (categories.length > 0) {
+   //      updateChatWithExistingCategories();
+   //      return;
+   //   }
+
+   //   try {
+   //      const res = await api.get(`/assistant/categories`);
+   //      const fetchedCategories = res.data.categories;
+   //      setCategories(fetchedCategories);
+   //      setTranslationsKz(res.data.translations_kz || {});
+
+   //      updateChatWithCategories(fetchedCategories);
+   //   } catch (error) {
+   //      console.error("Ошибка при загрузке начальных сообщений:", error);
+   //   }
+   //};
+
    const fetchInitialMessages = async () => {
       // Проверяем, есть ли у нас уже загруженные категории
       if (categories.length > 0) {
@@ -251,11 +271,111 @@ const ChatProvider = ({ children }) => {
       }
 
       try {
-         const res = await api.get(`/assistant/categories`);
-         const fetchedCategories = res.data.categories;
-         setCategories(fetchedCategories);
-         setTranslationsKz(res.data.translations_kz || {});
+         let fetchedCategories;
+         let fetchedTranslations;
 
+         // === TEST STUB: вместо реального запроса подставляем JSON с faq для проверки ===
+         if (import.meta.env.DEV) {
+            const testData = {
+               categories: [
+                  {
+                     name: "Общие вопросы",
+                     subcategories: [
+                        { name: "определение" },
+                        { name: "цель" },
+                        // …
+                     ],
+                     // Вот наш тестовый FAQ для этой категории
+                     faq: [
+                        {
+                           question: "Что такое переписной лист?",
+                           answer: "Это документ для сбора информации о населении.",
+                        },
+                        {
+                           question: "Когда сдавать годовую форму?",
+                           answer: "До 2 числа месяца, следующего за отчетным периодом.",
+                        },
+                        {
+                           question: "Куда отправлять форму?",
+                           answer: "Через портал sanak.gov или в местный орган статистики.",
+                        },
+                     ],
+                  },
+                  {
+                     name: "Заполнение переписных листов",
+                     subcategories: [{ name: "3-ЛПХ" }, { name: "2-СХП (КФХ)" }],
+                     // И тестовый FAQ для этой категории тоже
+                     faq: [
+                        {
+                           question: "Как заполнить 3-ЛПХ?",
+                           answer: "Следуйте инструкции на портале!",
+                        },
+                     ],
+                  },
+                  {
+                     name: "Общие вопросы по опросу",
+                     subcategories: [{ name: "2-СХП (КФХ)" }],
+                     faq: [
+                        {
+                           question: "Зачем нужен опрос СХП?",
+                           answer: "Для оценки состояния сельского хозяйства.",
+                        },
+                     ],
+                  },
+                  {
+                     name: "Сайт Санак.гов",
+                     subcategories: [
+                        { name: "Авторизация" },
+                        { name: "Пользовательская ошибка" },
+                        { name: "Регистрация" },
+                        { name: "NCALayer" },
+                     ],
+                     faq: [
+                        {
+                           question: "Как зарегистрироваться на Санак.гов?",
+                           answer: "Нажмите «Регистрация» и заполните поля.",
+                        },
+                     ],
+                  },
+               ],
+               translations_kz: {
+                  "Общие вопросы": "Жалпы сұрақтар",
+                  определение: "анықтама",
+                  цель: "мақсат",
+                  срок: "мерзім",
+                  "метод проведения": "өткізу әдісі",
+                  охват: "қамту",
+                  "закон (основание)": "заң (негіз)",
+                  этап: "кезең",
+                  защита: "қорғау",
+                  "уполномоченный орган": "уәкілетті орган",
+                  роль: "рөл",
+                  интервьюер: "сұхбатшы",
+                  "история СХП": "АӨШ тарихы",
+                  "переписные листы": "санақ парақтары",
+                  "Заполнение переписных листов": "Санақ парақтарын толтыру",
+                  "3-ЛПХ": "3-ЖШҚ",
+                  "2-СХП (КФХ)": "2-АӨШ (КФШ)",
+                  "Общие вопросы по опросу": "Сұрау бойынша жалпы сұрақтар",
+                  "Сайт Санак.гов": "Санак.гов сайты",
+                  Авторизация: "Авторизация",
+                  "Пользовательская ошибка": "Пайдаланушы қатесі",
+                  Регистрация: "Тіркеу",
+                  NCALayer: "NCALayer",
+               },
+            };
+            fetchedCategories = testData.categories;
+            fetchedTranslations = testData.translations_kz;
+         } else {
+            // реальный вызов на бэкенд
+            const res = await api.get(`/assistant/categories`);
+            fetchedCategories = res.data.categories;
+            fetchedTranslations = res.data.translations_kz || {};
+         }
+
+         // общая логика по записи в стейт и рендеру кнопок
+         setCategories(fetchedCategories);
+         setTranslationsKz(fetchedTranslations);
          updateChatWithCategories(fetchedCategories);
       } catch (error) {
          console.error("Ошибка при загрузке начальных сообщений:", error);
@@ -689,17 +809,40 @@ const ChatProvider = ({ children }) => {
    const handleButtonClick = (selectedItem) => {
       console.log("Selected item:", selectedItem);
 
-      // 1. Подкатегория
       if (selectedItem.isSubcategory) {
          const categoryData = selectedItem.category || currentCategory;
          setCurrentCategory(categoryData);
          setCurrentSubcategory(selectedItem);
          setCategoryFilter(categoryData.name);
-         createMessage(selectedItem.text, false, {
-            category: categoryData.name,
-            subcategory: selectedItem.name,
-            subcategory_report: null,
-         });
+
+         // Прячем старые кнопки и готовим FAQ-кнопки
+         setChats((prevChats) =>
+            prevChats.map((chat) => {
+               const isCurrent =
+                  String(chat.id) === String(currentChatId) || (chat.id === null && currentChatId === null);
+               if (!isCurrent) return chat;
+
+               // Собираем кнопки FAQ по этой категории
+               const faqButtons = (categoryData.faq || []).map((f, i) => ({
+                  text: f.question,
+                  isUser: true,
+                  isFeedback: false,
+                  isButton: true,
+                  isFaq: true,
+                  faqData: f,
+                  key: `faq-${i}`,
+               }));
+
+               return {
+                  ...chat,
+                  showInitialButtons: false,
+                  buttonsWereHidden: true,
+                  // Оставляем только приветствие + все FAQ-кнопки
+                  messages: [chat.messages[0], ...faqButtons],
+               };
+            })
+         );
+         // Пользователь введёт запрос вручную, и createMessage подтянет currentCategory/subcategory
          return;
       }
 
@@ -715,63 +858,97 @@ const ChatProvider = ({ children }) => {
          return;
       }
 
-      // 3. FAQ
+      // 4. Категория
+      // 3. FAQ — предзаполняем инпут и скрываем кнопки
       if (selectedItem.isFaq) {
-         const categoryData = currentCategory;
-         setCategoryFilter(categoryData.name);
-         createMessage(selectedItem.text, false, {
-            category: categoryData.name,
-            subcategory: currentSubcategory?.name ?? null,
-            subcategory_report: null,
-         });
+         setInputPrefill(selectedItem.text);
+         setChats((prev) =>
+            prev.map((chat) => {
+               const isCurrent =
+                  String(chat.id) === String(currentChatId) || (chat.id === null && currentChatId === null);
+               if (!isCurrent) return chat;
+               return {
+                  ...chat,
+                  showInitialButtons: false,
+                  buttonsWereHidden: true,
+                  messages: [chat.messages[0]],
+               };
+            })
+         );
          return;
       }
 
-      // 4. Категория
+      // 4. Категория — сначала подкатегории, потом FAQ, иначе заглушка
       const categoryData = selectedItem.category || selectedItem;
       setCurrentCategory(categoryData);
       setCurrentSubcategory(null);
       setCategoryFilter(categoryData.name);
 
-      if (categoryData.faq && categoryData.faq.length > 0) {
-         // Показываем FAQ-кнопки
+      if (categoryData.subcategories?.length > 0) {
+         // Показываем кнопки подкатегорий
          setChats((prev) =>
             prev.map((chat) => {
-               if (String(chat.id) === String(currentChatId) || (chat.id === null && chat === prev[0])) {
-                  const faqButtons = categoryData.faq.map((faq) => ({
-                     text:
-                        locale === "ru"
-                           ? faq.question
-                           : (translationsKz && translationsKz[faq.question]) || faq.question,
-                     isUser: true,
-                     isFeedback: false,
-                     isButton: true,
-                     isFaq: true,
-                     faqData: faq,
-                  }));
-                  return {
-                     ...chat,
-                     showInitialButtons: false,
-                     buttonsWereHidden: true,
-                     messages: [chat.messages[0], ...faqButtons],
-                  };
-               }
-               return chat;
+               const isCurrent =
+                  String(chat.id) === String(currentChatId) || (chat.id === null && currentChatId === null);
+               if (!isCurrent) return chat;
+
+               const subButtons = categoryData.subcategories.map((sub) => ({
+                  text: locale === "ru" ? sub.name : translationsKz[sub.name] || sub.name,
+                  isUser: true,
+                  isFeedback: false,
+                  isButton: true,
+                  isSubcategory: true,
+                  name: sub.name,
+                  category: categoryData,
+               }));
+
+               return {
+                  ...chat,
+                  showInitialButtons: false,
+                  buttonsWereHidden: true,
+                  messages: [chat.messages[0], ...subButtons],
+               };
+            })
+         );
+      } else if (categoryData.faq?.length > 0) {
+         // Показываем кнопки FAQ, если нет подкатегорий
+         setChats((prev) =>
+            prev.map((chat) => {
+               const isCurrent =
+                  String(chat.id) === String(currentChatId) || (chat.id === null && currentChatId === null);
+               if (!isCurrent) return chat;
+
+               const faqButtons = categoryData.faq.map((f, i) => ({
+                  text: f.question,
+                  isUser: true,
+                  isFeedback: false,
+                  isButton: true,
+                  isFaq: true,
+                  faqData: f,
+                  key: `faq-${i}`,
+               }));
+
+               return {
+                  ...chat,
+                  showInitialButtons: false,
+                  buttonsWereHidden: true,
+                  messages: [chat.messages[0], ...faqButtons],
+               };
             })
          );
       } else {
-         // Нет FAQ — просто скрываем кнопки
+         // Ни подкатегорий, ни FAQ — fallback
          setChats((prev) =>
             prev.map((chat) => {
-               if (String(chat.id) === String(currentChatId) || (chat.id === null && chat === prev[0])) {
-                  return {
-                     ...chat,
-                     showInitialButtons: false,
-                     buttonsWereHidden: true,
-                     messages: [chat.messages[0]],
-                  };
-               }
-               return chat;
+               const isCurrent =
+                  String(chat.id) === String(currentChatId) || (chat.id === null && currentChatId === null);
+               if (!isCurrent) return chat;
+               return {
+                  ...chat,
+                  showInitialButtons: false,
+                  buttonsWereHidden: true,
+                  messages: [chat.messages[0], { text: t("chat.noContent"), isUser: false, isFeedback: false }],
+               };
             })
          );
       }
@@ -1009,6 +1186,8 @@ const ChatProvider = ({ children }) => {
             sendFeedback,
             getBotMessageIndex,
             removeFeedbackMessage,
+            inputPrefill,
+            setInputPrefill,
             showInitialButtons:
                chats.find((c) => String(c.id) === String(currentChatId) || (c.id === null && c === chats[0]))
                   ?.showInitialButtons || false,
