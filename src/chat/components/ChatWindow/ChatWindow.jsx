@@ -19,6 +19,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
    const isEmptyChat = currentChat.isEmpty;
    const { createMessage } = useContext(ChatContext);
    const currentLang = i18n.language;
+   const showSpecialButton = import.meta.env.VITE_SHOW_SPECIAL_BUTTON === "true";
 
    const handleLanguageChange = (lang) => {
       updateLocale(lang);
@@ -107,11 +108,13 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
 
             <MessageInput />
 
-            <div className="special-button-container">
-               <button className="btn special" onClick={() => setBinModalOpen(true)}>
-                  {t("binModal.specialFormsButton")}
-               </button>
-            </div>
+            {showSpecialButton && (
+               <div className="special-button-container">
+                  <button className="btn special" onClick={() => setBinModalOpen(true)}>
+                     {t("binModal.specialFormsButton")}
+                  </button>
+               </div>
+            )}
 
             <MessageList isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
