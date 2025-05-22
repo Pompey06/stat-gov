@@ -16,7 +16,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
    const { t } = useTranslation(undefined, { i18n: chatI18n });
    const [isBinModalOpen, setBinModalOpen] = useState(false);
    const currentChat = chats.find((c) => c.id === currentChatId) || chats[0];
-   const isEmptyChat = currentChat.isEmpty && currentChat.messages.length <= 5;
+   const isEmptyChat = currentChat.isEmpty;
    const { createMessage } = useContext(ChatContext);
    const currentLang = i18n.language;
 
@@ -107,13 +107,13 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
 
             <MessageInput />
 
-            <MessageList isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-
             <div className="special-button-container">
                <button className="btn special" onClick={() => setBinModalOpen(true)}>
                   {t("binModal.specialFormsButton")}
                </button>
             </div>
+
+            <MessageList isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
             <BinModal
                isOpen={isBinModalOpen}

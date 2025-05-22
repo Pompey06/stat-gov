@@ -244,25 +244,6 @@ const ChatProvider = ({ children }) => {
       loadAndCleanChats();
    }, []);
 
-   //const fetchInitialMessages = async () => {
-   //   // Проверяем, есть ли у нас уже загруженные категории
-   //   if (categories.length > 0) {
-   //      updateChatWithExistingCategories();
-   //      return;
-   //   }
-
-   //   try {
-   //      const res = await api.get(`/assistant/categories`);
-   //      const fetchedCategories = res.data.categories;
-   //      setCategories(fetchedCategories);
-   //      setTranslationsKz(res.data.translations_kz || {});
-
-   //      updateChatWithCategories(fetchedCategories);
-   //   } catch (error) {
-   //      console.error("Ошибка при загрузке начальных сообщений:", error);
-   //   }
-   //};
-
    const fetchInitialMessages = async () => {
       // Проверяем, есть ли у нас уже загруженные категории
       if (categories.length > 0) {
@@ -271,116 +252,75 @@ const ChatProvider = ({ children }) => {
       }
 
       try {
-         let fetchedCategories;
-         let fetchedTranslations;
-
-         // === TEST STUB: вместо реального запроса подставляем JSON с faq для проверки ===
-         if (import.meta.env.DEV) {
-            const testData = {
-               categories: [
-                  {
-                     name: "Общие вопросы",
-                     subcategories: [
-                        { name: "определение" },
-                        { name: "цель" },
-                        // …
-                     ],
-                     // Вот наш тестовый FAQ для этой категории
-                     faq: [
-                        {
-                           question: "Что такое переписной лист?",
-                           answer: "Это документ для сбора информации о населении.",
-                        },
-                        {
-                           question: "Когда сдавать годовую форму?",
-                           answer: "До 2 числа месяца, следующего за отчетным периодом.",
-                        },
-                        {
-                           question: "Куда отправлять форму?",
-                           answer: "Через портал sanak.gov или в местный орган статистики.",
-                        },
-                     ],
-                  },
-                  {
-                     name: "Заполнение переписных листов",
-                     subcategories: [{ name: "3-ЛПХ" }, { name: "2-СХП (КФХ)" }],
-                     // И тестовый FAQ для этой категории тоже
-                     faq: [
-                        {
-                           question: "Как заполнить 3-ЛПХ?",
-                           answer: "Следуйте инструкции на портале!",
-                        },
-                     ],
-                  },
-                  {
-                     name: "Общие вопросы по опросу",
-                     subcategories: [{ name: "2-СХП (КФХ)" }],
-                     faq: [
-                        {
-                           question: "Зачем нужен опрос СХП?",
-                           answer: "Для оценки состояния сельского хозяйства.",
-                        },
-                     ],
-                  },
-                  {
-                     name: "Сайт Санак.гов",
-                     subcategories: [
-                        { name: "Авторизация" },
-                        { name: "Пользовательская ошибка" },
-                        { name: "Регистрация" },
-                        { name: "NCALayer" },
-                     ],
-                     faq: [
-                        {
-                           question: "Как зарегистрироваться на Санак.гов?",
-                           answer: "Нажмите «Регистрация» и заполните поля.",
-                        },
-                     ],
-                  },
-               ],
-               translations_kz: {
-                  "Общие вопросы": "Жалпы сұрақтар",
-                  определение: "анықтама",
-                  цель: "мақсат",
-                  срок: "мерзім",
-                  "метод проведения": "өткізу әдісі",
-                  охват: "қамту",
-                  "закон (основание)": "заң (негіз)",
-                  этап: "кезең",
-                  защита: "қорғау",
-                  "уполномоченный орган": "уәкілетті орган",
-                  роль: "рөл",
-                  интервьюер: "сұхбатшы",
-                  "история СХП": "АӨШ тарихы",
-                  "переписные листы": "санақ парақтары",
-                  "Заполнение переписных листов": "Санақ парақтарын толтыру",
-                  "3-ЛПХ": "3-ЖШҚ",
-                  "2-СХП (КФХ)": "2-АӨШ (КФШ)",
-                  "Общие вопросы по опросу": "Сұрау бойынша жалпы сұрақтар",
-                  "Сайт Санак.гов": "Санак.гов сайты",
-                  Авторизация: "Авторизация",
-                  "Пользовательская ошибка": "Пайдаланушы қатесі",
-                  Регистрация: "Тіркеу",
-                  NCALayer: "NCALayer",
-               },
-            };
-            fetchedCategories = testData.categories;
-            fetchedTranslations = testData.translations_kz;
-         } else {
-            // реальный вызов на бэкенд
-            const res = await api.get(`/assistant/categories`);
-            fetchedCategories = res.data.categories;
-            fetchedTranslations = res.data.translations_kz || {};
-         }
-
-         // общая логика по записи в стейт и рендеру кнопок
+         const res = await api.get(`/assistant/categories`);
+         const fetchedCategories = res.data.categories;
          setCategories(fetchedCategories);
-         setTranslationsKz(fetchedTranslations);
+         setTranslationsKz(res.data.translations_kz || {});
+
          updateChatWithCategories(fetchedCategories);
       } catch (error) {
          console.error("Ошибка при загрузке начальных сообщений:", error);
       }
    };
+
+   //const fetchInitialMessages = async () => {
+   //   // Проверяем, есть ли у нас уже загруженные категории
+   //   if (categories.length > 0) {
+   //      updateChatWithExistingCategories();
+   //      return;
+   //   }
+
+   //   try {
+   //      let fetchedCategories;
+   //      let fetchedTranslations;
+
+   //      // === TEST STUB: вместо реального запроса подставляем JSON с faq для проверки ===
+   //      if (import.meta.env.DEV) {
+   //         const testData = {
+   //            categories: [],
+   //            translations_kz: {
+   //               "Общие вопросы": "Жалпы сұрақтар",
+   //               определение: "анықтама",
+   //               цель: "мақсат",
+   //               срок: "мерзім",
+   //               "метод проведения": "өткізу әдісі",
+   //               охват: "қамту",
+   //               "закон (основание)": "заң (негіз)",
+   //               этап: "кезең",
+   //               защита: "қорғау",
+   //               "уполномоченный орган": "уәкілетті орган",
+   //               роль: "рөл",
+   //               интервьюер: "сұхбатшы",
+   //               "история СХП": "АӨШ тарихы",
+   //               "переписные листы": "санақ парақтары",
+   //               "Заполнение переписных листов": "Санақ парақтарын толтыру",
+   //               "3-ЛПХ": "3-ЖШҚ",
+   //               "2-СХП (КФХ)": "2-АӨШ (КФШ)",
+   //               "Общие вопросы по опросу": "Сұрау бойынша жалпы сұрақтар",
+   //               "Сайт Санак.гов": "Санак.гов сайты",
+   //               Авторизация: "Авторизация",
+   //               "Пользовательская ошибка": "Пайдаланушы қатесі",
+   //               Регистрация: "Тіркеу",
+   //               NCALayer: "NCALayer",
+   //            },
+   //         };
+   //         fetchedCategories = testData.categories;
+   //         fetchedTranslations = testData.translations_kz;
+   //      } else {
+   //         // реальный вызов на бэкенд
+   //         const res = await api.get(`/assistant/categories`);
+   //         fetchedCategories = res.data.categories;
+   //         fetchedTranslations = res.data.translations_kz || {};
+   //      }
+
+   //      // общая логика по записи в стейт и рендеру кнопок
+   //      setCategories(fetchedCategories);
+   //      setTranslationsKz(fetchedTranslations);
+   //      updateChatWithCategories(fetchedCategories);
+   //   } catch (error) {
+   //      console.error("Ошибка при загрузке начальных сообщений:", error);
+   //   }
+   //};
 
    function deleteChat(chatId) {
       // Помечаем чат как удалённый в localStorage
@@ -947,7 +887,7 @@ const ChatProvider = ({ children }) => {
                   ...chat,
                   showInitialButtons: false,
                   buttonsWereHidden: true,
-                  messages: [chat.messages[0], { text: t("chat.noContent"), isUser: false, isFeedback: false }],
+                  messages: [chat.messages[0]],
                };
             })
          );
