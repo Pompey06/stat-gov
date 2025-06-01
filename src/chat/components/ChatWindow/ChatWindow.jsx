@@ -7,6 +7,7 @@ import Header from "../Header/Header";
 import "./ChatWindow.css";
 import chatI18n from "../../i18n";
 import { useTranslation } from "react-i18next";
+import personImage from "../../assets/person.png";
 
 export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
    const { i18n } = useTranslation(undefined, { i18n: chatI18n });
@@ -104,7 +105,11 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
                </button>
             </div>
 
-            <div className="chat-window-start__content">{t("chat.greeting")}</div>
+            <div className="person__wrapper">
+               <img src={personImage} alt="" className="person" />
+
+               <div className="chat-window-start__content">{t("chat.greeting")}</div>
+            </div>
 
             <MessageInput />
 

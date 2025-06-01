@@ -1,6 +1,6 @@
 import { createContext, useState, useEffect, useRef } from "react";
 import axios from "axios";
-import mockForms from "./mockForms.json";
+import mockCategories from "./mockCategories.json";
 import { useTranslation } from "react-i18next";
 import {
    hasFeedback,
@@ -245,18 +245,30 @@ const ChatProvider = ({ children }) => {
    }, []);
 
    const fetchInitialMessages = async () => {
-      // Проверяем, есть ли у нас уже загруженные категории
+      const USE_MOCK_CATEGORIES = false;
+
       if (categories.length > 0) {
          updateChatWithExistingCategories();
          return;
       }
 
       try {
-         const res = await api.get(`/assistant/categories`);
-         const fetchedCategories = res.data.categories;
-         setCategories(fetchedCategories);
-         setTranslationsKz(res.data.translations_kz || {});
+         let fetchedCategories;
+         let fetchedTranslations;
 
+         if (USE_MOCK_CATEGORIES) {
+            // берём данные из локального mockCategories.json
+            fetchedCategories = mockCategories.categories;
+            fetchedTranslations = mockCategories.translations_kz || {};
+         } else {
+            // реальный вызов на бэкенд
+            const res = await api.get("/assistant/categories");
+            fetchedCategories = res.data.categories;
+            fetchedTranslations = res.data.translations_kz || {};
+         }
+
+         setCategories(fetchedCategories);
+         setTranslationsKz(fetchedTranslations);
          updateChatWithCategories(fetchedCategories);
       } catch (error) {
          console.error("Ошибка при загрузке начальных сообщений:", error);

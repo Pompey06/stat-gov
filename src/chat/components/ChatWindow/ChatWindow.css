@@ -26,6 +26,17 @@
    position: relative;
 }
 
+.person__wrapper {
+   display: flex;
+   gap: 10px;
+   align-items: center;
+   margin-bottom: 7px;
+}
+
+.person {
+   width: 50px;
+}
+
 .chat-window-start .language {
    position: absolute;
    right: 14px;
@@ -51,7 +62,7 @@
 .chat-window-start .message-list {
    min-height: 0px !important;
    flex-direction: row;
-   max-width: 1060px;
+   max-width: 1200px;
    flex-wrap: wrap;
    justify-content: center;
    column-gap: 15px;
