@@ -43,6 +43,9 @@ export default function MessageList({ isSidebarOpen, toggleSidebar }) {
    let botCount = 0;
    const renderedMessages = messages.map((message, index) => {
       // Если сообщение является фидбеком – рендерим FeedbackMessage
+      if (message.isGreeting && currentChat.isEmpty) {
+         return null;
+      }
       if (message.isFeedback) {
          const botMessageIndex = getBotMessageIndex(index);
          return <FeedbackMessage key={index} text={message.text} messageIndex={botMessageIndex} />;

@@ -14,6 +14,7 @@ import copy from "copy-to-clipboard";
 import copyIcon from "../../../assets/copy.svg";
 import checkIcon from "../../../assets/checkmark.svg";
 import { ChatContext } from "../../../context/ChatContext";
+import personImage from "../../../assets/person.png";
 
 export default function Message({
    text,
@@ -39,6 +40,7 @@ export default function Message({
    const { downloadForm, chats, currentChatId } = useContext(ChatContext);
    const [fileBlobMap, setFileBlobMap] = useState({});
    const [downloadingId, setDownloadingId] = useState(null);
+
    const allFilePaths = React.useMemo(() => {
       if (filePaths && Array.isArray(filePaths)) {
          return filePaths.filter((path) => typeof path === "string");
@@ -165,10 +167,10 @@ export default function Message({
 
    return (
       <div
-         className={`message mb-6 bg-white flex font-light ${
+         className={`message mb-6 flex font-light ${
             isUser
                ? "user text-right self-end text-white"
-               : `text-left ai text-black self-start relative ${!isGreeting ? "bot-response" : ""}`
+               : `self-start relative ${!isGreeting ? "bot-message-wrapper" : ""}`
          } ${
             isButton
                ? "cursor-pointer hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5"
@@ -176,7 +178,11 @@ export default function Message({
          }`}
          onClick={isButton ? onClick : undefined}
       >
-         <div>
+         {/* Аватарка бота слева (только для бот-сообщений) */}
+         {!isUser && <img src={personImage} alt="Bot" className="bot-avatar" />}
+
+         {/* «Пузырь» с содержимым */}
+         <div className={`${isUser ? "" : "bubble"} flex flex-col`}>
             <ReactMarkdown
                remarkPlugins={[remarkGfm, remarkBreaks]}
                components={{
@@ -189,6 +195,8 @@ export default function Message({
             >
                {text}
             </ReactMarkdown>
+
+            {/* Ссылки на filePaths (если есть) */}
             {!streaming && allFilePaths.length > 0 && (
                <div className="mt-2 fade-in">
                   <div className="file-download-container">
@@ -204,9 +212,9 @@ export default function Message({
                </div>
             )}
 
+            {/* Блок attachments (если есть) */}
             {Array.isArray(attachments) && attachments.length > 0 && (
                <div className="file-download-container fade-in">
-                  {/* Блоки с текстом от каждого файла */}
                   {attachments.map((att) => (
                      <div key={att.formVersionId} className="mb-4 text-sm text-gray-600">
                         <p>
@@ -234,7 +242,8 @@ export default function Message({
                         )}
                      </div>
                   ))}
-                  {/* Один файл (первый) */}
+
+                  {/* Только первый файл – кнопка «скачать» или «готовится» */}
                   {(() => {
                      const att = attachments[0];
                      const isReady = fileReadyMap[att.formVersionId];
@@ -271,15 +280,15 @@ export default function Message({
                   })()}
                </div>
             )}
-         </div>
-         <div className={`buttons__wrapper ${!streaming ? "fade-in" : ""}`}>
+
+            {/* Блок с кнопками «копировать / отправить feedback» внутри «bubble» */}
             {!isUser &&
                !isGreeting &&
                !isCustomMessage &&
                isAssistantResponse &&
                !streaming &&
                Number.isInteger(botMessageIndex) && (
-                  <>
+                  <div className="buttons__wrapper fade-in">
                      <button
                         type="button"
                         className="copy-button flex items-center gap-1 text-sm text-gray-500 hover:bg-gray-200 transition-colors"
@@ -295,7 +304,7 @@ export default function Message({
                         )}
                      </button>
                      <FeedbackMessage messageIndex={botMessageIndex} />
-                  </>
+                  </div>
                )}
          </div>
       </div>

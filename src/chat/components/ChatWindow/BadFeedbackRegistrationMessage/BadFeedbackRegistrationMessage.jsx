@@ -1,10 +1,12 @@
-// BadFeedbackRegistrationMessage.jsx
+// src/components/BadFeedbackRegistrationMessage/BadFeedbackRegistrationMessage.jsx
+
 import React, { useState, useContext } from "react";
 import RegistrationModal from "../Modal/RegistrationModal";
 import { useTranslation } from "react-i18next";
 import "./BadFeedbackRegistrationMessage.css";
 import { ChatContext } from "../../../context/ChatContext";
 import chatI18n from "../../../i18n";
+import personImage from "../../../assets/person.png";
 
 export default function BadFeedbackRegistrationMessage({ currentChatId }) {
    const { addBotMessage } = useContext(ChatContext);
@@ -24,8 +26,12 @@ export default function BadFeedbackRegistrationMessage({ currentChatId }) {
    };
 
    return (
-      <div className="bad-feedback-message message mb-8 bg-white flex font-light text-left ai self-start">
-         <div>
+      <div className="message mb-8 flex font-light self-start">
+         {/* 1) Аватарка бота слева (за пределами «пузыря») */}
+         <img src={personImage} alt="Bot" className="bot-avatar" />
+
+         {/* 2) «Пузырь» с текстом и кнопкой (используем прежний класс .ai) */}
+         <div className="bubble ai bg-white text-left">
             <p className="bad-feedback-text">{t("feedback.badFeedbackPromptText")}</p>
             <button className="bad-feedback-button" onClick={openModal}>
                {t("feedback.openRegistrationForm")}

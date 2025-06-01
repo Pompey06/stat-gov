@@ -6,26 +6,44 @@
    line-height: normal;
    color: #141414;
    max-width: 672px;
+   display: flex; /* родитель flex-контейнер */
+   align-items: flex-start; /* выравниваем аватар и «пузырь» по верху */
+   gap: 8px; /* расстояние между аватаром и текстом */
 }
 
 .user {
+   /* Сообщения пользователя могут оставаться без изменений */
    padding: 15px 22px;
    color: #fff;
    border-radius: 16px 16px 0px 16px;
    background: #0068bf;
+   margin-left: auto; /* выровнять вправо */
 }
 
-.ai {
+/* Убираем старый .ai, задаём новый класс для «пузыря» бота */
+.bubble {
    padding: 22px;
    border-radius: 16px 16px 16px 0px;
    background: #ebf0f5;
+   position: relative;
+   max-width: 100%;
 }
+
+/* Размер иконки бота слева */
+.bot-avatar {
+   width: 32px;
+   border-radius: 50%;
+   object-fit: cover;
+   align-self: flex-end;
+}
+
+/* Остальные стили остаются без изменений… */
 
 .file-download-container {
    display: flex;
-   flex-direction: column; /* Изменяем на колонку для вертикального списка файлов */
-   gap: 8px; /* Добавляем отступ между файлами */
-   margin-top: 8px; /* Увеличиваем отступ сверху */
+   flex-direction: column;
+   gap: 8px;
+   margin-top: 8px;
 }
 
 .file-download-link {
@@ -77,24 +95,9 @@
    font-size: 14px;
 }
 
-.bot-response {
-   padding-top: 30px;
-   flex-direction: column;
-}
-
-.message-link {
-   color: #007bff;
-   text-decoration: underline;
-   cursor: pointer;
-}
-.message-link:hover {
-   color: #0056b3;
-}
+/* Кнопки копирования и фидбека остаются без изменений */
 
 .copy-button {
-   /*position: absolute;
-   top: 4px;
-   right: 4px;*/
    background: transparent;
    display: flex;
    color: #0068bf;
@@ -112,7 +115,7 @@
 
 .buttons__wrapper {
    display: flex;
-   align-items: end;
+   align-items: flex-end;
    gap: 6px;
 }
 
@@ -137,7 +140,13 @@
 
 .copy-button,
 .feedback-button {
-   touch-action: manipulation; /* ускоряет распознавание тапа на мобильных */
+   touch-action: manipulation;
+}
+
+.ai {
+   padding: 22px;
+   border-radius: 16px 16px 16px 0px;
+   background: #ebf0f5;
 }
 
 @keyframes fadeIn {
@@ -157,7 +166,7 @@
 
 @media (max-width: 700px) {
    .user,
-   .ai {
+   .bubble {
       padding: 16px;
       margin-bottom: 16px;
       font-size: 16px;
