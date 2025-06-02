@@ -12,6 +12,7 @@ export default function BadFeedbackRegistrationMessage({ currentChatId }) {
    const { addBotMessage } = useContext(ChatContext);
    const { t } = useTranslation(undefined, { i18n: chatI18n });
    const [isModalOpen, setIsModalOpen] = useState(false);
+   const showAvatar = import.meta.env.VITE_SHOW_AVATAR === "true";
 
    const openModal = () => {
       setIsModalOpen(true);
@@ -28,7 +29,7 @@ export default function BadFeedbackRegistrationMessage({ currentChatId }) {
    return (
       <div className="message mb-8 flex font-light self-start">
          {/* 1) Аватарка бота слева (за пределами «пузыря») */}
-         <img src={personImage} alt="Bot" className="bot-avatar" />
+         {showAvatar && <img src={personImage} alt="" className="bot-avatar" />}
 
          {/* 2) «Пузырь» с текстом и кнопкой (используем прежний класс .ai) */}
          <div className="bubble ai bg-white text-left">

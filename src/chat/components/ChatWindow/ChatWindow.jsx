@@ -21,6 +21,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
    const { createMessage } = useContext(ChatContext);
    const currentLang = i18n.language;
    const showSpecialButton = import.meta.env.VITE_SHOW_SPECIAL_BUTTON === "true";
+   const showAvatar = import.meta.env.VITE_SHOW_AVATAR === "true";
 
    const handleLanguageChange = (lang) => {
       updateLocale(lang);
@@ -106,7 +107,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
             </div>
 
             <div className="person__wrapper">
-               <img src={personImage} alt="" className="person" />
+               {showAvatar && <img src={personImage} alt="" className="person" />}
 
                <div className="chat-window-start__content">{t("chat.greeting")}</div>
             </div>

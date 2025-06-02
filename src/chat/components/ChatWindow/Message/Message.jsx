@@ -40,6 +40,7 @@ export default function Message({
    const { downloadForm, chats, currentChatId } = useContext(ChatContext);
    const [fileBlobMap, setFileBlobMap] = useState({});
    const [downloadingId, setDownloadingId] = useState(null);
+   const showAvatar = import.meta.env.VITE_SHOW_AVATAR === "true";
 
    const allFilePaths = React.useMemo(() => {
       if (filePaths && Array.isArray(filePaths)) {
@@ -179,7 +180,7 @@ export default function Message({
          onClick={isButton ? onClick : undefined}
       >
          {/* Аватарка бота слева (только для бот-сообщений) */}
-         {!isUser && <img src={personImage} alt="Bot" className="bot-avatar" />}
+         {!isUser && showAvatar && <img src={personImage} alt="Bot" className="bot-avatar" />}
 
          {/* «Пузырь» с содержимым */}
          <div className={`${isUser ? "" : "bubble"} flex flex-col`}>
