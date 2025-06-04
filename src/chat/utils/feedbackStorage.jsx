@@ -6,7 +6,11 @@ const BAD_FEEDBACK_PROMPT_KEY = "chat_bad_feedback_prompt";
 const FILE_PATHS_KEY = "chat_file_paths";
 const DELETED_CHATS_KEY = "deleted_chats";
 
-// Базовые функции для работы с localStorage
+/**
+ * Получить весь объект с состоянием фидбека (лайк/дизлайк) из localStorage.
+ * Если данных нет или JSON некорректен — возвращает пустой объект.
+ * Структура: { [chatId]: { [messageIndex]: "good"|"bad", … }, … }
+ */
 export const getFeedbackState = () => {
    try {
       return JSON.parse(localStorage.getItem(FEEDBACK_STORAGE_KEY)) || {};
@@ -15,23 +19,66 @@ export const getFeedbackState = () => {
    }
 };
 
-export const saveFeedbackState = (chatId, messageIndex) => {
+/**
+ * Сохранить тип фидбека для конкретного сообщения в конкретном чате.
+ * @param {string} chatId - ID чата
+ * @param {number} messageIndex - Индекс сообщения
+ * @param {"good"|"bad"} type - Тип фидбека
+ */
+export const saveFeedbackState = (chatId, messageIndex, type) => {
    const currentState = getFeedbackState();
+
    if (!currentState[chatId]) {
-      currentState[chatId] = [];
+      currentState[chatId] = {};
    }
-   if (!currentState[chatId].includes(messageIndex)) {
-      currentState[chatId].push(messageIndex);
-   }
+   currentState[chatId][messageIndex] = type;
    localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(currentState));
 };
 
+/**
+ * Проверить, есть ли фидбек для конкретного сообщения в данном чате.
+ * Возвращает true, если в объекте хранится "good" или "bad".
+ * @param {string} chatId - ID чата
+ * @param {number} messageIndex - Индекс сообщения
+ * @returns {boolean}
+ */
 export const hasFeedback = (chatId, messageIndex) => {
    const state = getFeedbackState();
-   return state[chatId]?.includes(messageIndex) || false;
+   return !!state[chatId] && state[chatId][messageIndex] !== undefined;
 };
 
-// Функции для работы с BadFeedbackPrompt
+/**
+ * Получить тип фидбека ("good" или "bad") для конкретного сообщения в чате.
+ * Если фидбека нет — возвращает null.
+ * @param {string} chatId - ID чата
+ * @param {number} messageIndex - Индекс сообщения
+ * @returns {"good"|"bad"|null}
+ */
+export const getFeedbackType = (chatId, messageIndex) => {
+   const state = getFeedbackState();
+   if (!state[chatId]) return null;
+   return state[chatId][messageIndex] || null;
+};
+
+/**
+ * Удалить фидбек для конкретного сообщения в чате (если нужно).
+ * @param {string} chatId - ID чата
+ * @param {number} messageIndex - Индекс сообщения
+ */
+export const clearFeedbackForMessage = (chatId, messageIndex) => {
+   const state = getFeedbackState();
+   if (state[chatId] && state[chatId][messageIndex] !== undefined) {
+      delete state[chatId][messageIndex];
+      localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(state));
+   }
+};
+
+// ==================== Функции для работы с BadFeedbackPrompt ====================
+
+/**
+ * Получить объект состояния подсказок для «плохого» фидбека (one-time prompt).
+ * Возвращает { [chatId]: true }.
+ */
 export const getBadFeedbackPromptState = () => {
    try {
       return JSON.parse(localStorage.getItem(BAD_FEEDBACK_PROMPT_KEY)) || {};
@@ -40,18 +87,28 @@ export const getBadFeedbackPromptState = () => {
    }
 };
 
+/**
+ * Сохранить, что для данного чата уже показали prompt «плохого» фидбека.
+ * @param {string} chatId - ID чата
+ */
 export const saveBadFeedbackPromptState = (chatId) => {
    const currentState = getBadFeedbackPromptState();
    currentState[chatId] = true;
    localStorage.setItem(BAD_FEEDBACK_PROMPT_KEY, JSON.stringify(currentState));
 };
 
+/**
+ * Проверить, показан ли уже prompt «плохого» фидбека для данного чата.
+ * @param {string} chatId - ID чата
+ * @returns {boolean}
+ */
 export const hasBadFeedbackPrompt = (chatId) => {
    const state = getBadFeedbackPromptState();
    return !!state[chatId];
 };
 
-// Функции для работы с filePaths
+// ==================== Функции для работы с filePaths (оставляем без изменений) ====================
+
 export const getFilePathsState = () => {
    try {
       return JSON.parse(localStorage.getItem(FILE_PATHS_KEY)) || {};
@@ -60,78 +117,40 @@ export const getFilePathsState = () => {
    }
 };
 
-/**
- * Сохраняет пути к файлам для сообщения
- * @param {string} chatId - ID чата
- * @param {number} messageIndex - Индекс сообщения
- * @param {string|string[]} filePath - Путь к файлу или массив путей
- */
 export const saveFilePath = (chatId, messageIndex, filePath) => {
    const currentState = getFilePathsState();
    if (!currentState[chatId]) {
       currentState[chatId] = {};
    }
-
-   // Преобразуем в массив, если передана строка
    const pathsArray = Array.isArray(filePath) ? filePath : [filePath];
-
-   // Сохраняем массив путей
    currentState[chatId][messageIndex] = pathsArray;
-
    localStorage.setItem(FILE_PATHS_KEY, JSON.stringify(currentState));
 };
 
-/**
- * Получает все пути к файлам для чата
- * @param {string} chatId - ID чата
- * @returns {Object} - Объект с путями к файлам по индексам сообщений
- */
 export const getFilePaths = (chatId) => {
    const state = getFilePathsState();
    return state[chatId] || {};
 };
 
-/**
- * Сохраняет пути к файлам по индексу бота
- * @param {string} chatId - ID чата
- * @param {number} botIndex - Индекс сообщения бота
- * @param {string|string[]} filePath - Путь к файлу или массив путей
- */
 export const saveFilePathByBotIndex = (chatId, botIndex, filePath) => {
    try {
       const filePaths = getFilePathsState();
-
       if (!filePaths[chatId]) {
          filePaths[chatId] = {};
       }
-
-      // Преобразуем в массив, если передана строка
       const pathsArray = Array.isArray(filePath) ? filePath : [filePath];
-
-      // Сохраняем массив путей по индексу бота
       filePaths[chatId][`bot_${botIndex}`] = pathsArray;
-
       localStorage.setItem(FILE_PATHS_KEY, JSON.stringify(filePaths));
    } catch (error) {
       console.error("Error saving file paths:", error);
    }
 };
 
-/**
- * Получает пути к файлам по индексу бота
- * @param {string} chatId - ID чата
- * @param {number} botIndex - Индекс сообщения бота
- * @returns {string[]} - Массив путей к файлам
- */
 export const getFilePathByBotIndex = (chatId, botIndex) => {
    try {
       const filePaths = getFilePathsState();
       const paths = filePaths[chatId]?.[`bot_${botIndex}`];
-
-      // Если путей нет, возвращаем пустой массив
       if (!paths) return [];
-
-      // Если путь - строка, преобразуем в массив
       return Array.isArray(paths) ? paths : [paths];
    } catch (error) {
       console.error("Error getting file paths:", error);
@@ -139,73 +158,43 @@ export const getFilePathByBotIndex = (chatId, botIndex) => {
    }
 };
 
-/**
- * Добавляет путь к файлу в существующий массив путей
- * @param {string} chatId - ID чата
- * @param {number} messageIndex - Индекс сообщения
- * @param {string} filePath - Путь к файлу
- */
 export const addFilePath = (chatId, messageIndex, filePath) => {
    const currentState = getFilePathsState();
    if (!currentState[chatId]) {
       currentState[chatId] = {};
    }
-
-   // Если для этого индекса уже есть пути, добавляем новый
    if (!currentState[chatId][messageIndex]) {
       currentState[chatId][messageIndex] = [];
    } else if (!Array.isArray(currentState[chatId][messageIndex])) {
-      // Если текущее значение - строка, преобразуем в массив
       currentState[chatId][messageIndex] = [currentState[chatId][messageIndex]];
    }
-
-   // Добавляем новый путь, если его еще нет
    if (!currentState[chatId][messageIndex].includes(filePath)) {
       currentState[chatId][messageIndex].push(filePath);
    }
-
    localStorage.setItem(FILE_PATHS_KEY, JSON.stringify(currentState));
 };
 
-/**
- * Добавляет путь к файлу в существующий массив путей по индексу бота
- * @param {string} chatId - ID чата
- * @param {number} botIndex - Индекс сообщения бота
- * @param {string} filePath - Путь к файлу
- */
 export const addFilePathByBotIndex = (chatId, botIndex, filePath) => {
    try {
       const filePaths = getFilePathsState();
-
       if (!filePaths[chatId]) {
          filePaths[chatId] = {};
       }
-
       const botKey = `bot_${botIndex}`;
-
-      // Если для этого индекса уже есть пути, добавляем новый
       if (!filePaths[chatId][botKey]) {
          filePaths[chatId][botKey] = [];
       } else if (!Array.isArray(filePaths[chatId][botKey])) {
-         // Если текущее значение - строка, преобразуем в массив
          filePaths[chatId][botKey] = [filePaths[chatId][botKey]];
       }
-
-      // Добавляем новый путь, если его еще нет
       if (!filePaths[chatId][botKey].includes(filePath)) {
          filePaths[chatId][botKey].push(filePath);
       }
-
       localStorage.setItem(FILE_PATHS_KEY, JSON.stringify(filePaths));
    } catch (error) {
       console.error("Error adding file path:", error);
    }
 };
 
-/**
- * Очищает все пути к файлам для чата
- * @param {string} chatId - ID чата
- */
 export const clearFilePaths = (chatId) => {
    const currentState = getFilePathsState();
    if (currentState[chatId]) {
@@ -213,6 +202,8 @@ export const clearFilePaths = (chatId) => {
       localStorage.setItem(FILE_PATHS_KEY, JSON.stringify(currentState));
    }
 };
+
+// ==================== Функции для пометки удалённых чатов (оставляем без изменений) ====================
 
 export function getDeletedChats() {
    try {
@@ -223,9 +214,6 @@ export function getDeletedChats() {
    }
 }
 
-/**
- * Помечаем чат как удалённый, добавляя его ID в localStorage
- */
 export function markChatAsDeleted(chatId) {
    const deletedChats = getDeletedChats();
    if (!deletedChats.includes(chatId)) {
@@ -234,9 +222,6 @@ export function markChatAsDeleted(chatId) {
    }
 }
 
-/**
- * Проверяем, удалён ли чат
- */
 export function isChatDeleted(chatId) {
    return getDeletedChats().includes(chatId);
 }

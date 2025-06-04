@@ -973,8 +973,7 @@ const ChatProvider = ({ children }) => {
          });
 
          // Сохраняем информацию об отправленном фидбеке
-         saveFeedbackState(currentChat.id, messageIndex);
-
+         saveFeedbackState(currentChat.id, messageIndex, rate);
          // Удаляем сообщение с фидбеком из чата
          setTimeout(() => {
             removeFeedbackMessage(messageIndex);
