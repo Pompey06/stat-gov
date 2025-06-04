@@ -1,9 +1,7 @@
-// src/components/FeedbackMessage/FeedbackMessage.jsx
-
 import React, { useState, useContext, useCallback, useEffect } from "react";
 import { ChatContext } from "../../../context/ChatContext";
 import FeedbackModal from "../Modal/FeedbackModal";
-import "./FeedbackMessage.css";
+import "./Feedbackmessage.css";
 
 import badIcon from "../../../assets/bad.svg";
 import goodIcon from "../../../assets/good.svg";

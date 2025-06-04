@@ -86,7 +86,6 @@ const ChatProvider = ({ children }) => {
             }
          }
 
-         console.log("autoDeleteInactiveChats: newChats =", newChats);
          return newChats;
       });
    }
