@@ -40,6 +40,10 @@ export default function Message({
    const { downloadForm, chats, currentChatId } = useContext(ChatContext);
    const [fileBlobMap, setFileBlobMap] = useState({});
    const [downloadingId, setDownloadingId] = useState(null);
+
+   // 1) Добавили состояние для управления «скрытием» тултипа кнопки «Копировать»
+   const [hideCopyTooltip, setHideCopyTooltip] = useState(true);
+
    const showAvatar = import.meta.env.VITE_SHOW_AVATAR === "true";
 
    const allFilePaths = React.useMemo(() => {
@@ -115,6 +119,9 @@ export default function Message({
    const [copied, setCopied] = useState(false);
    const handleCopy = (e) => {
       e.stopPropagation();
+      // 2) Сразу «скрываем» тултип при клике
+      setHideCopyTooltip(true);
+
       if (navigator.clipboard && navigator.clipboard.writeText) {
          navigator.clipboard
             .writeText(text)
@@ -282,7 +289,7 @@ export default function Message({
                </div>
             )}
 
-            {/* Блок с кнопками «копировать / отправить feedback» внутри «bubble» */}
+            {/* ========== Кнопка «Копировать» ========== */}
             {!isUser &&
                !isGreeting &&
                !isCustomMessage &&
@@ -292,17 +299,32 @@ export default function Message({
                   <div className="buttons__wrapper fade-in">
                      <button
                         type="button"
-                        className="copy-button flex items-center gap-1 text-sm text-gray-500 hover:bg-gray-200 transition-colors"
-                        onClick={handleCopy}
-                        onTouchEnd={handleCopy}
-                        title={t("copyButton.copy")}
-                        style={{ touchAction: "manipulation" }}
+                        className={`copy-button flex items-center gap-1 text-sm text-gray-500 transition-colors ${
+                           hideCopyTooltip ? "tooltip-hide" : ""
+                        }`}
+                        style={{ touchAction: "manipulation", position: "relative" }}
+                        aria-label={t("copyButton.copy")}
+                        /* 1) при наведении убираем класс tooltip-hide → CSS-hover показывает тултип */
+                        onMouseEnter={() => setHideCopyTooltip(false)}
+                        /* 2) при уходе курсора возвращаем tooltip-hide → CSS скроет тултип */
+                        onMouseLeave={() => setHideCopyTooltip(true)}
+                        /* 3) при клике: сразу ставим tooltip-hide, а потом копируем текст */
+                        onClick={(e) => {
+                           handleCopy(e);
+                           setHideCopyTooltip(true);
+                        }}
+                        onTouchEnd={(e) => {
+                           handleCopy(e);
+                           setHideCopyTooltip(true);
+                        }}
                      >
                         {copied ? (
                            <img src={checkIcon} alt="Check" className="icon-check" />
                         ) : (
                            <img src={copyIcon} alt="Copy" className="icon-xs" />
                         )}
+                        {/* Тултип ВСЕГДА есть в DOM, но CSS контролирует видимость */}
+                        <span className="tooltip">{t("copyButton.copy")}</span>
                      </button>
                      <FeedbackMessage messageIndex={botMessageIndex} />
                   </div>

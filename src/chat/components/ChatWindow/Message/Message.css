@@ -102,28 +102,30 @@
    display: flex;
    color: #0068bf;
    align-items: flex-end;
-   padding-top: 4px;
+   padding: 4px;
    gap: 4px;
    border: none;
    cursor: pointer;
-   transition: background-color 0.2s;
+   transition: background-color 0.3s;
+   border-radius: 5px;
 }
 
 .copy-button:hover {
-   background-color: #f0f0f0;
+   background-color: #cce4ff;
 }
 
 .buttons__wrapper {
    display: flex;
    align-items: flex-end;
-   gap: 6px;
+   gap: 4px;
+   padding-top: 10px;
 }
 
 .icon-xs,
 .icon-check {
-   width: 24px;
-   height: 24px;
-   margin-top: 8px;
+   width: 18px;
+   height: 18px;
+   margin-bottom: -1px;
 }
 
 .chat-window-start__content {
@@ -156,6 +158,57 @@
    to {
       opacity: 1;
    }
+}
+
+/* ---------- ваш существующий код ---------- */
+.tooltip {
+   position: absolute;
+   top: 100%;
+   left: 50%;
+   transform: translateX(-50%);
+   margin-top: 6px;
+
+   background-color: #ffffff;
+   border: 1px solid #d1e5ff;
+   border-radius: 6px;
+   box-shadow: 0 2px 8px rgba(0, 104, 191, 0.12);
+
+   color: #0068bf;
+   font-size: 12px;
+   line-height: 1.2;
+   white-space: nowrap;
+   padding: 4px 8px;
+   z-index: 10;
+
+   opacity: 0;
+   pointer-events: none;
+   transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
+}
+
+.copy-button:hover .tooltip,
+.copy-button:focus .tooltip,
+.feedback-button:hover .tooltip,
+.feedback-button:focus .tooltip {
+   opacity: 1;
+   transform: translateX(-50%) translateY(2px);
+}
+
+.copy-button .tooltip,
+.feedback-button .tooltip {
+   top: 105%;
+}
+
+/* ---------- НОВОЕ правило «силового» скрытия тултипа ---------- */
+.copy-button.tooltip-hide .tooltip,
+.feedback-button.tooltip-hide .tooltip {
+   opacity: 0 !important;
+   transform: translateX(-50%); /* убираем «выдвижение» при скрытии */
+   pointer-events: none;
+}
+
+/* ---------- ДОБАВЛЕНО ДЛЯ ВИЗУАЛЬНОГО «disabled» состояния ---------- */
+.feedback-button--disabled {
+   cursor: default;
 }
 
 @media (max-width: 930px) {
