@@ -11,6 +11,15 @@
    gap: 8px; /* расстояние между аватаром и текстом */
 }
 
+.message-link {
+   color: #007bff;
+   text-decoration: underline;
+   cursor: pointer;
+}
+.message-link:hover {
+   color: #0056b3;
+}
+
 .user {
    /* Сообщения пользователя могут оставаться без изменений */
    padding: 15px 22px;

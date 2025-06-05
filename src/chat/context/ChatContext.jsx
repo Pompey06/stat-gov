@@ -559,7 +559,6 @@ const ChatProvider = ({ children }) => {
       }
    };
 
-   // Пример изменённой функции createMessage в ChatContext:
    async function createMessage(text, isFeedback = false, additionalParams = {}) {
       if (!text) return;
 
@@ -756,6 +755,340 @@ const ChatProvider = ({ children }) => {
          setIsTyping(false);
       }
    }
+
+   //async function createMessage(text, isFeedback = false, additionalParams = {}) {
+   //   if (!text) return;
+
+   //   // Находим текущий чат
+   //   const currentChat = chats.find(
+   //      (c) => String(c.id) === String(currentChatId) || (c.id === null && c === chats[0])
+   //   );
+
+   //   const { category: apCategory, subcategory: apSubcategory, subcategory_report: apSubReport } = additionalParams;
+
+   //   const params = {
+   //      prompt: text,
+   //      locale,
+   //      category: apCategory ?? currentCategory?.name ?? null,
+   //      subcategory: apSubcategory ?? currentSubcategory?.name ?? null,
+   //      subcategory_report: apSubReport ?? null,
+   //   };
+
+   //   if (currentChat && currentChat.id) {
+   //      params.conversation_id = currentChat.id;
+   //   }
+
+   //   setIsTyping(true);
+
+   //   // Шаг 1. Добавляем сообщение пользователя
+   //   setChats((prevChats) =>
+   //      prevChats.map((chat) => {
+   //         if (String(chat.id) === String(currentChatId) || (chat.id === null && chat === prevChats[0])) {
+   //            return {
+   //               ...chat,
+   //               isEmpty: false,
+   //               lastUpdated: new Date().toISOString(),
+   //               messages: [...chat.messages.filter((msg) => !msg.isButton), { text, isUser: true, isFeedback }],
+   //            };
+   //         }
+   //         return chat;
+   //      })
+   //   );
+
+   //   // Шаг 2. Добавляем временное сообщение-ответ от ассистента с пустым текстом
+   //   const tempAssistantMessage = {
+   //      text: "",
+   //      isUser: false,
+   //      isFeedback: false,
+   //      filePaths: [],
+   //      hasLineBreaks: false,
+   //      isAssistantResponse: true,
+   //      streaming: true,
+   //   };
+
+   //   setChats((prevChats) =>
+   //      prevChats.map((chat) => {
+   //         if (String(chat.id) === String(currentChatId) || (chat.id === null && chat === prevChats[0])) {
+   //            return {
+   //               ...chat,
+   //               messages: [...chat.messages, tempAssistantMessage],
+   //            };
+   //         }
+   //         return chat;
+   //      })
+   //   );
+
+   //   // Функция для обновления последнего сообщения (используется и в реальном, и в мок-режиме)
+   //   const updateLastMessage = (newText, streamingFlag = true) => {
+   //      const formattedText = newText.replace(/\\n/g, "\n");
+   //      setChats((prevChats) =>
+   //         prevChats.map((chat) => {
+   //            const idx = chat.messages.findIndex((msg) => msg.streaming);
+   //            if (idx === -1) return chat;
+   //            const streamingMsg = chat.messages[idx];
+   //            const updatedMsg = {
+   //               ...streamingMsg,
+   //               text: formattedText + (streamingFlag ? " |" : ""),
+   //               streaming: streamingFlag,
+   //            };
+   //            const updatedMessages = [...chat.messages];
+   //            updatedMessages[idx] = updatedMsg;
+   //            return { ...chat, messages: updatedMessages };
+   //         })
+   //      );
+   //   };
+
+   //   // --------------------------------------------------------------------------
+   //   // МОК-ЛОГИКА: Временно отключаем реальный запрос к assistant/ask
+   //   // --------------------------------------------------------------------------
+   //   const USE_MOCK_STREAM = true;
+   //   if (USE_MOCK_STREAM) {
+   //      // Заготовленные чанки, эмулирующие ответ сервера
+   //      const mockChunks = [
+   //         {
+   //            raw: '2:{"type": "conversation", "conversation": {"id": "6841dfc759772f7670c35171", "title": "с каким сайтом ты мо...", "created_at": "2025-06-05T18:19:51.590000Z"}}',
+   //         },
+   //         { raw: '2:{"type": "status", "status": "ok"}' },
+   //         { raw: '0:"Я"' },
+   //         { raw: '0:" могу"' },
+   //         { raw: '0:" помочь"' },
+   //         { raw: '0:" разобраться"' },
+   //         { raw: '0:" с"' },
+   //         { raw: '0:" сай"' },
+   //         { raw: '0:"том"' },
+   //         { raw: '0:" «"' },
+   //         { raw: '0:"s"' },
+   //         { raw: '0:"ana"' },
+   //         { raw: '0:"q"' },
+   //         { raw: '0:".gov"' },
+   //         { raw: '0:".kz"' },
+   //         { raw: '0:"», "' },
+   //         { raw: '0:" на"' },
+   //         { raw: '0:" котором"' },
+   //         { raw: '0:" вы"' },
+   //         { raw: '0:" найдете"' },
+   //         { raw: '0:" информацию"' },
+   //         { raw: '0:" о"' },
+   //         { raw: '0:" переп"' },
+   //         { raw: '0:"и"' },
+   //         { raw: '0:"ся"' },
+   //         { raw: '0:"х"' },
+   //         { raw: '0:" и"' },
+   //         { raw: '0:" статист"' },
+   //         { raw: '0:"ических"' },
+   //         { raw: '0:" данных"' },
+   //         { raw: '0:"."' },
+   //         { raw: '0:" На"' },
+   //         { raw: '0:" глав"' },
+   //         { raw: '0:"ной"' },
+   //         { raw: '0:" странице"' },
+   //         { raw: '0:" есть"' },
+   //         { raw: '0:" раздел"' },
+   //         { raw: '0:"ы",' },
+   //         { raw: '0:" такие"' },
+   //         { raw: '0:" как"' },
+   //         { raw: '0:" "Ин"' },
+   //         { raw: '0:"струкция"' },
+   //         { raw: '0:" по"' },
+   //         { raw: '0:" заполн"' },
+   //         { raw: '0:"ению"' },
+   //         { raw: '0:" оп"' },
+   //         { raw: '0:"рос"' },
+   //         { raw: '0:"ников"",' },
+   //         { raw: '0:" "Видео"' },
+   //         { raw: '0:"ин"' },
+   //         { raw: '0:"струк"' },
+   //         { raw: '0:"ции"",' },
+   //         { raw: '0:" а"' },
+   //         { raw: '0:" также"' },
+   //         { raw: '0:" информация"' },
+   //         { raw: '0:" о"' },
+   //         { raw: '0:" ходе"' },
+   //         { raw: '0:" переписей"' },
+   //         { raw: '0:"."' },
+   //         { raw: '0:" Если"' },
+   //         { raw: '0:" вам"' },
+   //         { raw: '0:" нужны"' },
+   //         { raw: '0:" конкрет"' },
+   //         { raw: '0:"ные"' },
+   //         { raw: '0:" страницы",' },
+   //         { raw: '0:" д"' },
+   //         { raw: '0:"айте"' },
+   //         { raw: '0:" знать",' },
+   //         { raw: '0:" что"' },
+   //         { raw: '0:" именно"' },
+   //         { raw: '0:" вас"' },
+   //         { raw: '0:" интерес"' },
+   //         { raw: '0:"ует!"' },
+   //         {
+   //            raw: '2:{"type": "final_text", "final_text": "Я могу помочь разобраться с сайтом «[sanaq.gov.kz](https://sanaq.gov.kz)», на котором вы найдете информацию о переписях и статистических данных. На главной странице есть разделы, такие как \\"Инструкция по заполнению опросников\\", \\"Видеоинструкции\\", а также информация о ходе переписей. Если вам нужны конкретные страницы, дайте знать, что именно вас интересует!"}',
+   //         },
+   //         { raw: '2:{"type": "relevant_documents", "documents": []}' },
+   //         { raw: 'd:{"finishReason": "stop"}' },
+   //      ];
+
+   //      // Функция для разбора чанка
+   //      const processChunk = (chunkStr) => {
+   //         const trimmed = chunkStr.trim();
+
+   //         if (trimmed.startsWith("0:")) {
+   //            const fragment = trimmed.slice(2).replace(/^"|"$/g, "");
+   //            return { transport: "text", data: fragment };
+   //         }
+   //         if (trimmed.startsWith("2:")) {
+   //            try {
+   //               const jsonObj = JSON.parse(trimmed.slice(2));
+   //               return { transport: "json", data: jsonObj };
+   //            } catch {
+   //               return null;
+   //            }
+   //         }
+   //         if (trimmed.startsWith("d:")) {
+   //            try {
+   //               const jsonObj = JSON.parse(trimmed.slice(2));
+   //               return { transport: "done", data: jsonObj };
+   //            } catch {
+   //               return null;
+   //            }
+   //         }
+   //         return null;
+   //      };
+
+   //      // Эмуляция «стриминга» с задержкой
+   //      let accumulatedText = "";
+   //      mockChunks.forEach((chunkObj, idx) => {
+   //         setTimeout(() => {
+   //            const result = processChunk(chunkObj.raw);
+   //            if (!result) return;
+
+   //            if (result.transport === "json" && result.data.type === "conversation") {
+   //               const { id: convId, title: convTitle } = result.data.conversation;
+   //               setCurrentChatId(convId);
+   //               setChats((prevChats) =>
+   //                  prevChats.map((chat) => {
+   //                     const hasStreaming = chat.messages.some((msg) => msg.streaming);
+   //                     if (hasStreaming) {
+   //                        return { ...chat, id: convId, title: convTitle };
+   //                     }
+   //                     return chat;
+   //                  })
+   //               );
+   //            } else if (result.transport === "json" && result.data.type === "status") {
+   //               console.log("Status:", result.data.status);
+   //            } else if (result.transport === "text") {
+   //               accumulatedText += result.data;
+   //               updateLastMessage(accumulatedText, true);
+   //            } else if (result.transport === "json" && result.data.type === "final_text") {
+   //               const final = result.data.final_text;
+   //               accumulatedText = final;
+   //               updateLastMessage(final, false);
+   //            } else if (result.transport === "json" && result.data.type === "relevant_documents") {
+   //               // Здесь можно обработать документы, если потребуется
+   //            } else if (result.transport === "done") {
+   //               console.log("Stream finished:", result.data.finishReason);
+   //               setIsTyping(false);
+   //            }
+   //         }, idx * 200);
+   //      });
+
+   //      return;
+   //   }
+   //   // --------------------------------------------------------------------------
+   //   // Конец мок-логики. Ниже — оригинальный код с fetch, который временно закомментирован.
+   //   // --------------------------------------------------------------------------
+   //   /*
+   //   try {
+   //     const searchParams = new URLSearchParams();
+   //     Object.entries(params).forEach(([key, value]) => {
+   //       if (value !== null && value !== undefined) {
+   //         searchParams.append(key, value);
+   //       }
+   //     });
+   //     const url = `${import.meta.env.VITE_API_URL}/assistant/ask?${searchParams.toString()}`;
+   //     const response = await fetch(url, {
+   //       method: "POST",
+   //       credentials: "include",
+   //     });
+
+   //     if (!response.ok) {
+   //       throw new Error("Network response was not ok");
+   //     }
+
+   //     const reader = response.body.getReader();
+   //     const decoder = new TextDecoder();
+   //     let done = false;
+   //     let accumulatedText = "";
+
+   //     while (!done) {
+   //       const { value, done: doneReading } = await reader.read();
+   //       done = doneReading;
+   //       const chunk = decoder.decode(value, { stream: !done });
+   //       const lines = chunk.split("\n");
+   //       for (const line of lines) {
+   //         const trimmed = line.trim();
+   //         if (!trimmed) continue;
+
+   //         if (trimmed.startsWith("0:")) {
+   //           const textFragment = trimmed.slice(2).replace(/^"|"$/g, "");
+   //           accumulatedText += textFragment;
+   //           updateLastMessage(accumulatedText, true);
+   //           await new Promise((resolve) => setTimeout(resolve, 50));
+   //         } else if (trimmed.startsWith("2:")) {
+   //           try {
+   //             const jsonObj = JSON.parse(trimmed.slice(2));
+   //             if (jsonObj.type === "conversation") {
+   //               const { id: convId, title: convTitle } = jsonObj.conversation;
+   //               setCurrentChatId(convId);
+   //               setChats((prevChats) => {
+   //                 const idx = prevChats.findIndex((chat) => chat.messages.some((msg) => msg.streaming));
+   //                 if (idx === -1) return prevChats;
+   //                 const updated = { ...prevChats[idx], id: convId, title: convTitle };
+   //                 return [...prevChats.slice(0, idx), updated, ...prevChats.slice(idx + 1)];
+   //               });
+   //             } else if (jsonObj.type === "relevant_documents") {
+   //               setChats((prevChats) =>
+   //                 prevChats.map((chat) => {
+   //                   const idx = chat.messages.findIndex((msg) => msg.streaming);
+   //                   if (idx === -1) return chat;
+   //                   const updated = [...chat.messages];
+   //                   updated[idx] = { ...updated[idx], filePaths: jsonObj.documents || [] };
+   //                   return { ...chat, messages: updated };
+   //                 })
+   //               );
+   //             } else if (jsonObj.type === "final_text") {
+   //               const final = jsonObj.final_text;
+   //               updateLastMessage(final, true);
+   //             } else if (jsonObj.type === "status") {
+   //               console.log("Status chunk:", jsonObj.status);
+   //             }
+   //           } catch (error) {
+   //             console.error("Ошибка парсинга JSON 2-чанка:", error);
+   //           }
+   //         } else if (trimmed.startsWith("d:")) {
+   //           updateLastMessage(accumulatedText, false);
+   //         }
+   //       }
+   //     }
+   //   } catch (error) {
+   //     console.error("Ошибка стриминга:", error);
+   //     const errorMessage = {
+   //       text: t("chatError.errorMessage"),
+   //       isUser: false,
+   //       isFeedback,
+   //     };
+   //     setChats((prevChats) =>
+   //       prevChats.map((chat) => {
+   //         if (String(chat.id) === String(currentChatId) || (chat.id === null && chat === prevChats[0])) {
+   //           return { ...chat, messages: [...chat.messages, errorMessage] };
+   //         }
+   //         return chat;
+   //       })
+   //     );
+   //   } finally {
+   //     setIsTyping(false);
+   //   }
+   //   */
+   //}
 
    const handleButtonClick = (selectedItem) => {
       console.log("Selected item:", selectedItem);
