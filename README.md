@@ -23,8 +23,8 @@ npm run dev
 
 ```env
 VITE_API_URL=http://your-api-url/api
-VITE_SHOW_SPECIAL_BUTTON=true/false
-VITE_SHOW_AVATAR=true/false
+VITE_SHOW_SPECIAL_BUTTON=true
+VITE_SHOW_AVATAR=false
 ```
 
 **Описание переменных:**
@@ -34,3 +34,45 @@ VITE_SHOW_AVATAR=true/false
 -  `VITE_SHOW_AVATAR` — boolean переменная (`true` или `false`), отвечает за отображение аватара как на стартовом экране, так и в сообщениях чата.
 
 ---
+
+## Сборка проекта (билд)
+
+На текущем этапе проект предназначен **только для разработки**.  
+Для деплоя потребуется настроить полноценную сборку фронтенда и серверную раздачу, например, через **Nginx**.
+
+### Команда для сборки
+
+```bash
+npm run build
+```
+
+В результате будет создана папка `dist` — статические файлы готового фронта.
+
+---
+
+## Пример деплоя через Nginx
+
+После сборки (`npm run build`) можно разместить содержимое папки `dist` на сервере и раздавать его через Nginx. Пример базовой конфигурации:
+
+```nginx
+server {
+  listen 80;
+  server_name your-domain.com;
+
+  root /var/www/statgov/dist;
+  index index.html;
+
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+}
+```
+
+### Важно
+
+-  Убедитесь, что `VITE_API_URL` в `.env` указывает на **рабочий backend**, доступный с сервера.
+-  Если используется прокси (например, backend работает на другом порту), настройте проксирование через `location /api`.
+
+---
+
+Готово к разработке и будущему деплою!
