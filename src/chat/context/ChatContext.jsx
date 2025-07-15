@@ -1,19 +1,16 @@
-import { createContext, useState, useEffect, useRef } from "react";
 import axios from "axios";
-import mockCategories from "./mockCategories.json";
 import { useTranslation } from "react-i18next";
+import chatI18n from "../i18n";
 import {
-  hasFeedback,
-  saveFeedbackState,
-  hasBadFeedbackPrompt,
-  saveBadFeedbackPromptState,
-  getFilePaths,
-  saveFilePath,
   getFilePathByBotIndex,
+  getFilePaths,
+  hasBadFeedbackPrompt,
   isChatDeleted,
   markChatAsDeleted,
+  saveBadFeedbackPromptState,
+  saveFeedbackState
 } from "../utils/feedbackStorage";
-import chatI18n from "../i18n";
+import mockCategories from "./mockCategories.json";
 
 const ChatContext = createContext();
 
@@ -929,7 +926,9 @@ const ChatProvider = ({ children }) => {
 
           // Собираем кнопки FAQ по этой категории
           const faqButtons = (categoryData.faq || []).map((f, i) => ({
-            text: f.question,
+            text: i18n.language === "қаз" 
+              ? translationsKz[f.question] || f.question
+              : f.question,
             isUser: true,
             isFeedback: false,
             isButton: true,
@@ -1028,7 +1027,9 @@ const ChatProvider = ({ children }) => {
           if (!isCurrent) return chat;
 
           const faqButtons = categoryData.faq.map((f, i) => ({
-            text: f.question,
+            text: i18n.language === "қаз" 
+              ? translationsKz[f.question] || f.question
+              : f.question,
             isUser: true,
             isFeedback: false,
             isButton: true,
