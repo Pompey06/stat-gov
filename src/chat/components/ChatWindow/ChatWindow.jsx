@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import MessageList from "./MessageList/MessageList";
 import MessageInput from "./MessageInput/MessageInput";
 import BinModal from "../ChatWindow/Modal/BinModal";
@@ -35,13 +35,24 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
     updateLocale(lang);
   };
 
-  // src/components/ChatWindow/ChatWindow.jsx
+  // Хук для отслеживания ширины экрана ≤ 700px
+  const [isSmall, setIsSmall] = useState(
+    () => window.matchMedia("(max-width: 700px)").matches,
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 700px)");
+    const handler = (e) => setIsSmall(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
   const handleBinSubmit = async (bin, year) => {
     setBinModalOpen(false);
     setIsInBinFlow(true);
 
-    setChats((prevChats) =>
-      prevChats.map((chat) => {
+    setChats((prev) =>
+      prev.map((chat) => {
         const isCurrent =
           String(chat.id) === String(currentChatId) ||
           (chat.id === null && currentChatId === null);
@@ -49,16 +60,15 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
       }),
     );
 
-    // Спрячем все кнопки и пометим чат как «не пустой»
-    setChats((prevChats) =>
-      prevChats.map((chat) => {
+    setChats((prev) =>
+      prev.map((chat) => {
         const isCurrent =
           String(chat.id) === String(currentChatId) ||
           (chat.id === null && currentChatId === null);
         if (!isCurrent) return chat;
         return {
           ...chat,
-          isEmpty: false, // ← помечаем, что чат уже не пуст
+          isEmpty: false,
           messages: chat.messages.filter((msg) => !msg.isButton),
         };
       }),
@@ -70,8 +80,8 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
     try {
       const forms = await fetchFormsByBin(bin, year);
 
-      setChats((prevChats) =>
-        prevChats.map((chat) => {
+      setChats((prev) =>
+        prev.map((chat) => {
           const isCurrent =
             String(chat.id) === String(currentChatId) ||
             (chat.id === null && currentChatId === null);
@@ -100,59 +110,125 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
       <div className="chat-window chat-window-start flex flex-col h-full items-center justify-center">
         <Header isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
-        <div className="flex language">
-          <button
-            className={`language__button rounded ${
-              currentLang === "қаз"
-                ? "bg-blue text-white"
-                : "bg-gray color-blue"
-            }`}
-            onClick={() => handleLanguageChange("қаз")}
-          >
-            қаз
-          </button>
-          <button
-            className={`language__button rounded ${
-              currentLang === "рус"
-                ? "bg-blue text-white"
-                : "bg-gray color-blue"
-            }`}
-            onClick={() => handleLanguageChange("рус")}
-          >
-            рус
-          </button>
-        </div>
+        {isSmall ? (
+          <div className="responsive-wrapper">
+            {/* <div className="flex language">
+              <button
+                className={`language__button rounded ${
+                  currentLang === "қаз"
+                    ? "bg-blue text-white"
+                    : "bg-gray color-blue"
+                }`}
+                onClick={() => handleLanguageChange("қаз")}
+              >
+                қаз
+              </button>
+              <button
+                className={`language__button rounded ${
+                  currentLang === "рус"
+                    ? "bg-blue text-white"
+                    : "bg-gray color-blue"
+                }`}
+                onClick={() => handleLanguageChange("рус")}
+              >
+                рус
+              </button>
+            </div> */}
 
-        <div className="person__wrapper">
-          {showAvatar && <img src={personImage} alt="" className="person" />}
+            <div className="person__wrapper">
+              {showAvatar && (
+                <img src={personImage} alt="" className="person" />
+              )}
+              <div className="chat-window-start__content">
+                {t("chat.greeting")}
+              </div>
+            </div>
 
-          <div className="chat-window-start__content">{t("chat.greeting")}</div>
-        </div>
+            <MessageInput />
 
-        <MessageInput />
+            {showSpecialButton && (
+              <div className="special-button-container">
+                <button
+                  className="btn special"
+                  onClick={() => setBinModalOpen(true)}
+                >
+                  {t("binModal.specialFormsButton")}
+                </button>
+              </div>
+            )}
 
-        {showSpecialButton && (
-          <div className="special-button-container">
-            <button
-              className="btn special"
-              onClick={() => setBinModalOpen(true)}
-            >
-              {t("binModal.specialFormsButton")}
-            </button>
+            <MessageList
+              isSidebarOpen={isSidebarOpen}
+              toggleSidebar={toggleSidebar}
+            />
+
+            <BinModal
+              isOpen={isBinModalOpen}
+              onClose={() => setBinModalOpen(false)}
+              onSubmitBin={handleBinSubmit}
+              createMessage={createMessage}
+            />
           </div>
+        ) : (
+          <>
+            <div className="flex language">
+              <button
+                className={`language__button rounded ${
+                  currentLang === "қаз"
+                    ? "bg-blue text-white"
+                    : "bg-gray color-blue"
+                }`}
+                onClick={() => handleLanguageChange("қаз")}
+              >
+                қаз
+              </button>
+              <button
+                className={`language__button rounded ${
+                  currentLang === "рус"
+                    ? "bg-blue text-white"
+                    : "bg-gray color-blue"
+                }`}
+                onClick={() => handleLanguageChange("рус")}
+              >
+                рус
+              </button>
+            </div>
+
+            <div className="person__wrapper">
+              {showAvatar && (
+                <img src={personImage} alt="" className="person" />
+              )}
+              <div className="chat-window-start__content">
+                {t("chat.greeting")}
+              </div>
+            </div>
+
+            <MessageInput />
+
+            {showSpecialButton && (
+              <div className="special-button-container">
+                <button
+                  className="btn special"
+                  onClick={() => setBinModalOpen(true)}
+                >
+                  {t("binModal.specialFormsButton")}
+                </button>
+              </div>
+            )}
+
+            <MessageList
+              isSidebarOpen={isSidebarOpen}
+              toggleSidebar={toggleSidebar}
+            />
+
+            <BinModal
+              isOpen={isBinModalOpen}
+              onClose={() => setBinModalOpen(false)}
+              onSubmitBin={handleBinSubmit}
+              createMessage={createMessage}
+            />
+          </>
         )}
-
-        <MessageList
-          isSidebarOpen={isSidebarOpen}
-          toggleSidebar={toggleSidebar}
-        />
-
-        <BinModal
-          isOpen={isBinModalOpen}
-          onClose={() => setBinModalOpen(false)}
-          onSubmitBin={handleBinSubmit}
-          createMessage={createMessage}
-        />
       </div>
     );
   }
