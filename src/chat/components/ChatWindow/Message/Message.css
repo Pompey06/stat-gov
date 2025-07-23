@@ -1,244 +1,249 @@
 .message {
-   font-family: Roboto;
-   font-size: 14px;
-   font-style: normal;
-   font-weight: 400;
-   line-height: normal;
-   color: #141414;
-   max-width: 672px;
-   display: flex; /* родитель flex-контейнер */
-   align-items: flex-start; /* выравниваем аватар и «пузырь» по верху */
-   gap: 8px; /* расстояние между аватаром и текстом */
+  font-family: Roboto;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  color: #141414;
+  max-width: 672px;
+  display: flex; /* родитель flex-контейнер */
+  align-items: flex-start; /* выравниваем аватар и «пузырь» по верху */
+  gap: 8px; /* расстояние между аватаром и текстом */
 }
 
 .message-link {
-   color: #007bff;
-   text-decoration: underline;
-   cursor: pointer;
+  color: #007bff;
+  text-decoration: underline;
+  cursor: pointer;
 }
 .message-link:hover {
-   color: #0056b3;
+  color: #0056b3;
 }
 
 .user {
-   /* Сообщения пользователя могут оставаться без изменений */
-   padding: 15px 22px;
-   color: #fff;
-   border-radius: 16px 16px 0px 16px;
-   background: #0068bf;
-   margin-left: auto; /* выровнять вправо */
+  /* Сообщения пользователя могут оставаться без изменений */
+  padding: 15px 22px;
+  color: #fff;
+  border-radius: 16px 16px 0px 16px;
+  background: #0068bf;
+  margin-left: auto; /* выровнять вправо */
 }
 
 /* Убираем старый .ai, задаём новый класс для «пузыря» бота */
 .bubble {
-   padding: 22px;
-   border-radius: 16px 16px 16px 0px;
-   background: #ebf0f5;
-   position: relative;
-   max-width: 100%;
+  padding: 22px;
+  border-radius: 16px 16px 16px 0px;
+  background: #ebf0f5;
+  position: relative;
+  max-width: 100%;
 }
 
 /* Размер иконки бота слева */
 .bot-avatar {
-   width: 32px;
-   border-radius: 50%;
-   object-fit: cover;
-   align-self: flex-end;
+  width: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  align-self: flex-end;
 }
 
 /* Остальные стили остаются без изменений… */
 
 .file-download-container {
-   display: flex;
-   flex-direction: column;
-   gap: 8px;
-   margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .file-download-link {
-   display: flex;
-   align-items: center;
-   text-decoration: none;
-   font-size: 14px;
-   color: #007bff;
-   font-weight: bold;
-   padding: 4px 6px;
-   margin-left: 2px;
-   border: 1px solid transparent;
-   border-radius: 4px;
-   transition: background-color 0.2s ease, border-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  font-size: 14px;
+  color: #007bff;
+  font-weight: bold;
+  padding: 4px 6px;
+  margin-left: 2px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .file-typing {
-   margin-bottom: 0 !important;
+  margin-bottom: 0 !important;
 }
 
 .file-download-link:hover {
-   background-color: #e6f0ff;
-   border-color: #b3d1ff;
+  background-color: #e6f0ff;
+  border-color: #b3d1ff;
 }
 
 .loader {
-   margin-left: 8px;
-   width: 16px;
-   height: 16px;
-   border: 2px solid #e0e0e0;
-   border-top: 2px solid #0068bf;
-   border-radius: 50%;
-   animation: spin 0.8s linear infinite;
+  margin-left: 8px;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e0e0e0;
+  border-top: 2px solid #0068bf;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-   to {
-      transform: rotate(360deg);
-   }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .file-icon {
-   margin-right: 6px;
-   width: 20px;
-   height: 20px;
+  margin-right: 6px;
+  width: 20px;
+  height: 20px;
 }
 
 .file-name {
-   font-size: 14px;
+  font-size: 14px;
 }
 
 /* Кнопки копирования и фидбека остаются без изменений */
 
 .copy-button {
-   background: transparent;
-   display: flex;
-   color: #0068bf;
-   align-items: flex-end;
-   padding: 4px;
-   gap: 4px;
-   border: none;
-   cursor: pointer;
-   transition: background-color 0.3s;
-   border-radius: 5px;
+  background: transparent;
+  display: flex;
+  color: #0068bf;
+  align-items: flex-end;
+  padding: 4px;
+  gap: 4px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  border-radius: 5px;
 }
 
 .copy-button:hover {
-   background-color: #cce4ff;
+  background-color: #cce4ff;
 }
 
 .buttons__wrapper {
-   display: flex;
-   align-items: flex-end;
-   gap: 4px;
-   padding-top: 10px;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding-top: 10px;
 }
 
 .icon-xs,
 .icon-check {
-   width: 18px;
-   height: 18px;
-   margin-bottom: -1px;
+  width: 18px;
+  height: 18px;
+  margin-bottom: -1px;
 }
 
 .chat-window-start__content {
-   font-size: 28px;
-   font-weight: 500;
-   line-height: 1;
-   margin: 10px;
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1;
+  margin: 10px;
 }
 
 .fade-in {
-   opacity: 0;
-   animation: fadeIn 0.5s ease-out forwards;
+  opacity: 0;
+  animation: fadeIn 0.5s ease-out forwards;
 }
 
 .copy-button,
 .feedback-button {
-   touch-action: manipulation;
+  touch-action: manipulation;
 }
 
 .ai {
-   padding: 22px;
-   border-radius: 16px 16px 16px 0px;
-   background: #ebf0f5;
+  padding: 22px;
+  border-radius: 16px 16px 16px 0px;
+  background: #ebf0f5;
 }
 
 @keyframes fadeIn {
-   from {
-      opacity: 0;
-   }
-   to {
-      opacity: 1;
-   }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* ---------- ваш существующий код ---------- */
 .tooltip {
-   position: absolute;
-   top: 100%;
-   left: 50%;
-   transform: translateX(-50%);
-   margin-top: 6px;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 6px;
 
-   background-color: #ffffff;
-   border: 1px solid #d1e5ff;
-   border-radius: 6px;
-   box-shadow: 0 2px 8px rgba(0, 104, 191, 0.12);
+  background-color: #ffffff;
+  border: 1px solid #d1e5ff;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 104, 191, 0.12);
 
-   color: #0068bf;
-   font-size: 12px;
-   line-height: 1.2;
-   white-space: nowrap;
-   padding: 4px 8px;
-   z-index: 10;
+  color: #0068bf;
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+  padding: 4px 8px;
+  z-index: 10;
 
-   opacity: 0;
-   pointer-events: none;
-   transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
 }
 
 .copy-button:hover .tooltip,
 .copy-button:focus .tooltip,
 .feedback-button:hover .tooltip,
 .feedback-button:focus .tooltip {
-   opacity: 1;
-   transform: translateX(-50%) translateY(2px);
+  opacity: 1;
+  transform: translateX(-50%) translateY(2px);
 }
 
 .copy-button .tooltip,
 .feedback-button .tooltip {
-   top: 105%;
+  top: 105%;
 }
 
 /* ---------- НОВОЕ правило «силового» скрытия тултипа ---------- */
 .copy-button.tooltip-hide .tooltip,
 .feedback-button.tooltip-hide .tooltip {
-   opacity: 0 !important;
-   transform: translateX(-50%); /* убираем «выдвижение» при скрытии */
-   pointer-events: none;
+  opacity: 0 !important;
+  transform: translateX(-50%); /* убираем «выдвижение» при скрытии */
+  pointer-events: none;
 }
 
 /* ---------- ДОБАВЛЕНО ДЛЯ ВИЗУАЛЬНОГО «disabled» состояния ---------- */
 .feedback-button--disabled {
-   cursor: default;
+  cursor: default;
 }
 
 @media (max-width: 930px) {
-   .message {
-      max-width: 80%;
-   }
+  .message {
+    max-width: 80%;
+  }
 }
 
 @media (max-width: 700px) {
-   .user,
-   .bubble {
-      padding: 16px;
-      margin-bottom: 16px;
-      font-size: 16px;
-   }
-   .message {
-      width: 100%;
-      max-width: none;
-   }
-   .chat-window-start__content {
-      font-size: 20px;
-      text-align: center;
-   }
+  .user,
+  .bubble {
+    padding: 16px;
+    margin-bottom: 16px;
+    font-size: 16px;
+  }
+  .user .message__text {
+    text-align: right;
+    width: 100%;
+  }
+
+  .message {
+    width: 100%;
+    max-width: none;
+  }
+  .chat-window-start__content {
+    font-size: 20px;
+    text-align: center;
+  }
 }
