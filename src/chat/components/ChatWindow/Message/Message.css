@@ -144,6 +144,12 @@
   margin: 10px;
 }
 
+.chat-window-start__content--alt {
+  font-size: 20px;
+  text-align: center;
+  font-weight: 500;
+}
+
 .fade-in {
   opacity: 0;
   animation: fadeIn 0.5s ease-out forwards;
@@ -220,6 +226,12 @@
   cursor: default;
 }
 
+@media (max-width: 1500px) {
+  .chat-window-start__content--alt {
+    font-size: 16px;
+  }
+}
+
 @media (max-width: 930px) {
   .message {
     max-width: 80%;
@@ -245,5 +257,8 @@
   .chat-window-start__content {
     font-size: 20px;
     text-align: center;
+  }
+  .chat-window-start__content--alt {
+    font-size: 16px;
   }
 }

@@ -30,6 +30,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
   const currentLang = i18n.language;
   const showSpecialButton = import.meta.env.VITE_SHOW_SPECIAL_BUTTON === "true";
   const showAvatar = import.meta.env.VITE_SHOW_AVATAR === "true";
+  const useAltGreeting = import.meta.env.VITE_USE_ALT_GREETING === "true";
 
   const handleLanguageChange = (lang) => {
     updateLocale(lang);
@@ -135,12 +136,22 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
               </button>
             </div> */}
 
-            <div className="person__wrapper">
+            <div
+              className={
+                `person__wrapper` +
+                (useAltGreeting ? ` person__wrapper--alt` : ``)
+              }
+            >
               {showAvatar && (
                 <img src={personImage} alt="" className="person" />
               )}
-              <div className="chat-window-start__content">
-                {t("chat.greeting")}
+              <div
+                className={
+                  `chat-window-start__content` +
+                  (useAltGreeting ? ` chat-window-start__content--alt` : ``)
+                }
+              >
+                {t(useAltGreeting ? "chat.greetingAlt" : "chat.greeting")}
               </div>
             </div>
 
@@ -198,8 +209,13 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
               {showAvatar && (
                 <img src={personImage} alt="" className="person" />
               )}
-              <div className="chat-window-start__content">
-                {t("chat.greeting")}
+              <div
+                className={
+                  `chat-window-start__content` +
+                  (useAltGreeting ? ` chat-window-start__content--alt` : ``)
+                }
+              >
+                {t(useAltGreeting ? "chat.greetingAlt" : "chat.greeting")}
               </div>
             </div>
 

@@ -7,48 +7,56 @@ import { ChatContext } from "../../../context/ChatContext";
 import chatI18n from "../../../i18n";
 
 export default function MessageInput() {
-   const { t } = useTranslation(undefined, { i18n: chatI18n });
-   const { inputPrefill, setInputPrefill, createMessage } = useContext(ChatContext);
-   const [message, setMessage] = useState(inputPrefill);
+  const { t } = useTranslation(undefined, { i18n: chatI18n });
+  const { inputPrefill, setInputPrefill, createMessage } =
+    useContext(ChatContext);
+  const [message, setMessage] = useState(inputPrefill);
+  const useAltGreeting = import.meta.env.VITE_USE_ALT_GREETING === "true";
 
-   const handleSend = async () => {
-      // Если нет сообщения, можно дополнительно сделать проверку, не отправлять пустую строку
-      if (!message.trim()) return;
-      createMessage(message);
-      setInputPrefill("");
-      console.log(t("messageInput.sentMessage"), message);
-      setMessage("");
-   };
+  const handleSend = async () => {
+    // Если нет сообщения, можно дополнительно сделать проверку, не отправлять пустую строку
+    if (!message.trim()) return;
+    createMessage(message);
+    setInputPrefill("");
+    console.log(t("messageInput.sentMessage"), message);
+    setMessage("");
+  };
 
-   useEffect(() => {
-      setMessage(inputPrefill);
-   }, [inputPrefill]);
+  useEffect(() => {
+    setMessage(inputPrefill);
+  }, [inputPrefill]);
 
-   const handleKeyDown = (e) => {
-      // Проверяем, что нажата клавиша Enter
-      if (e.key === "Enter") {
-         handleSend();
-      }
-   };
+  const handleKeyDown = (e) => {
+    // Проверяем, что нажата клавиша Enter
+    if (e.key === "Enter") {
+      handleSend();
+    }
+  };
 
-   return (
-      <div className="bottom__wrapper">
-         <div className="message-input-container">
-            <div className="message-input mt-auto font-light bg-white flex items-center gap-2">
-               <input
-                  type="text"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyDown={handleKeyDown} // Добавили обработчик onKeyDown
-                  placeholder={t("messageInput.placeholder")}
-                  className="flex-1 p-2 border rounded-lg"
-               />
-            </div>
-            <button onClick={handleSend} className="">
-               <img className="send-icon" src={sendIcon} alt={t("messageInput.sendIconAlt")} />
-            </button>
-         </div>
-         <div className="ai__text">{t("messageInput.text")}</div>
+  return (
+    <div className="bottom__wrapper">
+      <div className="message-input-container">
+        <div className="message-input mt-auto font-light bg-white flex items-center gap-2">
+          <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={handleKeyDown} // Добавили обработчик onKeyDown
+            placeholder={t("messageInput.placeholder")}
+            className="flex-1 p-2 border rounded-lg"
+          />
+        </div>
+        <button onClick={handleSend} className="">
+          <img
+            className="send-icon"
+            src={sendIcon}
+            alt={t("messageInput.sendIconAlt")}
+          />
+        </button>
       </div>
-   );
+      <div className={`ai__text` + (useAltGreeting ? ` ai__text--alt` : ``)}>
+        {t(useAltGreeting ? "messageInput.textAlt" : "messageInput.text")}
+      </div>
+    </div>
+  );
 }
