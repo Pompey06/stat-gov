@@ -25,6 +25,7 @@ npm run dev
 VITE_API_URL=http://your-api-url/api
 VITE_SHOW_SPECIAL_BUTTON=true
 VITE_SHOW_AVATAR=false
+VITE_USE_ALT_GREETING=true
 ```
 
 **Описание переменных:**
