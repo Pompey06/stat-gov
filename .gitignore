@@ -25,3 +25,6 @@ dist-ssr
 *.sw?
 __MACOSX
 .DS_Store
+
+# Environment variables
+.env
