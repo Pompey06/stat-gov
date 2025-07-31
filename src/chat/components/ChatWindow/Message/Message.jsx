@@ -1,20 +1,20 @@
 // src/components/Message/Message.jsx
 
-import React, { useState, useContext, useEffect } from "react";
 import axios from "axios";
-import downloadIcon from "../../../assets/pdf.svg";
-import "./Message.css";
+import copy from "copy-to-clipboard";
+import React, { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import ReactMarkdown from "react-markdown";
+import remarkBreaks from "remark-breaks";
+import remarkGfm from "remark-gfm";
+import checkIcon from "../../../assets/checkmark.svg";
+import copyIcon from "../../../assets/copy.svg";
+import downloadIcon from "../../../assets/pdf.svg";
+import personImage from "../../../assets/person.png";
+import { ChatContext } from "../../../context/ChatContext";
 import chatI18n from "../../../i18n";
 import FeedbackMessage from "../FeeadbackMessage/FeedbackMessage";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkBreaks from "remark-breaks";
-import copy from "copy-to-clipboard";
-import copyIcon from "../../../assets/copy.svg";
-import checkIcon from "../../../assets/checkmark.svg";
-import { ChatContext } from "../../../context/ChatContext";
-import personImage from "../../../assets/person.png";
+import "./Message.css";
 
 export default function Message({
   text,
@@ -174,6 +174,7 @@ export default function Message({
       return;
     }
 
+    // Open in new tab - base target="_parent" will handle iframe behavior
     const win = window.open(blobUrl, "_blank");
     if (!win) {
       console.error("Браузер заблокировал всплывающее окно");
@@ -204,7 +205,13 @@ export default function Message({
           remarkPlugins={[remarkGfm, remarkBreaks]}
           components={{
             a: ({ href, children, ...props }) => (
-              <a href={href} className="message-link" {...props}>
+              <a 
+                href={href} 
+                className="message-link" 
+                target="_blank"
+                rel="noopener noreferrer"
+                {...props}
+              >
                 {children}
               </a>
             ),

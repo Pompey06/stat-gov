@@ -232,7 +232,21 @@ const ChatProvider = ({ children }) => {
     const loadAndCleanChats = async () => {
       try {
         const myChats = await fetchMyChats();
-        const filteredChats = myChats.filter((chat) => !isChatDeleted(chat.id));
+        
+        // Ensure myChats is an array - handle different response structures
+        let chatsArray = [];
+        if (Array.isArray(myChats)) {
+          chatsArray = myChats;
+        } else if (myChats && Array.isArray(myChats.chats)) {
+          chatsArray = myChats.chats;
+        } else if (myChats && Array.isArray(myChats.data)) {
+          chatsArray = myChats.data;
+        } else {
+          console.warn("Unexpected response format from fetchMyChats:", myChats);
+          chatsArray = [];
+        }
+        
+        const filteredChats = chatsArray.filter((chat) => !isChatDeleted(chat.id));
 
         setChats((prevChats) => {
           const defaultChat = prevChats.find((c) => c.id === null);
@@ -250,6 +264,11 @@ const ChatProvider = ({ children }) => {
         autoDeleteInactiveChats();
       } catch (error) {
         console.error("Error loading existing chats:", error);
+        // Ensure we still have a default chat even if loading fails
+        setChats((prevChats) => {
+          const defaultChat = prevChats.find((c) => c.id === null);
+          return defaultChat ? [defaultChat] : [createDefaultChat()];
+        });
       }
     };
 
@@ -265,25 +284,34 @@ const ChatProvider = ({ children }) => {
     }
 
     try {
-      let fetchedCategories;
-      let fetchedTranslations;
+      let fetchedCategories = []; // Initialize with empty array
+      let fetchedTranslations = {};
 
       if (USE_MOCK_CATEGORIES) {
         // берём данные из локального mockCategories.json
-        fetchedCategories = mockCategories.categories;
+        fetchedCategories = mockCategories.categories || [];
         fetchedTranslations = mockCategories.translations_kz || {};
       } else {
         // реальный вызов на бэкенд
         const res = await api.get("/assistant/categories");
-        fetchedCategories = res.data.categories;
-        fetchedTranslations = res.data.translations_kz || {};
+        fetchedCategories = res.data?.categories || [];
+        fetchedTranslations = res.data?.translations_kz || {};
       }
 
       setCategories(fetchedCategories);
       setTranslationsKz(fetchedTranslations);
-      updateChatWithCategories(fetchedCategories);
+      
+      // Only call updateChatWithCategories if we have categories
+      if (fetchedCategories && fetchedCategories.length > 0) {
+        updateChatWithCategories(fetchedCategories);
+      } else {
+        console.warn("No categories fetched, skipping updateChatWithCategories");
+      }
     } catch (error) {
       console.error("Ошибка при загрузке начальных сообщений:", error);
+      // Set empty arrays to prevent undefined errors
+      setCategories([]);
+      setTranslationsKz({});
     }
   };
 
@@ -374,6 +402,12 @@ const ChatProvider = ({ children }) => {
   }
 
   const updateChatWithCategories = (fetchedCategories) => {
+    // Safety check: ensure fetchedCategories is an array
+    if (!fetchedCategories || !Array.isArray(fetchedCategories)) {
+      console.warn("updateChatWithCategories: fetchedCategories is not a valid array:", fetchedCategories);
+      return;
+    }
+    
     setChats((prev) =>
       prev.map((chat) => {
         if (
@@ -1303,6 +1337,7 @@ const ChatProvider = ({ children }) => {
     // Формируем прямой URL к отчету
     const url = `${baseUrl}/begunok/report?order_id=${orderId}&lang=${lang}`;
     // Открываем в новой вкладке — браузер сам отрендерит inline PDF
+    // base target="_parent" will handle iframe behavior automatically
     window.open(url, "_blank");
   };
 
