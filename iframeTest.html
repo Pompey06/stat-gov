@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Iframe Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+        
+        .left-panel {
+            flex: 1;
+            padding: 20px;
+            background-color: white;
+            border-right: 2px solid #e0e0e0;
+            overflow-y: auto;
+        }
+        
+        .right-panel {
+            flex: 1;
+            height: 100vh;
+            border: none;
+        }
+        
+        .iframe-container {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .chat-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: white;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .test-section h2 {
+            color: #007bff;
+            margin-top: 0;
+            font-size: 18px;
+        }
+        
+        .test-section p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .test-links {
+            margin-top: 15px;
+        }
+        
+        .test-links a {
+            display: inline-block;
+            margin-right: 15px;
+            color: #007bff;
+            text-decoration: none;
+            padding: 8px 12px;
+            border: 1px solid #007bff;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .test-links a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .status-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #28a745;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+        
+        .instructions {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .instructions h3 {
+            color: #856404;
+            margin-top: 0;
+        }
+        
+        .instructions ol {
+            color: #856404;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="status-indicator">
+        ✅ Iframe Test Active
+    </div>
+    
+    <div class="container">
+        <div class="left-panel">
+            <h1>Chat Iframe Test Page</h1>
+            
+            <div class="instructions">
+                <h3>Testing Instructions:</h3>
+                <ol>
+                    <li>Start your chat application on localhost (usually http://localhost:5173)</li>
+                    <li>This page should show the chat in an iframe on the right</li>
+                    <li>Try clicking links in the chat - they should open in the main browser window, not in the iframe</li>
+                    <li>Test both markdown links and file download links</li>
+                </ol>
+            </div>
+            
+            <div class="test-section">
+                <h2>Test Links (Left Panel)</h2>
+                <p>These links open in the current window to demonstrate normal behavior:</p>
+                <div class="test-links">
+                    <a href="https://www.google.com" target="_self">Google (same window)</a>
+                    <a href="https://www.github.com" target="_self">GitHub (same window)</a>
+                </div>
+            </div>
+            
+            <div class="test-section">
+                <h2>External Links (New Tab)</h2>
+                <p>These links open in new tabs to demonstrate target="_blank" behavior:</p>
+                <div class="test-links">
+                    <a href="https://www.google.com" target="_blank">Google (new tab)</a>
+                    <a href="https://www.github.com" target="_blank">GitHub (new tab)</a>
+                </div>
+            </div>
+            
+            <div class="test-section">
+                <h2>Expected Behavior</h2>
+                <p><strong>✅ Correct:</strong> Links in the chat iframe should open in the main browser window (not inside the iframe)</p>
+                <p><strong>❌ Wrong:</strong> Links opening within the iframe or replacing the iframe content</p>
+                <p><strong>ℹ️ Note:</strong> Using &lt;base target="_parent"&gt; - all links will automatically open in the parent window</p>
+            </div>
+            
+            <div class="test-section">
+                <h2>Test Scenarios</h2>
+                <p>In the chat iframe, try:</p>
+                <ul>
+                    <li>Clicking on markdown links like [Google](https://www.google.com)</li>
+                    <li>Downloading files or PDFs</li>
+                    <li>Clicking on any external links provided by the chat bot</li>
+                    <li>Verifying that links open in the main browser window, not the iframe</li>
+                </ul>
+            </div>
+            
+            <div class="test-section">
+                <h2>Current URL</h2>
+                <p><strong>Main Page:</strong> <span id="current-url"></span></p>
+                <p><strong>Chat URL:</strong> <span id="chat-url">http://localhost:5173</span></p>
+            </div>
+        </div>
+        
+        <div class="right-panel">
+            <div class="iframe-container">
+                <iframe 
+                    src="http://localhost:5173" 
+                    class="chat-iframe"
+                    title="Chat Application"
+                    allow="microphone; camera; geolocation"
+                ></iframe>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Display current URL
+        document.getElementById('current-url').textContent = window.location.href;
+        
+        // Add some interactive features
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Iframe test page loaded');
+            console.log('Main window URL:', window.location.href);
+            console.log('Chat iframe URL: http://localhost:5173');
+            console.log('Using <base target="_parent"> approach - no postMessage needed');
+        });
+    </script>
+</body>
+</html> 
