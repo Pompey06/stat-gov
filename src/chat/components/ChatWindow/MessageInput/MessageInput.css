@@ -32,6 +32,12 @@
   padding: 0px 34px 10px 16px;
 }
 
+.icon-s {
+  width: 24px;
+  height: 24px;
+  margin-bottom: -1px;
+}
+
 .ai__text {
   font-family: Roboto;
   font-size: 12px;
