@@ -109,6 +109,9 @@
     "labelIndex": "Индекс"
   },
   "soundButton": {
-    "readAloud": "Прочесть вслух"
+    "readAloud": "Прочесть вслух",
+    "loading": "Подготовка…",
+    "playing": "Воспроизведение…",
+    "stop": "Остановить"
   }
 }

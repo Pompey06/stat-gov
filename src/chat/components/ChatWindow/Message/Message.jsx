@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import copy from "copy-to-clipboard";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ReactMarkdown from "react-markdown";
 import remarkBreaks from "remark-breaks";
@@ -10,7 +10,8 @@ import remarkGfm from "remark-gfm";
 import checkIcon from "../../../assets/checkmark.svg";
 import copyIcon from "../../../assets/copy.svg";
 import downloadIcon from "../../../assets/pdf.svg";
-import soundIcon from "../../../assets/sound.svg"; // ⬅️ NEW
+import soundIcon from "../../../assets/sound.svg";
+import stopIcon from "../../../assets/stop.svg"; // ⬅️ NEW
 import personImage from "../../../assets/person.png";
 import { ChatContext } from "../../../context/ChatContext";
 import chatI18n from "../../../i18n";
@@ -44,18 +45,25 @@ export default function Message({
 
   // tooltips
   const [hideCopyTooltip, setHideCopyTooltip] = useState(true);
-  const [hideSoundTooltip, setHideSoundTooltip] = useState(true); // ⬅️ NEW
+  const [hideSoundTooltip, setHideSoundTooltip] = useState(true);
+
+  // TTS
+  const audioRef = useRef(null);
+  const [audioUrl, setAudioUrl] = useState(null);
+  const [isAudioLoading, setIsAudioLoading] = useState(false);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const abortRef = useRef(null);
 
   const showAvatar = import.meta.env.VITE_SHOW_AVATAR === "true";
 
   const allFilePaths = React.useMemo(() => {
     if (filePaths && Array.isArray(filePaths)) {
-      return filePaths.filter((path) => typeof path === "string");
+      return filePaths.filter((p) => typeof p === "string");
     } else if (filePath) {
       return typeof filePath === "string"
         ? [filePath]
         : Array.isArray(filePath)
-        ? filePath.filter((path) => typeof path === "string")
+        ? filePath.filter((p) => typeof p === "string")
         : [];
     }
     return [];
@@ -63,10 +71,7 @@ export default function Message({
 
   const handleDownload = async (e, path) => {
     e.preventDefault();
-    if (!path || typeof path !== "string") {
-      console.error("Invalid file path:", path);
-      return;
-    }
+    if (!path || typeof path !== "string") return;
     try {
       const response = await api.get(`/knowledge/get-file`, {
         params: { path },
@@ -115,8 +120,7 @@ export default function Message({
     if (!path || typeof path !== "string") return "file";
     try {
       return path.split("/").pop() || "file";
-    } catch (error) {
-      console.error("Error getting file name:", error);
+    } catch {
       return "file";
     }
   };
@@ -126,7 +130,7 @@ export default function Message({
     e.stopPropagation();
     setHideCopyTooltip(true);
 
-    if (navigator.clipboard && navigator.clipboard.writeText) {
+    if (navigator.clipboard?.writeText) {
       navigator.clipboard
         .writeText(text)
         .then(() => {
@@ -138,8 +142,6 @@ export default function Message({
           if (ok) {
             setCopied(true);
             setTimeout(() => setCopied(false), 1500);
-          } else {
-            console.error("Не удалось скопировать текст");
           }
         });
     } else {
@@ -147,13 +149,10 @@ export default function Message({
       if (ok) {
         setCopied(true);
         setTimeout(() => setCopied(false), 1500);
-      } else {
-        console.error("Не удалось скопировать текст");
       }
     }
   };
 
-  // Находит в стейте чат и его attachments по formVersionId
   const getAttachment = (formVersionId) => {
     const currentChat = chats.find(
       (c) =>
@@ -170,15 +169,130 @@ export default function Message({
   const handleDownloadClick = (e, att) => {
     e.preventDefault();
     const blobUrl = fileBlobMap[att.formVersionId];
-    if (!blobUrl) {
-      console.error("Файл ещё не готов");
+    if (!blobUrl) return;
+    const win = window.open(blobUrl, "_blank");
+    if (!win) console.error("Браузер заблокировал всплывающее окно");
+  };
+
+  // ====== TTS ======
+  const cleanupAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+      audioRef.current = null;
+    }
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl);
+      setAudioUrl(null);
+    }
+    setIsAudioPlaying(false);
+  };
+
+  useEffect(() => {
+    return () => {
+      cleanupAudio();
+      if (abortRef.current) abortRef.current.abort();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const playFromUrl = (url) => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    audio.onended = () => setIsAudioPlaying(false);
+    audio.onpause = () => setIsAudioPlaying(false);
+    audio.onplay = () => setIsAudioPlaying(true);
+    audio.play().catch((err) => {
+      console.error("Ошибка воспроизведения аудио:", err);
+      setIsAudioPlaying(false);
+    });
+  };
+
+  const handleSoundClick = async (e) => {
+    e.stopPropagation();
+    setHideSoundTooltip(true);
+
+    // уже загружено: если играем — ничего не делаем (стоп отдельной кнопкой),
+    // если не играем — запускаем из кеша
+    if (audioUrl && audioRef.current) {
+      if (!isAudioPlaying) {
+        audioRef.current.play().catch((err) => {
+          console.error("Ошибка воспроизведения:", err);
+        });
+      }
       return;
     }
-    const win = window.open(blobUrl, "_blank");
-    if (!win) {
-      console.error("Браузер заблокировал всплывающее окно");
+
+    if (isAudioLoading) return;
+    setIsAudioLoading(true);
+
+    try {
+      if (abortRef.current) abortRef.current.abort();
+      abortRef.current = new AbortController();
+
+      const res = await api.post("/audio/tts", null, {
+        params: { text },
+        responseType: "blob",
+        signal: abortRef.current.signal,
+      });
+
+      const blob = new Blob([res.data], { type: "audio/mpeg" });
+      const url = URL.createObjectURL(blob);
+      setAudioUrl(url);
+      playFromUrl(url);
+    } catch (err) {
+      if (axios.isCancel?.(err)) {
+        console.warn("TTS запрос отменён");
+      } else {
+        console.error("Ошибка TTS:", err);
+      }
+    } finally {
+      setIsAudioLoading(false);
     }
   };
+
+  const handleStopClick = (e) => {
+    e.stopPropagation();
+    setHideSoundTooltip(true);
+    // Полный сброс: остановить, освободить URL, очистить состояния
+    cleanupAudio();
+  };
+  // ==============
+
+  // Простой SVG-лоудер (анимация без CSS), цвет #0068bf
+  const LoaderIcon = () => (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 50 50"
+      role="img"
+      aria-label="loading"
+    >
+      <circle
+        cx="25"
+        cy="25"
+        r="20"
+        fill="none"
+        stroke="#0068bf"
+        strokeWidth="6"
+        strokeLinecap="round"
+        strokeDasharray="31.4 188.4"
+      >
+        <animateTransform
+          attributeName="transform"
+          type="rotate"
+          from="0 25 25"
+          to="360 25 25"
+          dur="0.8s"
+          repeatCount="indefinite"
+        />
+      </circle>
+    </svg>
+  );
 
   return (
     <div
@@ -193,12 +307,10 @@ export default function Message({
       }`}
       onClick={isButton ? onClick : undefined}
     >
-      {/* Аватарка бота слева (только для бот-сообщений) */}
       {!isUser && showAvatar && (
         <img src={personImage} alt="Bot" className="bot-avatar" />
       )}
 
-      {/* «Пузырь» с содержимым */}
       <div className={`${isUser ? "" : "bubble"} flex flex-col message__text`}>
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkBreaks]}
@@ -219,7 +331,6 @@ export default function Message({
           {text}
         </ReactMarkdown>
 
-        {/* Ссылки на filePaths (если есть) */}
         {!streaming && allFilePaths.length > 0 && (
           <div className="mt-2 fade-in">
             <div className="file-download-container">
@@ -243,7 +354,6 @@ export default function Message({
           </div>
         )}
 
-        {/* Блок attachments (если есть) */}
         {Array.isArray(attachments) && attachments.length > 0 && (
           <div className="file-download-container fade-in">
             {attachments.map((att) => (
@@ -280,7 +390,6 @@ export default function Message({
               </div>
             ))}
 
-            {/* Только первый файл – кнопка «скачать» или «готовится» */}
             {(() => {
               const att = attachments[0];
               const isReady = fileReadyMap[att.formVersionId];
@@ -358,28 +467,40 @@ export default function Message({
               {/* Лайк/дизлайк */}
               <FeedbackMessage messageIndex={botMessageIndex} />
 
-              {/* Прочесть вслух (новая кнопка) */}
+              {/* Прочесть вслух / Лоудер / Стоп */}
               <button
                 type="button"
                 className={`copy-button sound-button flex items-center gap-1 text-sm text-gray-500 transition-colors ${
                   hideSoundTooltip ? "tooltip-hide" : ""
                 }`}
                 style={{ touchAction: "manipulation", position: "relative" }}
-                aria-label={t("soundButton.readAloud")}
+                aria-label={
+                  isAudioLoading
+                    ? t("soundButton.loading", "Подготовка…")
+                    : isAudioPlaying
+                    ? t("soundButton.stop", "Остановить")
+                    : t("soundButton.readAloud")
+                }
                 onMouseEnter={() => setHideSoundTooltip(false)}
                 onMouseLeave={() => setHideSoundTooltip(true)}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setHideSoundTooltip(true);
-                  // функционал воспроизведения добавим позже
-                }}
-                onTouchEnd={(e) => {
-                  e.stopPropagation();
-                  setHideSoundTooltip(true);
-                }}
+                onClick={isAudioPlaying ? handleStopClick : handleSoundClick}
+                onTouchEnd={isAudioPlaying ? handleStopClick : handleSoundClick}
+                disabled={isAudioLoading}
               >
-                <img src={soundIcon} alt="Sound" className="icon-xs" />
-                <span className="tooltip">{t("soundButton.readAloud")}</span>
+                {isAudioLoading ? (
+                  <LoaderIcon />
+                ) : isAudioPlaying ? (
+                  <img src={stopIcon} alt="Stop" className="icon-xs" />
+                ) : (
+                  <img src={soundIcon} alt="Sound" className="icon-xs" />
+                )}
+                <span className="tooltip">
+                  {isAudioLoading
+                    ? t("soundButton.loading", "Подготовка…")
+                    : isAudioPlaying
+                    ? t("soundButton.stop", "Остановить")
+                    : t("soundButton.readAloud")}
+                </span>
               </button>
             </div>
           )}

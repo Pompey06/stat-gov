@@ -109,6 +109,9 @@
     "labelIndex": "Индекс"
   },
   "soundButton": {
-    "readAloud": "Дауыстап оқу"
+    "readAloud": "Дауыстап оқу",
+    "loading": "Дайындау…",
+    "playing": "Ойнатылуда…",
+    "stop": "Тоқтату"
   }
 }
