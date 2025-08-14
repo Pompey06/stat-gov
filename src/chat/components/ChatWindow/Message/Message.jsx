@@ -10,6 +10,7 @@ import remarkGfm from "remark-gfm";
 import checkIcon from "../../../assets/checkmark.svg";
 import copyIcon from "../../../assets/copy.svg";
 import downloadIcon from "../../../assets/pdf.svg";
+import soundIcon from "../../../assets/sound.svg"; // ⬅️ NEW
 import personImage from "../../../assets/person.png";
 import { ChatContext } from "../../../context/ChatContext";
 import chatI18n from "../../../i18n";
@@ -41,8 +42,9 @@ export default function Message({
   const [fileBlobMap, setFileBlobMap] = useState({});
   const [downloadingId, setDownloadingId] = useState(null);
 
-  // 1) Добавили состояние для управления «скрытием» тултипа кнопки «Копировать»
+  // tooltips
   const [hideCopyTooltip, setHideCopyTooltip] = useState(true);
+  const [hideSoundTooltip, setHideSoundTooltip] = useState(true); // ⬅️ NEW
 
   const showAvatar = import.meta.env.VITE_SHOW_AVATAR === "true";
 
@@ -122,7 +124,6 @@ export default function Message({
   const [copied, setCopied] = useState(false);
   const handleCopy = (e) => {
     e.stopPropagation();
-    // 2) Сразу «скрываем» тултип при клике
     setHideCopyTooltip(true);
 
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -173,8 +174,6 @@ export default function Message({
       console.error("Файл ещё не готов");
       return;
     }
-
-    // Open in new tab - base target="_parent" will handle iframe behavior
     const win = window.open(blobUrl, "_blank");
     if (!win) {
       console.error("Браузер заблокировал всплывающее окно");
@@ -205,9 +204,9 @@ export default function Message({
           remarkPlugins={[remarkGfm, remarkBreaks]}
           components={{
             a: ({ href, children, ...props }) => (
-              <a 
-                href={href} 
-                className="message-link" 
+              <a
+                href={href}
+                className="message-link"
                 target="_blank"
                 rel="noopener noreferrer"
                 {...props}
@@ -321,7 +320,7 @@ export default function Message({
           </div>
         )}
 
-        {/* ========== Кнопка «Копировать» ========== */}
+        {/* Кнопки действий */}
         {!isUser &&
           !isGreeting &&
           !isCustomMessage &&
@@ -329,6 +328,7 @@ export default function Message({
           !streaming &&
           Number.isInteger(botMessageIndex) && (
             <div className="buttons__wrapper fade-in">
+              {/* Копировать */}
               <button
                 type="button"
                 className={`copy-button flex items-center gap-1 text-sm text-gray-500 transition-colors ${
@@ -336,11 +336,8 @@ export default function Message({
                 }`}
                 style={{ touchAction: "manipulation", position: "relative" }}
                 aria-label={t("copyButton.copy")}
-                /* 1) при наведении убираем класс tooltip-hide → CSS-hover показывает тултип */
                 onMouseEnter={() => setHideCopyTooltip(false)}
-                /* 2) при уходе курсора возвращаем tooltip-hide → CSS скроет тултип */
                 onMouseLeave={() => setHideCopyTooltip(true)}
-                /* 3) при клике: сразу ставим tooltip-hide, а потом копируем текст */
                 onClick={(e) => {
                   handleCopy(e);
                   setHideCopyTooltip(true);
@@ -355,10 +352,35 @@ export default function Message({
                 ) : (
                   <img src={copyIcon} alt="Copy" className="icon-xs" />
                 )}
-                {/* Тултип ВСЕГДА есть в DOM, но CSS контролирует видимость */}
                 <span className="tooltip">{t("copyButton.copy")}</span>
               </button>
+
+              {/* Лайк/дизлайк */}
               <FeedbackMessage messageIndex={botMessageIndex} />
+
+              {/* Прочесть вслух (новая кнопка) */}
+              <button
+                type="button"
+                className={`copy-button sound-button flex items-center gap-1 text-sm text-gray-500 transition-colors ${
+                  hideSoundTooltip ? "tooltip-hide" : ""
+                }`}
+                style={{ touchAction: "manipulation", position: "relative" }}
+                aria-label={t("soundButton.readAloud")}
+                onMouseEnter={() => setHideSoundTooltip(false)}
+                onMouseLeave={() => setHideSoundTooltip(true)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setHideSoundTooltip(true);
+                  // функционал воспроизведения добавим позже
+                }}
+                onTouchEnd={(e) => {
+                  e.stopPropagation();
+                  setHideSoundTooltip(true);
+                }}
+              >
+                <img src={soundIcon} alt="Sound" className="icon-xs" />
+                <span className="tooltip">{t("soundButton.readAloud")}</span>
+              </button>
             </div>
           )}
       </div>
