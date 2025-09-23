@@ -182,7 +182,10 @@
   left: 50%;
   transform: translateX(-50%);
   margin-top: 6px;
-
+  max-width: 500px; /* ограничиваем ширину */
+  text-align: center; /* центрируем текст */
+  width: max-content; /* растягивается под содержимое */
+  white-space: normal; /* разрешаем перенос строк */
   background-color: #ffffff;
   border: 1px solid #d1e5ff;
   border-radius: 6px;
@@ -191,7 +194,6 @@
   color: #0068bf;
   font-size: 12px;
   line-height: 1.2;
-  white-space: nowrap;
   padding: 4px 8px;
   z-index: 10;
 
