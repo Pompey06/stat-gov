@@ -249,7 +249,7 @@ export default function MessageInput() {
               className="icon-s"
             />
           )}
-          <span className="tooltip">
+          <span className="tooltip mic-tooltip">
             {isUploading
               ? t("messageInput.micUploading")
               : isRecording

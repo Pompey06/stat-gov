@@ -9,7 +9,7 @@ import {
   isChatDeleted,
   markChatAsDeleted,
   saveBadFeedbackPromptState,
-  saveFeedbackState
+  saveFeedbackState,
 } from "../utils/feedbackStorage";
 import mockCategories from "./mockCategories.json";
 
@@ -232,7 +232,7 @@ const ChatProvider = ({ children }) => {
     const loadAndCleanChats = async () => {
       try {
         const myChats = await fetchMyChats();
-        
+
         // Ensure myChats is an array - handle different response structures
         let chatsArray = [];
         if (Array.isArray(myChats)) {
@@ -242,11 +242,16 @@ const ChatProvider = ({ children }) => {
         } else if (myChats && Array.isArray(myChats.data)) {
           chatsArray = myChats.data;
         } else {
-          console.warn("Unexpected response format from fetchMyChats:", myChats);
+          console.warn(
+            "Unexpected response format from fetchMyChats:",
+            myChats,
+          );
           chatsArray = [];
         }
-        
-        const filteredChats = chatsArray.filter((chat) => !isChatDeleted(chat.id));
+
+        const filteredChats = chatsArray.filter(
+          (chat) => !isChatDeleted(chat.id),
+        );
 
         setChats((prevChats) => {
           const defaultChat = prevChats.find((c) => c.id === null);
@@ -300,12 +305,14 @@ const ChatProvider = ({ children }) => {
 
       setCategories(fetchedCategories);
       setTranslationsKz(fetchedTranslations);
-      
+
       // Only call updateChatWithCategories if we have categories
       if (fetchedCategories && fetchedCategories.length > 0) {
         updateChatWithCategories(fetchedCategories);
       } else {
-        console.warn("No categories fetched, skipping updateChatWithCategories");
+        console.warn(
+          "No categories fetched, skipping updateChatWithCategories",
+        );
       }
     } catch (error) {
       console.error("Ошибка при загрузке начальных сообщений:", error);
@@ -404,10 +411,13 @@ const ChatProvider = ({ children }) => {
   const updateChatWithCategories = (fetchedCategories) => {
     // Safety check: ensure fetchedCategories is an array
     if (!fetchedCategories || !Array.isArray(fetchedCategories)) {
-      console.warn("updateChatWithCategories: fetchedCategories is not a valid array:", fetchedCategories);
+      console.warn(
+        "updateChatWithCategories: fetchedCategories is not a valid array:",
+        fetchedCategories,
+      );
       return;
     }
-    
+
     setChats((prev) =>
       prev.map((chat) => {
         if (
@@ -961,9 +971,10 @@ const ChatProvider = ({ children }) => {
 
           // Собираем кнопки FAQ по этой категории
           const faqButtons = (categoryData.faq || []).map((f, i) => ({
-            text: i18n.language === "қаз" 
-              ? translationsKz[f.question] || f.question
-              : f.question,
+            text:
+              i18n.language === "қаз"
+                ? translationsKz[f.question] || f.question
+                : f.question,
             isUser: true,
             isFeedback: false,
             isButton: true,
@@ -1062,9 +1073,10 @@ const ChatProvider = ({ children }) => {
           if (!isCurrent) return chat;
 
           const faqButtons = categoryData.faq.map((f, i) => ({
-            text: i18n.language === "қаз" 
-              ? translationsKz[f.question] || f.question
-              : f.question,
+            text:
+              i18n.language === "қаз"
+                ? translationsKz[f.question] || f.question
+                : f.question,
             isUser: true,
             isFeedback: false,
             isButton: true,

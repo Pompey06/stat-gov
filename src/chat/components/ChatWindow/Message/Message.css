@@ -202,6 +202,19 @@
   transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
 }
 
+/* Правим позиционирование только для тултипа микрофона */
+.mic-tooltip {
+  left: -500%; /* прижимаем к правому краю кнопки */
+  top: -250% !important;
+  transform: none; /* поднимаем чуть выше */
+}
+
+.chat-window-start .mic-tooltip {
+  top: 100% !important;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 .copy-button:hover .tooltip,
 .copy-button:focus .tooltip,
 .feedback-button:hover .tooltip,
