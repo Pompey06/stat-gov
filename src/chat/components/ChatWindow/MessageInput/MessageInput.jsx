@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect, useRef } from "react";
 import "./MessageInput.css";
 import sendIcon from "../../../assets/send.png";
 import microphoneIcon from "../../../assets/microphone.svg";
-import stopIcon from "../../../assets/stop.svg"; // для состояния "идёт запись"
+import stopIcon from "../../../assets/stop.svg";
 import { useTranslation } from "react-i18next";
 import { ChatContext } from "../../../context/ChatContext";
 import chatI18n from "../../../i18n";
@@ -15,17 +15,15 @@ export default function MessageInput() {
   const [message, setMessage] = useState(inputPrefill);
   const useAltGreeting = import.meta.env.VITE_USE_ALT_GREETING === "true";
 
-  // mic tooltips/states
   const [hideMicTooltip, setHideMicTooltip] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [showMicHint, setShowMicHint] = useState(false);
 
-  // media
   const mediaStreamRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
 
-  // axios (как в проекте)
   const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
     withCredentials: true,
@@ -46,7 +44,6 @@ export default function MessageInput() {
     if (e.key === "Enter") handleSend();
   };
 
-  // Подбор формата записи: пытаемся mp3 → webm → ogg → wav
   const pickSupportedMime = () => {
     const candidates = [
       { mime: "audio/mpeg", ext: "mp3" },
@@ -59,7 +56,6 @@ export default function MessageInput() {
         return c;
       }
     }
-    // fallback — пусть MediaRecorder сам решит
     return { mime: "", ext: "webm" };
   };
 
@@ -83,30 +79,29 @@ export default function MessageInput() {
       recorder.onstop = async () => {
         try {
           setIsRecording(false);
+          setShowMicHint(false);
           setIsUploading(true);
+
           const blob = new Blob(chunksRef.current, {
             type: recorder.mimeType || "audio/webm",
           });
           const filename = `record.${ext}`;
           const fd = new FormData();
-          // имя поля из swagger: "audio_file"
           fd.append("audio_file", blob, filename);
 
           const res = await api.post("/audio/stt", fd, {
             headers: { "Content-Type": "multipart/form-data" },
-            responseType: "text", // сервер отвечает text/plain
-            transformResponse: [(data) => data], // не парсим как JSON
+            responseType: "text",
+            transformResponse: [(data) => data],
           });
 
           const textFromStt =
             typeof res.data === "string" ? res.data : String(res.data || "");
-          // Вставляем распознанный текст в инпут (прибавляем к текущему, если там что-то уже есть)
           setMessage((prev) => (prev ? prev + " " : "") + textFromStt.trim());
         } catch (err) {
           console.error("STT upload error:", err);
         } finally {
           setIsUploading(false);
-          // останавливаем треки
           if (mediaStreamRef.current) {
             mediaStreamRef.current.getTracks().forEach((t) => t.stop());
             mediaStreamRef.current = null;
@@ -118,6 +113,7 @@ export default function MessageInput() {
 
       recorder.start();
       setIsRecording(true);
+      setShowMicHint(true);
     } catch (err) {
       console.error("Microphone permission or init error:", err);
       alert(t("messageInput.micPermissionDenied"));
@@ -131,8 +127,8 @@ export default function MessageInput() {
     ) {
       mediaRecorderRef.current.stop();
     } else {
-      // На случай неконсистентного состояния
       setIsRecording(false);
+      setShowMicHint(false);
       if (mediaStreamRef.current) {
         mediaStreamRef.current.getTracks().forEach((t) => t.stop());
         mediaStreamRef.current = null;
@@ -142,15 +138,11 @@ export default function MessageInput() {
   };
 
   const handleMicClick = () => {
-    if (isUploading) return; // защита от повторных
-    if (isRecording) {
-      stopRecording();
-    } else {
-      startRecording();
-    }
+    if (isUploading) return;
+    if (isRecording) stopRecording();
+    else startRecording();
   };
 
-  // Очистка при размонтировании
   useEffect(() => {
     return () => {
       if (
@@ -169,7 +161,7 @@ export default function MessageInput() {
   return (
     <div className="bottom__wrapper">
       <div className="message-input-container">
-        <div className="message-input mt-auto font-light bg-white flex items-center gap-2">
+        <div className="message-input mt-auto font-light bg-white flex items-center gap-2 relative">
           <input
             type="text"
             value={message}
@@ -178,9 +170,12 @@ export default function MessageInput() {
             placeholder={t("messageInput.placeholder")}
             className="flex-1 p-2 border rounded-lg"
           />
+          {showMicHint && (
+            <div className="mic-hint">{t("messageInput.micHint")}</div>
+          )}
         </div>
 
-        {/* Микрофон: тултип и hover как у "прочесть вслух", но с твоим классом icon-s */}
+        {/* Кнопка микрофона с тултипом сохранена */}
         <button
           type="button"
           className={`copy-button flex items-center gap-1 text-sm text-gray-500 transition-colors ${
@@ -208,7 +203,6 @@ export default function MessageInput() {
           disabled={isUploading}
         >
           {isUploading ? (
-            // простой SVG‑лоудер в #0068bf
             <svg
               width="18"
               height="18"
@@ -258,8 +252,7 @@ export default function MessageInput() {
           </span>
         </button>
 
-        {/* Кнопка отправки */}
-        <button onClick={handleSend} className="">
+        <button onClick={handleSend}>
           <img
             className="send-icon"
             src={sendIcon}

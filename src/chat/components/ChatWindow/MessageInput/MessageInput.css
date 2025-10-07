@@ -52,6 +52,38 @@
 .ai__text--alt {
 }
 
+/* Подсказка внутри инпута при голосовом вводе */
+.mic-hint {
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  right: 16px;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: #0068bf;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #cfe4ff;
+  border-radius: 8px;
+  padding: 10px;
+  line-height: 1.3;
+  text-align: left;
+  z-index: 5;
+  animation: fadeIn 0.3s ease;
+}
+
+.input--with-hint input {
+  opacity: 0.3;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @media (max-width: 700px) {
   .message-input-container {
     padding-right: 7px;
@@ -61,5 +93,11 @@
   .message-input input {
     font-size: 14px;
     padding: 10px 15px;
+  }
+}
+
+@media (max-width: 400px) {
+  .mic-hint {
+    top: -50%;
   }
 }
