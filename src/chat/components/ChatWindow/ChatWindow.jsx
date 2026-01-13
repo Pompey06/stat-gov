@@ -7,6 +7,7 @@ import Header from "../Header/Header";
 import "./ChatWindow.css";
 import chatI18n from "../../i18n";
 import { useTranslation } from "react-i18next";
+import RegistrationModal from "../ChatWindow/Modal/RegistrationModal.jsx";
 import personImage from "../../assets/person.png";
 
 export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
@@ -31,6 +32,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
   const showSpecialButton = import.meta.env.VITE_SHOW_SPECIAL_BUTTON === "true";
   const showAvatar = import.meta.env.VITE_SHOW_AVATAR === "true";
   const useAltGreeting = import.meta.env.VITE_USE_ALT_GREETING === "true";
+  const [isRegistrationModalOpen, setRegistrationModalOpen] = useState(false);
 
   const handleLanguageChange = (lang) => {
     updateLocale(lang);
@@ -173,11 +175,28 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
               toggleSidebar={toggleSidebar}
             />
 
+            <div className="registration-button-container">
+              <button
+                className="btn special"
+                onClick={() => setRegistrationModalOpen(true)}
+              >
+                {t("feedback.openRegistrationForm")}
+              </button>
+            </div>
+
             <BinModal
               isOpen={isBinModalOpen}
               onClose={() => setBinModalOpen(false)}
               onSubmitBin={handleBinSubmit}
               createMessage={createMessage}
+            />
+
+            <RegistrationModal
+              isOpen={isRegistrationModalOpen}
+              onClose={() => setRegistrationModalOpen(false)}
+              title={t("feedback.registrationTitle")}
+              currentChatId={currentChatId}
+              addBotMessage={addBotMessage}
             />
           </div>
         ) : (
@@ -237,11 +256,28 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
               toggleSidebar={toggleSidebar}
             />
 
+            <div className="registration-button-container">
+              <button
+                className="btn special"
+                onClick={() => setRegistrationModalOpen(true)}
+              >
+                {t("feedback.openRegistrationForm")}
+              </button>
+            </div>
+
             <BinModal
               isOpen={isBinModalOpen}
               onClose={() => setBinModalOpen(false)}
               onSubmitBin={handleBinSubmit}
               createMessage={createMessage}
+            />
+
+            <RegistrationModal
+              isOpen={isRegistrationModalOpen}
+              onClose={() => setRegistrationModalOpen(false)}
+              title={t("feedback.registrationTitle")}
+              currentChatId={currentChatId}
+              addBotMessage={addBotMessage}
             />
           </>
         )}
