@@ -197,6 +197,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
               title={t("feedback.registrationTitle")}
               currentChatId={currentChatId}
               addBotMessage={addBotMessage}
+              sendSuccessMessageToChat={false}
             />
           </div>
         ) : (
@@ -278,6 +279,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
               title={t("feedback.registrationTitle")}
               currentChatId={currentChatId}
               addBotMessage={addBotMessage}
+              sendSuccessMessageToChat={false}
             />
           </>
         )}
