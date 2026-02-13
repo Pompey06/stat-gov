@@ -9,6 +9,7 @@ import chatI18n from "../../i18n";
 import { useTranslation } from "react-i18next";
 import RegistrationModal from "../ChatWindow/Modal/RegistrationModal.jsx";
 import personImage from "../../assets/person.png";
+import personVideo from "../../assets/person.mp4";
 
 export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
   const { i18n } = useTranslation(undefined, { i18n: chatI18n });
@@ -145,15 +146,34 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
               }
             >
               {showAvatar && (
-                <img src={personImage} alt="" className="person" />
+                <video
+                  src={personVideo}
+                  className="person"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                />
               )}
+
               <div
                 className={
                   `chat-window-start__content` +
                   (useAltGreeting ? ` chat-window-start__content--alt` : ``)
                 }
               >
-                {t(useAltGreeting ? "chat.greetingAlt" : "chat.greeting")}
+                {useAltGreeting ? (
+                  <>
+                    <div className="chat-greeting-title">
+                      {t("chat.greetingAltTitle")}
+                    </div>
+                    <div className="chat-greeting-description">
+                      {t("chat.greetingAltDescription")}
+                    </div>
+                  </>
+                ) : (
+                  t("chat.greeting")
+                )}
               </div>
             </div>
 
@@ -227,15 +247,34 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
 
             <div className="person__wrapper">
               {showAvatar && (
-                <img src={personImage} alt="" className="person" />
+                <video
+                  src={personVideo}
+                  className="person"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                />
               )}
+
               <div
                 className={
                   `chat-window-start__content` +
                   (useAltGreeting ? ` chat-window-start__content--alt` : ``)
                 }
               >
-                {t(useAltGreeting ? "chat.greetingAlt" : "chat.greeting")}
+                {useAltGreeting ? (
+                  <>
+                    <div className="chat-greeting-title">
+                      {t("chat.greetingAltTitle")}
+                    </div>
+                    <div className="chat-greeting-description">
+                      {t("chat.greetingAltDescription")}
+                    </div>
+                  </>
+                ) : (
+                  t("chat.greeting")
+                )}
               </div>
             </div>
 
@@ -283,6 +322,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
             />
           </>
         )}
+        <div className="chat__window_bottom-text">{t("chat.bottomText")}</div>
       </div>
     );
   }

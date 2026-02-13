@@ -35,7 +35,36 @@
 }
 
 .person {
-  width: 50px;
+  width: 60px;
+}
+
+.chat__window_bottom-text {
+  position: absolute;
+  bottom: 20px;
+  font-family: Roboto;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  color: #141414;
+  opacity: 0.5;
+  margin-top: 10px;
+}
+
+.chat-greeting-title {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 6px;
+  color: #141414;
+}
+
+.chat-greeting-description {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #141414;
+  opacity: 0.85;
 }
 
 .chat-window-start .language {

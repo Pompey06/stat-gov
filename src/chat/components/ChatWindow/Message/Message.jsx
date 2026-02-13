@@ -13,6 +13,7 @@ import downloadIcon from "../../../assets/pdf.svg";
 import soundIcon from "../../../assets/sound.svg";
 import stopIcon from "../../../assets/stop.svg"; // ⬅️ NEW
 import personImage from "../../../assets/person.png";
+import videoIcon from "../../../assets/person.mp4";
 import { ChatContext } from "../../../context/ChatContext";
 import chatI18n from "../../../i18n";
 import FeedbackMessage from "../FeeadbackMessage/FeedbackMessage";
@@ -308,7 +309,15 @@ export default function Message({
       onClick={isButton ? onClick : undefined}
     >
       {!isUser && showAvatar && (
-        <img src={personImage} alt="Bot" className="bot-avatar" />
+        // <img src={videoIcon} alt="Bot" className="bot-avatar" />
+        <video
+          src={videoIcon}
+          className="bot-avatar"
+          autoPlay
+          loop
+          muted
+          playsInline
+        />
       )}
 
       <div className={`${isUser ? "" : "bubble"} flex flex-col message__text`}>
