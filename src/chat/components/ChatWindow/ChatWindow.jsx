@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import RegistrationModal from "../ChatWindow/Modal/RegistrationModal.jsx";
 import personImage from "../../assets/person.png";
 import personVideo from "../../assets/person.webm";
+import botImage from "../../assets/bot-avatar.png";
 
 export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
   const { i18n } = useTranslation(undefined, { i18n: chatI18n });
@@ -146,14 +147,15 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
               }
             >
               {showAvatar && (
-                <video
-                  src={personVideo}
-                  className="person"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                />
+                // <video
+                //   src={personVideo}
+                //   className="person"
+                //   autoPlay
+                //   loop
+                //   muted
+                //   playsInline
+                // />
+                <img src={botImage} alt="person" className="person" />
               )}
 
               <div
@@ -247,14 +249,15 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
 
             <div className="person__wrapper">
               {showAvatar && (
-                <video
-                  src={personVideo}
-                  className="person"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                />
+                // <video
+                //   src={personVideo}
+                //   className="person"
+                //   autoPlay
+                //   loop
+                //   muted
+                //   playsInline
+                // />
+                <img src={botImage} alt="person" className="person" />
               )}
 
               <div
