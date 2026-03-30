@@ -96,6 +96,11 @@
   }
 }
 
+@media (max-width: 450px) {
+  .ai__text {
+    display: none;
+  }
+}
 @media (max-width: 400px) {
   .mic-hint {
     top: -50%;
