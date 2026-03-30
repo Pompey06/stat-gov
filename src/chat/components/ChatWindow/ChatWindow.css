@@ -49,6 +49,7 @@
   color: #141414;
   opacity: 0.5;
   margin-top: 10px;
+  padding: 0 10px;
 }
 
 .chat-greeting-title {
@@ -219,9 +220,7 @@
   .chat-greeting-title {
     font-size: 16px;
   }
-  .chat-greeting-description {
-    font-size: 10px;
-  }
+
   .chat-window-start .user,
   .chat-window-start .ai {
     padding-top: 10px;
@@ -230,10 +229,18 @@
 }
 
 @media (max-width: 400px) {
-  .chat-greeting-title {
-    font-size: 14px;
-  }
   .chat__window_bottom-text {
     display: none;
+  }
+  .user,
+  .bubble {
+    font-size: 14px;
+    padding: 8px;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn.special {
+    font-size: 13px;
   }
 }
