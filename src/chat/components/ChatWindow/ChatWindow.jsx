@@ -325,7 +325,6 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
             />
           </>
         )}
-        <div className="chat__window_bottom-text">{t("chat.bottomText")}</div>
       </div>
     );
   }
