@@ -163,11 +163,23 @@
   .chat-greeting-description {
     font-size: 12px;
   }
+  .chat-window-start .message-list {
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .chat-window-start .user,
+  .chat-window-start .ai {
+    width: 100%;
+  }
 }
 
 @media (max-width: 950px) {
   .chat-window-start .message-list {
     align-items: center !important;
+  }
+  .person__wrapper {
+    padding: 0 10px;
   }
 }
 
@@ -223,8 +235,8 @@
 
   .chat-window-start .user,
   .chat-window-start .ai {
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
   }
 }
 
