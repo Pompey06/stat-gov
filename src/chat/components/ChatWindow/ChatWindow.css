@@ -68,6 +68,11 @@
   opacity: 0.85;
 }
 
+.chat-greeting-description__link {
+  color: #0068bf;
+  text-decoration: underline;
+}
+
 .chat-window-start .language {
   position: absolute;
   right: 14px;
