@@ -44,12 +44,12 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
 
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" width="220" height="140" viewBox="0 0 220 140">
-        <g transform="translate(28 60) rotate(-35)">
-          <rect x="1" y="-17" width="12" height="12" fill="none" stroke="#6d7f98" stroke-width="1" opacity="0.45" transform="rotate(45 7 -11)" />
-          <text x="7" y="-8" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="700" fill="#6d7f98" opacity="0.45">!</text>
-          <text x="20" y="-6" font-family="Arial, sans-serif" font-size="14" fill="#6d7f98" opacity="0.4">
-            <tspan x="20" dy="0">${firstLine}</tspan>
-            ${secondLine ? `<tspan x="20" dy="14">${secondLine}</tspan>` : ""}
+        <g transform="translate(56 76) rotate(-35)">
+          <rect x="42" y="-28" width="12" height="12" fill="none" stroke="#6d7f98" stroke-width="1" opacity="0.45" transform="rotate(45 48 -22)" />
+          <text x="48" y="-19" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="700" fill="#6d7f98" opacity="0.45">!</text>
+          <text x="48" y="-2" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#6d7f98" opacity="0.4">
+            <tspan x="48" dy="0">${firstLine}</tspan>
+            ${secondLine ? `<tspan x="48" dy="14">${secondLine}</tspan>` : ""}
           </text>
         </g>
       </svg>
