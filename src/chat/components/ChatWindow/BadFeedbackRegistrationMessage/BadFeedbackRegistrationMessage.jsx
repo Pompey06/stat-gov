@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import "./BadFeedbackRegistrationMessage.css";
 import { ChatContext } from "../../../context/ChatContext";
 import chatI18n from "../../../i18n";
-import botImage from "../../assets/bot-avatar.png";
+import botImage from "../../../assets/bot-avatar.png";
 
 export default function BadFeedbackRegistrationMessage({ currentChatId }) {
   const { addBotMessage } = useContext(ChatContext);
