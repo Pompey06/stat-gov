@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import "./BadFeedbackRegistrationMessage.css";
 import { ChatContext } from "../../../context/ChatContext";
 import chatI18n from "../../../i18n";
-import videoIcon from "../../../assets/person.mp4";
+import botImage from "../../assets/bot-avatar.png";
 
 export default function BadFeedbackRegistrationMessage({ currentChatId }) {
   const { addBotMessage } = useContext(ChatContext);
@@ -29,13 +29,7 @@ export default function BadFeedbackRegistrationMessage({ currentChatId }) {
   return (
     <div className="message mb-8 flex font-light self-start">
       {/* 1) Аватарка бота слева (за пределами «пузыря») */}
-      {showAvatar && (
-        <img
-          alt="Bot"
-          className="bot-avatar"
-          src="/src/chat/assets/bot-avatar.png"
-        ></img>
-      )}
+      {showAvatar && <img src={botImage} alt="Bot" className="bot-avatar" />}
 
       {/* 2) «Пузырь» с текстом и кнопкой (используем прежний класс .ai) */}
       <div className="bubble ai bg-white text-left">
