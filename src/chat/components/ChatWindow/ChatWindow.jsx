@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useMemo } from "react";
 import MessageList from "./MessageList/MessageList";
 import MessageInput from "./MessageInput/MessageInput";
 import BinModal from "../ChatWindow/Modal/BinModal";
@@ -36,6 +36,19 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
   const useAltGreeting = import.meta.env.VITE_USE_ALT_GREETING === "true";
   const [isRegistrationModalOpen, setRegistrationModalOpen] = useState(false);
   const feedbackFormUrl = "https://forms.gle/dDhLCDBYSQZRMuD87";
+  const watermarkText = t("chat.watermarkText");
+
+  const watermarkBackground = useMemo(() => {
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="220" height="140" viewBox="0 0 220 140">
+        <g transform="translate(28 60) rotate(-35)">
+          <rect x="0" y="-16" width="14" height="14" fill="none" stroke="#6d7f98" stroke-width="1" opacity="0.5" />
+          <text x="20" y="-2" font-family="Arial, sans-serif" font-size="14" fill="#6d7f98" opacity="0.4">${watermarkText}</text>
+        </g>
+      </svg>
+    `;
+    return `url("data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}")`;
+  }, [watermarkText]);
 
   const handleLanguageChange = (lang) => {
     updateLocale(lang);
@@ -128,7 +141,12 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
 
   if (isEmptyChat) {
     return (
-      <div className="chat-window chat-window-start flex flex-col h-full items-center justify-center">
+      <div className="chat-window chat-window--watermark chat-window-start flex flex-col h-full items-center justify-center">
+        <div
+          className="chat-window__watermark"
+          style={{ backgroundImage: watermarkBackground }}
+          aria-hidden="true"
+        />
         <Header isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
         {isSmall ? (
@@ -342,7 +360,12 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
   }
 
   return (
-    <div className="chat-window flex flex-col h-full">
+    <div className="chat-window chat-window--watermark flex flex-col h-full">
+      <div
+        className="chat-window__watermark"
+        style={{ backgroundImage: watermarkBackground }}
+        aria-hidden="true"
+      />
       <MessageList
         isSidebarOpen={isSidebarOpen}
         toggleSidebar={toggleSidebar}
