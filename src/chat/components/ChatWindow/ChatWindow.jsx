@@ -39,11 +39,18 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
   const watermarkText = t("chat.watermarkText");
 
   const watermarkBackground = useMemo(() => {
+    const [firstLine = "", ...restLines] = watermarkText.split(" ");
+    const secondLine = restLines.join(" ");
+
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" width="220" height="140" viewBox="0 0 220 140">
         <g transform="translate(28 60) rotate(-35)">
-          <rect x="0" y="-16" width="14" height="14" fill="none" stroke="#6d7f98" stroke-width="1" opacity="0.5" />
-          <text x="20" y="-2" font-family="Arial, sans-serif" font-size="14" fill="#6d7f98" opacity="0.4">${watermarkText}</text>
+          <rect x="1" y="-17" width="12" height="12" fill="none" stroke="#6d7f98" stroke-width="1" opacity="0.45" transform="rotate(45 7 -11)" />
+          <text x="7" y="-8" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="700" fill="#6d7f98" opacity="0.45">!</text>
+          <text x="20" y="-6" font-family="Arial, sans-serif" font-size="14" fill="#6d7f98" opacity="0.4">
+            <tspan x="20" dy="0">${firstLine}</tspan>
+            ${secondLine ? `<tspan x="20" dy="14">${secondLine}</tspan>` : ""}
+          </text>
         </g>
       </svg>
     `;
