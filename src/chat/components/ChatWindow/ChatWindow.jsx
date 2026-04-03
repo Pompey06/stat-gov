@@ -113,31 +113,15 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
 
   const renderAltGreetingDescription = () => (
     <div className="chat-greeting-description">
-      <div>РУС: {t("chat.greetingAltTitle")}</div>
-      <div>
-        *{t("chat.greetingAltDescriptionRu")}
-        <a
-          className="chat-greeting-description__link"
-          href={feedbackFormUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {t("chat.greetingAltDescriptionLinkRu")}
-        </a>
-      </div>
-      <br />
-      <div>КАЗ: {t("chat.greetingAltTitleKz")}</div>
-      <div>
-        *{t("chat.greetingAltDescriptionKz")}
-        <a
-          className="chat-greeting-description__link"
-          href={feedbackFormUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {t("chat.greetingAltDescriptionLinkKz")}
-        </a>
-      </div>
+      {t("chat.greetingAltDescription")}
+      <a
+        className="chat-greeting-description__link"
+        href={feedbackFormUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {t("chat.greetingAltDescriptionLink")}
+      </a>
     </div>
   );
 
@@ -197,6 +181,9 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
               >
                 {useAltGreeting ? (
                   <>
+                    <div className="chat-greeting-title">
+                      {t("chat.greetingAltTitle")}
+                    </div>
                     {renderAltGreetingDescription()}
                   </>
                 ) : (
@@ -294,6 +281,9 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
               >
                 {useAltGreeting ? (
                   <>
+                    <div className="chat-greeting-title">
+                      {t("chat.greetingAltTitle")}
+                    </div>
                     {renderAltGreetingDescription()}
                   </>
                 ) : (
