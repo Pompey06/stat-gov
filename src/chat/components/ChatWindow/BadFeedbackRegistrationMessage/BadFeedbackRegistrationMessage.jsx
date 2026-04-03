@@ -30,14 +30,11 @@ export default function BadFeedbackRegistrationMessage({ currentChatId }) {
     <div className="message mb-8 flex font-light self-start">
       {/* 1) Аватарка бота слева (за пределами «пузыря») */}
       {showAvatar && (
-        <video
-          src={videoIcon}
+        <img
+          alt="Bot"
           className="bot-avatar"
-          autoPlay
-          loop
-          muted
-          playsInline
-        />
+          src="/src/chat/assets/bot-avatar.png"
+        ></img>
       )}
 
       {/* 2) «Пузырь» с текстом и кнопкой (используем прежний класс .ai) */}
