@@ -122,6 +122,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
       >
         {t("chat.greetingAltDescriptionLink")}
       </a>
+      {t("chat.greetingAltDescriptionAfterLink")}
     </div>
   );
 
