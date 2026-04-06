@@ -196,10 +196,6 @@ export default function MessageInput() {
             handleMicClick();
             setHideMicTooltip(true);
           }}
-          onTouchEnd={(e) => {
-            handleMicClick();
-            setHideMicTooltip(true);
-          }}
           disabled={isUploading}
         >
           {isUploading ? (
