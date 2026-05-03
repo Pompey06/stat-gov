@@ -149,11 +149,11 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
   if (isEmptyChat) {
     return (
       <div className="chat-window chat-window--watermark chat-window-start flex flex-col h-full items-center justify-center">
-        <div
+        {/* <div
           className="chat-window__watermark"
           style={{ backgroundImage: watermarkBackground }}
           aria-hidden="true"
-        />
+        /> */}
         <Header isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
         {isSmall ? (
@@ -210,7 +210,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
                     <div className="chat-greeting-title">
                       {t("chat.greetingAltTitle")}
                     </div>
-                    {renderAltGreetingDescription()}
+                    {/* {renderAltGreetingDescription()} */}
                   </>
                 ) : (
                   t("chat.greeting")
@@ -310,7 +310,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
                     <div className="chat-greeting-title">
                       {t("chat.greetingAltTitle")}
                     </div>
-                    {renderAltGreetingDescription()}
+                    {/* {renderAltGreetingDescription()} */}
                   </>
                 ) : (
                   t("chat.greeting")
@@ -368,11 +368,11 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
 
   return (
     <div className="chat-window chat-window--watermark flex flex-col h-full">
-      <div
+      {/* <div
         className="chat-window__watermark"
         style={{ backgroundImage: watermarkBackground }}
         aria-hidden="true"
-      />
+      /> */}
       <MessageList
         isSidebarOpen={isSidebarOpen}
         toggleSidebar={toggleSidebar}
