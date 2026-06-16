@@ -11,11 +11,17 @@ import { ChatContext } from "../../context/ChatContext";
 import chatI18n from "../../i18n";
 import DeleteChatModal from "../ChatWindow/Modal/DeleteChatModal";
 
-export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
-   const { t, i18n } = useTranslation(undefined, { i18n: chatI18n });
+export default function Sidebar({
+   isSidebarOpen,
+   toggleSidebar,
+   showSpecialButton,
+   onOpenSpecialForms,
+   onOpenRegistration,
+}) {
+   const { t } = useTranslation(undefined, { i18n: chatI18n });
    const [isMobile, setIsMobile] = useState(window.innerWidth < 700);
 
-   const { chats, currentChatId, createNewChat, switchChat, deleteChat, updateLocale } = useContext(ChatContext);
+   const { chats, currentChatId, createNewChat, switchChat, deleteChat } = useContext(ChatContext);
 
    useEffect(() => {
       const handleResize = () => {
@@ -27,6 +33,16 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
 
    const handleNewChat = () => {
       createNewChat();
+      if (isMobile) toggleSidebar();
+   };
+
+   const handleSpecialFormsClick = () => {
+      onOpenSpecialForms();
+      if (isMobile) toggleSidebar();
+   };
+
+   const handleRegistrationClick = () => {
+      onOpenRegistration();
       if (isMobile) toggleSidebar();
    };
 
@@ -59,15 +75,68 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
             />
          </div>
 
-         <div className="sidebar__buttons flex flex-col gap-2.5 mt-16">
+         <div className="sidebar__actions flex flex-col gap-2.5 mt-16">
             <SidebarButton
                key="new-chat"
                text={t("sidebar.newChat")}
                icon={<img src={newPlusIcon} alt={t("sidebar.newChat")} className="w-5 h-5" />}
                onClick={handleNewChat}
-               className="bg-white"
+               className="bg-white sidebar__button--primary"
             />
 
+            {showSpecialButton && (
+               <SidebarButton
+                  key="special-forms"
+                  text={t("binModal.specialFormsButton")}
+                  icon={
+                     <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-5 h-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                     >
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <path d="M14 2v6h6" />
+                        <path d="M8 13h8" />
+                        <path d="M8 17h8" />
+                        <path d="M8 9h2" />
+                     </svg>
+                  }
+                  onClick={handleSpecialFormsClick}
+                  className="bg-white sidebar__button--primary"
+               />
+            )}
+
+            <SidebarButton
+               key="registration"
+               text={t("feedback.openRegistrationForm")}
+               icon={
+                  <svg
+                     xmlns="http://www.w3.org/2000/svg"
+                     className="w-5 h-5"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     strokeWidth="2"
+                     strokeLinecap="round"
+                     strokeLinejoin="round"
+                     aria-hidden="true"
+                  >
+                     <path d="M12 20h9" />
+                     <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                  </svg>
+               }
+               onClick={handleRegistrationClick}
+               className="bg-white sidebar__button--primary"
+            />
+         </div>
+
+         <div className="sidebar__history flex flex-col gap-2.5 mt-8">
             {(() => {
                const sortedChats = chats
                   .filter((chat) => chat.id !== null)

@@ -1,7 +1,6 @@
 .sidebar {
    transition: all 0.4s ease-in-out;
    width: 384px;
-   overflow-y: auto;
    background: #eff8fe;
    position: relative;
 
@@ -28,6 +27,32 @@
    overflow: hidden; /* Запрещаем скролл в закрытом состоянии */
 }
 
+.sidebar__actions {
+   flex-shrink: 0;
+   padding-bottom: 20px;
+   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.sidebar__history {
+   flex: 1 1 auto;
+   min-height: 0;
+   overflow-y: auto;
+   padding-right: 4px;
+}
+
+.sidebar__history::-webkit-scrollbar {
+   width: 6px;
+}
+
+.sidebar__history::-webkit-scrollbar-track {
+   background: transparent;
+}
+
+.sidebar__history::-webkit-scrollbar-thumb {
+   background: rgba(0, 104, 191, 0.25);
+   border-radius: 3px;
+}
+
 @media (max-width: 1024px) {
    .sidebar--close .sidebar__icon {
       align-self: center;
@@ -47,7 +72,8 @@
    align-self: start;
 }
 
-.sidebar__buttons,
+.sidebar__actions,
+.sidebar__history,
 .sidebar__warning {
    opacity: 1;
    transition: opacity 0.3s ease-in-out;
@@ -63,7 +89,8 @@
    text-transform: uppercase;
 }
 
-.sidebar--close .sidebar__buttons,
+.sidebar--close .sidebar__actions,
+.sidebar--close .sidebar__history,
 .sidebar--close .sidebar__warning,
 .sidebar--close .language {
    opacity: 0;
@@ -112,10 +139,11 @@
    .sidebar--close {
       transform: translateX(0);
       width: 100%;
-      overflow-y: auto; /* Возвращаем скролл для мобильной версии в закрытом состоянии */
+      overflow: hidden;
    }
 
-   .sidebar--close .sidebar__buttons,
+   .sidebar--close .sidebar__actions,
+   .sidebar--close .sidebar__history,
    .sidebar--close .sidebar__warning,
    .sidebar--close .language {
       opacity: 1;

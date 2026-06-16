@@ -149,32 +149,6 @@
   padding: 0;
 }
 
-/* Расположение и отступы */
-.special-button-container {
-  margin-top: 20px; /* немного отступа от MessageList */
-  margin-bottom: -10px;
-  padding: 0 10px;
-}
-
-/* Базовый стиль кнопки */
-.btn.special {
-  background-color: transparent;
-  color: #0066cc;
-  border: 2px solid #0066cc;
-  padding: 10px 24px;
-  border-radius: 24px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
-}
-
-/* Hover-эффект */
-.btn.special:hover {
-  background-color: #0066cc;
-  color: #fff;
-  transform: translateY(-2px);
-}
-
 @media (max-width: 1400px) {
   .chat-window-start .bottom__wrapper {
     width: 100%;
@@ -276,8 +250,5 @@
     text-align: center;
     align-items: center;
     justify-content: center;
-  }
-  .btn.special {
-    font-size: 13px;
   }
 }

@@ -3,7 +3,7 @@ import { BaseModal } from "./BaseModal";
 import { useTranslation } from "react-i18next";
 import chatI18n from "../../../i18n";
 
-export default function BinModal({ isOpen, onClose, onSubmitBin, createMessage }) {
+export default function BinModal({ isOpen, onClose, onSubmitBin }) {
    const { t } = useTranslation(undefined, { i18n: chatI18n });
    const currentYear = new Date().getFullYear();
    const years = [currentYear - 2, currentYear - 1, currentYear];
