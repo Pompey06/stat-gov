@@ -9,6 +9,7 @@ import chatI18n from "../../i18n";
 const Header = ({ isSidebarOpen, toggleSidebar }) => {
   const { i18n } = useTranslation(undefined, { i18n: chatI18n });
   const { updateLocale } = useContext(ChatContext);
+  const languageOptions = ["қаз", "рус", "eng"];
 
   // Текущий язык по-умолчанию — казахский
   const currentLang = i18n.language;
@@ -30,22 +31,17 @@ const Header = ({ isSidebarOpen, toggleSidebar }) => {
       />
 
       <div className="flex language">
-        <button
-          className={`language__button rounded ${
-            currentLang === "қаз" ? "bg-blue text-white" : "bg-gray color-blue"
-          }`}
-          onClick={() => handleLanguageChange("қаз")}
-        >
-          қаз
-        </button>
-        <button
-          className={`language__button rounded ${
-            currentLang === "рус" ? "bg-blue text-white" : "bg-gray color-blue"
-          }`}
-          onClick={() => handleLanguageChange("рус")}
-        >
-          рус
-        </button>
+        {languageOptions.map((lang) => (
+          <button
+            key={lang}
+            className={`language__button rounded ${
+              currentLang === lang ? "bg-blue text-white" : "bg-gray color-blue"
+            }`}
+            onClick={() => handleLanguageChange(lang)}
+          >
+            {lang}
+          </button>
+        ))}
       </div>
     </div>
   );

@@ -37,6 +37,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
   const [isRegistrationModalOpen, setRegistrationModalOpen] = useState(false);
   const feedbackFormUrl = "https://forms.gle/dDhLCDBYSQZRMuD87";
   const watermarkText = t("chat.watermarkText");
+  const languageOptions = ["қаз", "рус", "eng"];
 
   const watermarkBackground = useMemo(() => {
     const [firstLine = "", ...restLines] = watermarkText.split(" ");
@@ -125,7 +126,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
       );
     } catch (err) {
       console.error(err);
-      addBotMessage("Ошибка при получении перечня форм. Попробуйте позже.");
+      addBotMessage(t("binModal.fetchError"));
     } finally {
       setIsTyping(false);
     }
@@ -264,26 +265,19 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
         ) : (
           <>
             <div className="flex language">
-              <button
-                className={`language__button rounded ${
-                  currentLang === "қаз"
-                    ? "bg-blue text-white"
-                    : "bg-gray color-blue"
-                }`}
-                onClick={() => handleLanguageChange("қаз")}
-              >
-                қаз
-              </button>
-              <button
-                className={`language__button rounded ${
-                  currentLang === "рус"
-                    ? "bg-blue text-white"
-                    : "bg-gray color-blue"
-                }`}
-                onClick={() => handleLanguageChange("рус")}
-              >
-                рус
-              </button>
+              {languageOptions.map((lang) => (
+                <button
+                  key={lang}
+                  className={`language__button rounded ${
+                    currentLang === lang
+                      ? "bg-blue text-white"
+                      : "bg-gray color-blue"
+                  }`}
+                  onClick={() => handleLanguageChange(lang)}
+                >
+                  {lang}
+                </button>
+              ))}
             </div>
 
             <div className="person__wrapper">

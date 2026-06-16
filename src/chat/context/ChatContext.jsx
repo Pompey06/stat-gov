@@ -14,6 +14,13 @@ import {
 import mockCategories from "./mockCategories.json";
 
 const ChatContext = createContext();
+const getLocaleCode = (lang) => {
+  if (lang === "қаз") return "kz";
+  if (lang === "eng") return "en";
+  return "ru";
+};
+
+const getBackendLang = (lang) => (lang === "қаз" ? "kk" : "ru");
 
 const ChatProvider = ({ children }) => {
   const { t, i18n } = useTranslation(undefined, { i18n: chatI18n });
@@ -97,7 +104,7 @@ const ChatProvider = ({ children }) => {
   const [currentChatId, setCurrentChatId] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState(null);
-  const [locale, setLocale] = useState("ru");
+  const [locale, setLocale] = useState(() => getLocaleCode(i18n.language));
 
   useEffect(() => {
     setChats((prevChats) =>
@@ -113,12 +120,11 @@ const ChatProvider = ({ children }) => {
   }, [i18n.language, t]);
 
   useEffect(() => {
-    const currentLanguage = i18n.language === "қаз" ? "kz" : "ru";
-    setLocale(currentLanguage);
+    setLocale(getLocaleCode(i18n.language));
   }, [i18n.language]);
 
   const updateLocale = (lang) => {
-    const newLocale = lang === "қаз" ? "kz" : "ru";
+    const newLocale = getLocaleCode(lang);
     setLocale(newLocale);
     i18n.changeLanguage(lang);
     localStorage.setItem("locale", lang);
@@ -431,7 +437,7 @@ const ChatProvider = ({ children }) => {
               chat.messages[0],
               ...fetchedCategories.slice(0, 4).map((cat) => ({
                 text:
-                  i18n.language === "қаз"
+                  locale === "kz"
                     ? translationsKz[cat.name] || cat.name
                     : cat.name,
                 isUser: true,
@@ -458,7 +464,7 @@ const ChatProvider = ({ children }) => {
         ) {
           const categoryButtons = categories.slice(0, 4).map((cat) => ({
             text:
-              i18n.language === "қаз"
+              locale === "kz"
                 ? translationsKz[cat.name] || cat.name
                 : cat.name,
             isUser: true,
@@ -972,7 +978,7 @@ const ChatProvider = ({ children }) => {
           // Собираем кнопки FAQ по этой категории
           const faqButtons = (categoryData.faq || []).map((f, i) => ({
             text:
-              i18n.language === "қаз"
+              locale === "kz"
                 ? translationsKz[f.question] || f.question
                 : f.question,
             isUser: true,
@@ -1046,7 +1052,7 @@ const ChatProvider = ({ children }) => {
 
           const subButtons = categoryData.subcategories.map((sub) => ({
             text:
-              locale === "ru" ? sub.name : translationsKz[sub.name] || sub.name,
+              locale === "kz" ? translationsKz[sub.name] || sub.name : sub.name,
             isUser: true,
             isFeedback: false,
             isButton: true,
@@ -1074,7 +1080,7 @@ const ChatProvider = ({ children }) => {
 
           const faqButtons = categoryData.faq.map((f, i) => ({
             text:
-              i18n.language === "қаз"
+              locale === "kz"
                 ? translationsKz[f.question] || f.question
                 : f.question,
             isUser: true,
@@ -1275,7 +1281,7 @@ const ChatProvider = ({ children }) => {
   // Обновлённая версия fetchFormsByBin, теперь принимает год из модалки
 
   const fetchFormsByBin = async (bin, year = new Date().getFullYear()) => {
-    const lang = i18n.language === "қаз" ? "kk" : "ru";
+    const lang = getBackendLang(i18n.language);
 
     try {
       // 1) Немедленно получаем перечень форм
@@ -1344,7 +1350,7 @@ const ChatProvider = ({ children }) => {
   };
 
   const downloadForm = (bin, formVersionId, orderId, filename) => {
-    const lang = i18n.language === "қаз" ? "kk" : "ru";
+    const lang = getBackendLang(i18n.language);
     const baseUrl = import.meta.env.VITE_API_URL;
     // Формируем прямой URL к отчету
     const url = `${baseUrl}/begunok/report?order_id=${orderId}&lang=${lang}`;

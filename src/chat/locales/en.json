@@ -1,0 +1,129 @@
+{
+  "messages": {
+    "feedbackPrompt": "Rate the quality of the answer",
+    "noMessagesInChat": "There are no messages in this chat"
+  },
+  "logo": {
+    "text": "Bureau of National Statistics of the Agency for Strategic Planning and Reforms of the Republic of Kazakhstan"
+  },
+  "chat": {
+    "suggestionText": "Perhaps you were looking for ...",
+    "greeting": "Hello! How can I help you?",
+    "greetingAltTitle": "Hello! How can I help you?",
+    "greetingAltDescription": "*We are currently in testing mode, and your questions help us improve the bot. If you have suggestions, you can leave them ",
+    "greetingAltDescriptionLink": "here",
+    "greetingAltDescriptionAfterLink": ".",
+    "watermarkText": "Test mode",
+    "sources": "Additionally, I am attaching the instructions for the form:",
+    "interestingSuggestion": "Perhaps this may interest you...",
+    "bottomText": "*You are currently using the demo beta version of the bot. We regularly improve and update its functionality to make the service more convenient and useful for you."
+  },
+  "sidebar": {
+    "close": "Close sidebar",
+    "newChat": "New chat",
+    "previousRequest": "Previous request",
+    "previousChat": "Previous chat {{number}}",
+    "warning": "Attention: request history older than 7 days is cleared automatically",
+    "today": "Today",
+    "yesterday": "Yesterday"
+  },
+  "feedback": {
+    "good": "Good",
+    "bad": "Bad",
+    "goodAlt": "Positive feedback",
+    "badAlt": "Negative feedback",
+    "goodAltHover": "Positive feedback (hover)",
+    "badAltHover": "Negative feedback (hover)",
+    "goodModalTitle": "Thank you for your feedback!",
+    "goodModalDescription": "We are glad you liked it. Would you like to share what exactly you liked about the answer?",
+    "badModalTitle": "We are sorry you were not satisfied.",
+    "badModalDescription": "We want to get better! Tell us what can be improved.",
+    "requestFeedback": "Rate the quality of the answer",
+    "badFeedbackPromptText": "We are sorry that we could not answer your question. Please leave your contact details so our operators can get in touch with you for a consultation.",
+    "openRegistrationForm": "Create a request",
+    "registrationTitle": "Request registration"
+  },
+  "modal": {
+    "close": "Close",
+    "placeholder": "Leave your feedback ...",
+    "submit": "Send",
+    "feedbackSubmitted": "Feedback sent"
+  },
+  "messageInput": {
+    "placeholder": "Send a message...",
+    "sendIconAlt": "Send icon",
+    "sentMessage": "Message sent",
+    "text": "Our bot uses AI and is currently in the testing stage. Inaccuracies in the answers are possible. If you encounter any inaccuracies, please let us know by filling out the feedback form.",
+    "textAlt": "Please note: the bot's answers are for reference only. During the testing period, some inaccuracies are possible. If you encounter inaccuracies, please let us know by leaving a rating or filling out the feedback form. This will help us improve the service.",
+    "micTooltip": "Voice input",
+    "micRecording": "Stop recording",
+    "micUploading": "Uploading...",
+    "micPermissionDenied": "No access to the microphone. Please check your browser settings.",
+    "micHint": "Press the \"Voice input\" button and say your question in the selected language (Kazakh, Russian, or English). To help us recognize your speech as accurately as possible, speak calmly and do not say links or website addresses."
+  },
+  "chatError": {
+    "errorMessage": "Sorry, an error occurred. Please rephrase your request."
+  },
+  "chatTyping": {
+    "typingMessage": "Typing"
+  },
+  "registration": {
+    "physical": "Individual",
+    "legal": "Legal entity",
+    "surname": "Surname",
+    "successMessage": "Thank you, your request No. {{requestId}} has been accepted. Our specialists will contact you shortly.",
+    "name": "Name",
+    "patronymic": "Patronymic",
+    "phone": "Phone number",
+    "email": "Email",
+    "bin": "BIN",
+    "iin": "IIN",
+    "region": {
+      "select": "Select a region",
+      "option1": "1",
+      "option2": "2",
+      "option3": "3"
+    },
+    "description": "Describe your question and attach screenshots if necessary",
+    "chooseFile": "Choose file",
+    "fileInfo": "File size must not exceed 5 MB.",
+    "removeFile": "Remove",
+    "submit": "Send",
+    "submitting": "Sending...",
+    "consent": "By clicking \"Send\", I consent to the collection, storage, and processing of my personal data specified in this form in accordance with the legislation of the Republic of Kazakhstan on personal data protection, for the purpose of reviewing my request and receiving feedback from the Bureau of National Statistics of Kazakhstan."
+  },
+  "copyButton": {
+    "copy": "Copy",
+    "copied": "Copied"
+  },
+  "deleteChatModal": {
+    "title": "Delete chat",
+    "message": "Are you sure you want to delete this chat? This action cannot be undone.",
+    "cancel": "Cancel",
+    "confirm": "Delete"
+  },
+  "binModal": {
+    "title": "Enter the company's BIN",
+    "cancel": "Cancel",
+    "submit": "Send",
+    "specialFormsButton": "List of statistical forms that I need to submit",
+    "labelDeadline": "Deadline",
+    "labelRecipient": "Recipient",
+    "labelDescription": "Description",
+    "labelName": "Name",
+    "loadingTitle": "Loading form",
+    "loadingText": "Please wait while the report is being generated...",
+    "foundForms": "A list of statistical forms for BIN {{bin}} has been found:",
+    "invalidBin": "Please enter a valid 12-digit BIN",
+    "fileName": "List of statistical forms",
+    "preparing": "Preparing file",
+    "labelIndex": "Index",
+    "fetchError": "An error occurred while retrieving the list of forms. Please try again later."
+  },
+  "soundButton": {
+    "readAloud": "Read aloud",
+    "loading": "Preparing...",
+    "playing": "Playing...",
+    "stop": "Stop"
+  }
+}
