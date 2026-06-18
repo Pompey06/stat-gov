@@ -49,35 +49,38 @@ export default function RegistrationModal({
   // ========= Локальное состояние для телефона (заменяем InputMask) =========
   const [phoneValue, setPhoneValue] = useState("");
 
-  // Функция форматирования номера: +7 9999 99 99 99
+  // Функция форматирования номера: +7-7XX-xxx-xx-xx
   const formatPhone = (rawValue) => {
     // Удаляем всё, кроме цифр
     let digits = rawValue.replace(/\D/g, "");
 
-    // Ограничим максимум 11 цифрами (первая — 7, потом 10 ещё)
+    // Первая цифра — код страны 7. Вторая цифра для номеров РК тоже всегда 7.
+    if (digits.startsWith("7") || digits.startsWith("8")) {
+      digits = digits.slice(1);
+    }
+    if (digits.startsWith("7")) {
+      digits = digits.slice(1);
+    }
+    digits = `77${digits}`;
+
+    // Ограничим максимум 11 цифрами: 7 + 10 цифр номера.
     if (digits.length > 11) {
       digits = digits.slice(0, 11);
     }
 
-    // Убедимся, что начинается с "7" (по аналогии с +7)
-    if (!digits.startsWith("7")) {
-      digits = "7" + digits;
-    }
-
-    // Собираем результат: +7 9999 99 99 99
+    // Собираем результат: +7-7XX-xxx-xx-xx
     let formatted = "+7";
     if (digits.length > 1) {
-      // первые 4 цифры после 7
-      formatted += " " + digits.substring(1, Math.min(5, digits.length));
+      formatted += "-" + digits.substring(1, Math.min(4, digits.length));
     }
-    if (digits.length >= 5) {
-      formatted += " " + digits.substring(5, Math.min(7, digits.length));
+    if (digits.length >= 4) {
+      formatted += "-" + digits.substring(4, Math.min(7, digits.length));
     }
     if (digits.length >= 7) {
-      formatted += " " + digits.substring(7, Math.min(9, digits.length));
+      formatted += "-" + digits.substring(7, Math.min(9, digits.length));
     }
     if (digits.length >= 9) {
-      formatted += " " + digits.substring(9, Math.min(11, digits.length));
+      formatted += "-" + digits.substring(9, Math.min(11, digits.length));
     }
 
     return formatted;
