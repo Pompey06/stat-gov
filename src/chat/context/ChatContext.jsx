@@ -14,13 +14,26 @@ import {
 import mockCategories from "./mockCategories.json";
 
 const ChatContext = createContext();
+const RU_LANGUAGE = "\u0440\u0443\u0441";
+const KZ_LANGUAGE = "\u049b\u0430\u0437";
+const EN_LANGUAGE = "eng";
+
+const normalizeChatLanguage = (lang) => {
+  if (lang === EN_LANGUAGE || lang === "en") return RU_LANGUAGE;
+  if (lang === "ru" || lang === RU_LANGUAGE) return RU_LANGUAGE;
+  if (lang === "kz" || lang === "kk" || lang === KZ_LANGUAGE) {
+    return KZ_LANGUAGE;
+  }
+  return RU_LANGUAGE;
+};
+
 const getLocaleCode = (lang) => {
-  if (lang === "қаз") return "kz";
-  if (lang === "eng") return "en";
+  if (normalizeChatLanguage(lang) === KZ_LANGUAGE) return "kz";
   return "ru";
 };
 
-const getBackendLang = (lang) => (lang === "қаз" ? "kk" : "ru");
+const getBackendLang = (lang) =>
+  normalizeChatLanguage(lang) === KZ_LANGUAGE ? "kk" : "ru";
 
 const ChatProvider = ({ children }) => {
   const { t, i18n } = useTranslation(undefined, { i18n: chatI18n });
@@ -120,14 +133,24 @@ const ChatProvider = ({ children }) => {
   }, [i18n.language, t]);
 
   useEffect(() => {
-    setLocale(getLocaleCode(i18n.language));
+    const normalizedLanguage = normalizeChatLanguage(i18n.language);
+
+    if (normalizedLanguage !== i18n.language) {
+      i18n.changeLanguage(normalizedLanguage);
+      localStorage.setItem("locale", normalizedLanguage);
+      return;
+    }
+
+    setLocale(getLocaleCode(normalizedLanguage));
   }, [i18n.language]);
 
   const updateLocale = (lang) => {
-    const newLocale = getLocaleCode(lang);
+    const normalizedLanguage = normalizeChatLanguage(lang);
+    const newLocale = getLocaleCode(normalizedLanguage);
+
     setLocale(newLocale);
-    i18n.changeLanguage(lang);
-    localStorage.setItem("locale", lang);
+    i18n.changeLanguage(normalizedLanguage);
+    localStorage.setItem("locale", normalizedLanguage);
   };
 
   const fetchChatHistory = async (chatId) => {

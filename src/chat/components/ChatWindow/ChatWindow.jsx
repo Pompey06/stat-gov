@@ -8,6 +8,11 @@ import chatI18n from "../../i18n";
 import { useTranslation } from "react-i18next";
 import botImage from "../../assets/bot-avatar.png";
 
+const RU_LANGUAGE = "\u0440\u0443\u0441";
+const KZ_LANGUAGE = "\u049b\u0430\u0437";
+const normalizeChatLanguage = (lang) =>
+  lang === "eng" || lang === "en" ? RU_LANGUAGE : lang;
+
 export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
   const { i18n } = useTranslation(undefined, { i18n: chatI18n });
   const {
@@ -19,10 +24,10 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
   const { t } = useTranslation(undefined, { i18n: chatI18n });
   const currentChat = chats.find((c) => c.id === currentChatId) || chats[0];
   const isEmptyChat = currentChat.isEmpty;
-  const currentLang = i18n.language;
+  const currentLang = normalizeChatLanguage(i18n.language);
   const showAvatar = import.meta.env.VITE_SHOW_AVATAR === "true";
   const useAltGreeting = import.meta.env.VITE_USE_ALT_GREETING === "true";
-  const languageOptions = ["қаз", "рус", "eng"];
+  const languageOptions = [KZ_LANGUAGE, RU_LANGUAGE];
 
   const handleLanguageChange = (lang) => {
     updateLocale(lang);

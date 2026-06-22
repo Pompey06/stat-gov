@@ -6,13 +6,18 @@ import { ChatContext } from "../../context/ChatContext";
 import { useTranslation } from "react-i18next";
 import chatI18n from "../../i18n";
 
+const RU_LANGUAGE = "\u0440\u0443\u0441";
+const KZ_LANGUAGE = "\u049b\u0430\u0437";
+const normalizeChatLanguage = (lang) =>
+  lang === "eng" || lang === "en" ? RU_LANGUAGE : lang;
+
 const Header = ({ isSidebarOpen, toggleSidebar }) => {
   const { i18n } = useTranslation(undefined, { i18n: chatI18n });
   const { updateLocale } = useContext(ChatContext);
-  const languageOptions = ["қаз", "рус", "eng"];
+  const languageOptions = [KZ_LANGUAGE, RU_LANGUAGE];
 
   // Текущий язык по-умолчанию — казахский
-  const currentLang = i18n.language;
+  const currentLang = normalizeChatLanguage(i18n.language);
 
   const handleLanguageChange = (lang) => {
     updateLocale(lang);
