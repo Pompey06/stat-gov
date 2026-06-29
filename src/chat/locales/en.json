@@ -28,6 +28,7 @@
     "searchEmpty": "No chats found",
     "searchMatchTitle": "Match in title",
     "searchMatchMessage": "Match in message",
+    "clearHistory": "Delete all request history",
     "previousRequest": "Previous request",
     "previousChat": "Previous chat {{number}}",
     "warning": "Attention: request history older than 7 days is cleared automatically",
@@ -107,7 +108,10 @@
     "title": "Delete chat",
     "message": "Are you sure you want to delete this chat? This action cannot be undone.",
     "cancel": "Cancel",
-    "confirm": "Delete"
+    "confirm": "Delete",
+    "clearAllTitle": "Delete all request history",
+    "clearAllMessage": "Are you sure you want to delete the entire request history? This action cannot be undone.",
+    "clearAllConfirm": "Delete all"
   },
   "binModal": {
     "title": "Enter the company's BIN",

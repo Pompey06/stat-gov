@@ -225,3 +225,7 @@ export function markChatAsDeleted(chatId) {
 export function isChatDeleted(chatId) {
    return getDeletedChats().includes(chatId);
 }
+
+export function clearDeletedChats() {
+   localStorage.setItem(DELETED_CHATS_KEY, JSON.stringify([]));
+}

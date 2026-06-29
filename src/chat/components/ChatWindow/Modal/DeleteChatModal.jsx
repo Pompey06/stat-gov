@@ -3,22 +3,35 @@ import React from "react";
 import { BaseModal } from "./BaseModal";
 import { useTranslation } from "react-i18next";
 
-export default function DeleteChatModal({ isOpen, onClose, onConfirm }) {
+export default function DeleteChatModal({
+   isOpen,
+   onClose,
+   onConfirm,
+   title,
+   message,
+   confirmText,
+}) {
    const { t } = useTranslation();
 
-   const handleConfirm = () => {
-      onConfirm();
-      onClose();
+   const handleConfirm = async () => {
+      try {
+         await onConfirm();
+         onClose();
+      } catch (error) {
+         console.error("Delete confirmation failed:", error);
+      }
    };
 
    return (
       <BaseModal
          isOpen={isOpen}
          onClose={onClose}
-         title={t("deleteChatModal.title")}
+         title={title || t("deleteChatModal.title")}
          modalClassName="delete-chat-modal"
       >
-         <p className="font-light text-base/6 mb-3">{t("deleteChatModal.message")}</p>
+         <p className="font-light text-base/6 mb-3">
+            {message || t("deleteChatModal.message")}
+         </p>
          <div className="mt-6 flex justify-end gap-2">
             <button
                type="button"
@@ -32,7 +45,7 @@ export default function DeleteChatModal({ isOpen, onClose, onConfirm }) {
                className="confirm__button bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
                onClick={handleConfirm}
             >
-               {t("deleteChatModal.confirm")}
+               {confirmText || t("deleteChatModal.confirm")}
             </button>
          </div>
       </BaseModal>

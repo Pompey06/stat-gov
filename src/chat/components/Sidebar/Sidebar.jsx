@@ -23,9 +23,16 @@ export default function Sidebar({
    const [isMobile, setIsMobile] = useState(window.innerWidth < 700);
    const [chatToDelete, setChatToDelete] = useState(null);
    const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+   const [isDeleteAllModalOpen, setIsDeleteAllModalOpen] = useState(false);
 
-   const { chats, currentChatId, createNewChat, switchChat, deleteChat } =
-      useContext(ChatContext);
+   const {
+      chats,
+      currentChatId,
+      createNewChat,
+      switchChat,
+      deleteChat,
+      deleteAllChats,
+   } = useContext(ChatContext);
 
    useEffect(() => {
       const handleResize = () => {
@@ -61,8 +68,12 @@ export default function Sidebar({
    const openDeleteModal = (chatId) => setChatToDelete(chatId);
    const closeDeleteModal = () => setChatToDelete(null);
    const confirmDeleteChat = () => {
-      if (chatToDelete) deleteChat(chatToDelete);
+      if (chatToDelete) return deleteChat(chatToDelete);
+      return Promise.resolve();
    };
+   const openDeleteAllModal = () => setIsDeleteAllModalOpen(true);
+   const closeDeleteAllModal = () => setIsDeleteAllModalOpen(false);
+   const confirmDeleteAllChats = () => deleteAllChats();
 
    const handleSwitchChat = (chatId) => {
       switchChat(chatId);
@@ -229,6 +240,32 @@ export default function Sidebar({
                onClick={handleSearchClick}
                className="bg-white sidebar__button--primary"
             />
+
+            <SidebarButton
+               key="delete-all-chats"
+               text={t("sidebar.clearHistory")}
+               icon={
+                  <svg
+                     xmlns="http://www.w3.org/2000/svg"
+                     className="w-5 h-5"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     strokeWidth="2"
+                     strokeLinecap="round"
+                     strokeLinejoin="round"
+                     aria-hidden="true"
+                  >
+                     <path d="M3 6h18" />
+                     <path d="M8 6V4h8v2" />
+                     <path d="M19 6l-1 14H6L5 6" />
+                     <path d="M10 11v6" />
+                     <path d="M14 11v6" />
+                  </svg>
+               }
+               onClick={openDeleteAllModal}
+               className="bg-white sidebar__button--danger"
+            />
          </div>
 
          <div className="sidebar__history flex flex-col gap-2.5 mt-8">
@@ -256,6 +293,15 @@ export default function Sidebar({
             isOpen={!!chatToDelete}
             onClose={closeDeleteModal}
             onConfirm={confirmDeleteChat}
+         />
+
+         <DeleteChatModal
+            isOpen={isDeleteAllModalOpen}
+            onClose={closeDeleteAllModal}
+            onConfirm={confirmDeleteAllChats}
+            title={t("deleteChatModal.clearAllTitle")}
+            message={t("deleteChatModal.clearAllMessage")}
+            confirmText={t("deleteChatModal.clearAllConfirm")}
          />
 
          <SearchChatsModal

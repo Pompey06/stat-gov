@@ -117,6 +117,17 @@
    background: red;
 }
 
+.sidebar__button--danger {
+   color: #b42318;
+   border-bottom: 1px solid rgba(180, 35, 24, 0.45);
+   position: relative;
+   box-shadow: 0px 2px 4px -2px rgba(24, 39, 75, 0.12), 0px 4px 4px -2px rgba(24, 39, 75, 0.08);
+}
+
+.sidebar__button--danger:hover {
+   background: #fff4f2 !important;
+}
+
 @media (max-width: 1024px) {
    .sidebar__icon {
       max-width: 44px;

@@ -8,6 +8,7 @@ import {
   hasBadFeedbackPrompt,
   isChatDeleted,
   markChatAsDeleted,
+  clearDeletedChats,
   saveBadFeedbackPromptState,
   saveFeedbackState,
 } from "../utils/feedbackStorage";
@@ -633,6 +634,34 @@ const ChatProvider = ({ children }) => {
       return newChats;
     });
   }
+
+  const deleteChatRemote = async (chatId) => {
+    if (chatId == null) return;
+
+    try {
+      await api.delete(`/conversation/by-id/${chatId}`);
+      deleteChat(chatId);
+    } catch (error) {
+      console.error("Error deleting chat:", error);
+      throw error;
+    }
+  };
+
+  const deleteAllChats = async () => {
+    try {
+      await api.delete(`/conversation/my`);
+      conversationSearchCacheRef.current.clear();
+      clearDeletedChats();
+      setCurrentCategory(null);
+      setCurrentSubcategory(null);
+      setCurrentChatId(null);
+      setChats([createDefaultChat()]);
+      fetchInitialMessages();
+    } catch (error) {
+      console.error("Error deleting all chats:", error);
+      throw error;
+    }
+  };
 
   const updateChatWithCategories = (fetchedCategories) => {
     // Safety check: ensure fetchedCategories is an array
@@ -1593,7 +1622,8 @@ const ChatProvider = ({ children }) => {
         fetchFormsByBin,
         addButtonMessages,
         downloadForm,
-        deleteChat,
+        deleteChat: deleteChatRemote,
+        deleteAllChats,
         addBotMessage,
         setChats,
         removeBadFeedbackMessage,
