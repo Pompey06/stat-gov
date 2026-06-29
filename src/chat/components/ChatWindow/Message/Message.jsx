@@ -43,6 +43,39 @@ export default function Message({
   const { downloadForm, chats, currentChatId } = useContext(ChatContext);
   const [fileBlobMap, setFileBlobMap] = useState({});
   const [downloadingId, setDownloadingId] = useState(null);
+  const displayText = React.useMemo(() => {
+    if (typeof text === "string") return text;
+    if (typeof text === "number" || typeof text === "boolean") {
+      return String(text);
+    }
+    if (text == null) return "";
+    if (Array.isArray(text)) {
+      return text
+        .map((item) => {
+          if (typeof item === "string") return item;
+          if (typeof item === "number" || typeof item === "boolean") {
+            return String(item);
+          }
+          if (item && typeof item === "object") {
+            if (typeof item.text === "string") return item.text;
+            if (typeof item.content === "string") return item.content;
+          }
+          return "";
+        })
+        .filter(Boolean)
+        .join("\n");
+    }
+    if (typeof text === "object") {
+      if (typeof text.text === "string") return text.text;
+      if (typeof text.content === "string") return text.content;
+      try {
+        return JSON.stringify(text, null, 2);
+      } catch {
+        return "";
+      }
+    }
+    return "";
+  }, [text]);
 
   // tooltips
   const [hideCopyTooltip, setHideCopyTooltip] = useState(true);
@@ -133,20 +166,20 @@ export default function Message({
 
     if (navigator.clipboard?.writeText) {
       navigator.clipboard
-        .writeText(text)
+        .writeText(displayText)
         .then(() => {
           setCopied(true);
           setTimeout(() => setCopied(false), 1500);
         })
         .catch(() => {
-          const ok = copy(text);
+          const ok = copy(displayText);
           if (ok) {
             setCopied(true);
             setTimeout(() => setCopied(false), 1500);
           }
         });
     } else {
-      const ok = copy(text);
+      const ok = copy(displayText);
       if (ok) {
         setCopied(true);
         setTimeout(() => setCopied(false), 1500);
@@ -236,7 +269,7 @@ export default function Message({
       abortRef.current = new AbortController();
 
       const res = await api.post("/audio/tts", null, {
-        params: { text },
+        params: { text: displayText },
         responseType: "blob",
         signal: abortRef.current.signal,
       });
@@ -337,9 +370,8 @@ export default function Message({
             ),
           }}
         >
-          {text}
+          {displayText}
         </ReactMarkdown>
-
         {!streaming && allFilePaths.length > 0 && (
           <div className="mt-2 fade-in">
             <div className="file-download-container">
@@ -362,7 +394,6 @@ export default function Message({
             </div>
           </div>
         )}
-
         {Array.isArray(attachments) && attachments.length > 0 && (
           <div className="file-download-container fade-in">
             {attachments.map((att) => (
@@ -437,7 +468,6 @@ export default function Message({
             })()}
           </div>
         )}
-
         {/* Кнопки действий */}
         {!isUser &&
           !isGreeting &&
