@@ -4,6 +4,7 @@ html, body {
  }
 
  .database-update,
+ .file-manager,
  .feedback-export,
  .analytics-dashboard,
  .faq-settings {
@@ -26,6 +27,7 @@ html, body {
  }
 
  .database-update,
+ .file-manager,
  .feedback-export,
  .analytics-dashboard,
  .faq-settings {
@@ -45,6 +47,7 @@ html, body {
       display: none;
    }
    .database-update,
+   .file-manager,
    .feedback-export,
    .analytics-dashboard,
    .faq-settings {

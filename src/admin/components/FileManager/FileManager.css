@@ -1,0 +1,345 @@
+.file-manager {
+  height: calc(100vh - 139px);
+  overflow-y: auto;
+  padding: 36px 48px 48px;
+}
+
+.file-manager__loader,
+.file-manager__empty {
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 1px solid #d6ebfa;
+  border-radius: 24px;
+  color: #5d7690;
+  font-size: 22px;
+}
+
+.file-manager__header,
+.file-manager__actions,
+.file-manager__panel-header,
+.file-manager__credential-row,
+.file-manager__file-header,
+.file-manager__file-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.file-manager__title {
+  margin: 0;
+  font-size: 27px;
+  font-weight: 400;
+  color: #09182f;
+}
+
+.file-manager__subtitle {
+  margin: 12px 0 0;
+  max-width: 920px;
+  color: #5d7690;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.file-manager__actions {
+  flex-wrap: wrap;
+}
+
+.file-manager__button {
+  min-width: 220px;
+  font-size: 18px;
+}
+
+.file-manager__button_secondary {
+  background: #fff;
+  color: #0086bf;
+  border: 1px solid #9fd4ef;
+}
+
+.file-manager__button_secondary:hover {
+  background: #edf8ff;
+}
+
+.file-manager__status {
+  margin-top: 24px;
+  padding: 16px 20px;
+  border-radius: 18px;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.file-manager__status_success {
+  background: #ecf9f1;
+  color: #1d7a45;
+}
+
+.file-manager__status_error {
+  background: #fbece6;
+  color: #bd5f27;
+}
+
+.file-manager__summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.file-manager__summary-card,
+.file-manager__panel,
+.file-manager__file-card {
+  background: #fff;
+  border: 1px solid #d6ebfa;
+  border-radius: 24px;
+  box-shadow: 0 18px 50px rgba(0, 111, 170, 0.08);
+}
+
+.file-manager__summary-card {
+  padding: 20px 22px;
+}
+
+.file-manager__summary-card span,
+.file-manager__meta-item span,
+.file-manager__credential-card span,
+.file-manager__field span,
+.file-manager__status-label {
+  display: block;
+  color: #7f90a5;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.file-manager__summary-card strong {
+  display: block;
+  margin-top: 14px;
+  font-size: 34px;
+  font-weight: 400;
+  color: #0758ab;
+}
+
+.file-manager__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
+  gap: 22px;
+  margin-top: 24px;
+}
+
+.file-manager__panel {
+  padding: 24px;
+}
+
+.file-manager__panel_full {
+  margin-top: 24px;
+}
+
+.file-manager__panel-header h3 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 400;
+  color: #09182f;
+}
+
+.file-manager__panel-header p {
+  margin: 8px 0 0;
+  color: #5d7690;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.file-manager__credential-grid,
+.file-manager__meta-grid,
+.file-manager__fields {
+  display: grid;
+  gap: 16px;
+}
+
+.file-manager__credential-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 20px;
+}
+
+.file-manager__credential-card,
+.file-manager__meta-item {
+  padding: 18px;
+  border-radius: 18px;
+  background: #f7fbfe;
+  border: 1px solid #d6ebfa;
+}
+
+.file-manager__credential-card strong,
+.file-manager__meta-item strong {
+  display: block;
+  margin-top: 10px;
+  color: #0b2f59;
+  font-size: 19px;
+  font-weight: 400;
+  word-break: break-word;
+}
+
+.file-manager__toggle-secret {
+  border: none;
+  background: none;
+  color: #0086bf;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+}
+
+.file-manager__status-box {
+  margin-top: 20px;
+  padding: 18px;
+  border-radius: 18px;
+  background: #f7fbfe;
+  border: 1px solid #d6ebfa;
+}
+
+.file-manager__status-preview {
+  margin: 12px 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #0b2f59;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.file-manager__search {
+  margin-top: 18px;
+}
+
+.file-manager__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-manager__input {
+  width: 100%;
+  min-height: 52px;
+  border-radius: 16px;
+  border: 1px solid #cde2f3;
+  padding: 14px 16px;
+  font-size: 16px;
+  color: #0b2f59;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.file-manager__input:focus {
+  border-color: #4aa8d9;
+  box-shadow: 0 0 0 3px rgba(74, 168, 217, 0.12);
+}
+
+.file-manager__list {
+  margin-top: 20px;
+  display: grid;
+  gap: 18px;
+}
+
+.file-manager__file-card {
+  padding: 22px;
+}
+
+.file-manager__file-header h4 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 400;
+  color: #09182f;
+}
+
+.file-manager__file-header p {
+  margin: 8px 0 0;
+  color: #6d819a;
+  font-size: 14px;
+}
+
+.file-manager__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 92px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #eaf8ef;
+  color: #1d7a45;
+  font-size: 14px;
+}
+
+.file-manager__badge_deleted {
+  background: #fbece6;
+  color: #bd5f27;
+}
+
+.file-manager__fields {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 18px;
+}
+
+.file-manager__meta-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 18px;
+}
+
+.file-manager__file-actions {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  margin-top: 18px;
+}
+
+.file-manager__file-actions .button {
+  min-width: 180px;
+  font-size: 16px;
+}
+
+@media (max-width: 1280px) {
+  .file-manager__summary-grid,
+  .file-manager__meta-grid,
+  .file-manager__fields,
+  .file-manager__credential-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .file-manager__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .file-manager {
+    height: calc(100vh - 102px);
+    padding: 20px 16px 32px;
+  }
+
+  .file-manager__header,
+  .file-manager__actions,
+  .file-manager__panel-header,
+  .file-manager__credential-row,
+  .file-manager__file-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .file-manager__summary-grid,
+  .file-manager__meta-grid,
+  .file-manager__fields,
+  .file-manager__credential-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .file-manager__button,
+  .file-manager__file-actions .button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .file-manager__title {
+    font-size: 24px;
+  }
+
+  .file-manager__panel,
+  .file-manager__file-card {
+    padding: 18px;
+  }
+}

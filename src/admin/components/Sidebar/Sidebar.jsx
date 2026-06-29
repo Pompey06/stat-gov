@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 import { useState } from "react";
 import logo from "../../assets/logo.svg";
-import newIcon from "../../assets/new.svg";
 import downloadIcon from "../../assets/download.svg";
 import burgerIcon from "../../assets/burgerIcon.svg";
 import SidebarButton from "../SidebarButton/SidebarButton";
@@ -57,9 +56,31 @@ const FaqIcon = () => (
   </svg>
 );
 
+const FilesIcon = () => (
+  <svg
+    width="34"
+    height="34"
+    viewBox="0 0 34 34"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <path
+      d="M9 10.5C9 8.567 10.567 7 12.5 7H17L20 10H24.5C26.433 10 28 11.567 28 13.5V23.5C28 25.433 26.433 27 24.5 27H12.5C10.567 27 9 25.433 9 23.5V10.5Z"
+      stroke="white"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+    <path d="M13 16H24" stroke="white" strokeWidth="2" strokeLinecap="round" />
+    <path d="M13 20H21" stroke="white" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
+
 const Sidebar = ({ activeTab, setActiveTab, isOpen, onMenuToggle }) => {
   const { t, i18n } = useTranslation(undefined, { i18n: adminI18n });
   const [activeLang, setActiveLang] = useState("ru");
+  const filesLabel =
+    i18n.language === "kz" ? "Файлдарды жаңарту" : "Обновление файлов";
   const faqLabel = i18n.language === "kz" ? "Жиі сұрақтар" : "Частые вопросы";
 
   const handleLangChange = (lang) => {
@@ -88,8 +109,8 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, onMenuToggle }) => {
       </div>
       <nav className="sidebar-nav">
         <SidebarButton
-          icon={newIcon}
-          text={t("sidebar.databaseUpdate")}
+          icon={<FilesIcon />}
+          text={filesLabel}
           active={activeTab === 1}
           onClick={() => handleButtonClick(1)}
         />

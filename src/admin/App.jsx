@@ -2,7 +2,7 @@ import "./App.css";
 import Login from "./components/Login/Login";
 import Sidebar from "./components/Sidebar/Sidebar";
 import Header from "./components/Header/Header";
-import DatabaseUpdate from "./components/DatabaseUpdate/DatabaseUpdate";
+import FileManager from "./components/FileManager/FileManager";
 import FeedbackExport from "./components/FeedbackExport/FeedbackExport";
 import AnalyticsDashboard from "./components/AnalyticsDashboard/AnalyticsDashboard";
 import FaqSettings from "./components/FaqSettings/FaqSettings";
@@ -43,7 +43,7 @@ function AppAdmin() {
                      onMenuToggle={handleMenuToggle}
                      onLogout={handleLogout} // если надо вывести кнопку «Выйти»
                   />
-                  {activeTab === 1 && <DatabaseUpdate credentials={credentials} />}
+                  {activeTab === 1 && <FileManager credentials={credentials} />}
                   {activeTab === 2 && <FeedbackExport credentials={credentials} />}
                   {activeTab === 3 && <AnalyticsDashboard credentials={credentials} />}
                   {activeTab === 4 && <FaqSettings credentials={credentials} />}
