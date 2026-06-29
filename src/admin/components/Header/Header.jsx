@@ -11,6 +11,12 @@ import adminI18n from "../../i18n";
 const Header = ({ activeTab, onMenuToggle }) => {
   const { t, i18n } = useTranslation(undefined, { i18n: adminI18n });
   const [activeLang, setActiveLang] = useState("ru");
+  const mobileTitleKey =
+    activeTab === 1
+      ? "sidebar.databaseUpdate"
+      : activeTab === 2
+        ? "sidebar.feedbackExport"
+        : "sidebar.analytics";
 
   const handleLangChange = (lang) => {
     setActiveLang(lang);
@@ -66,9 +72,7 @@ const Header = ({ activeTab, onMenuToggle }) => {
         </div>
         <div className="mobile-header-center">
           <h2 className="mobile-header-title">
-            {activeTab === 1
-              ? t("sidebar.databaseUpdate")
-              : t("sidebar.feedbackExport")}
+            {t(mobileTitleKey)}
           </h2>
         </div>
         <div className="mobile-header-right">

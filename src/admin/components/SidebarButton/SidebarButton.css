@@ -21,7 +21,7 @@
    background: rgba(237, 237, 237, 0.54);
  }
 
- .sidebar-button-text {
+.sidebar-button-text {
    font-family: Roboto;
 font-size: 20px;
 font-style: normal;
@@ -29,5 +29,16 @@ font-weight: 300;
 line-height: normal;
 color: #FFF;
  }
- 
- 
+
+.sidebar-button-icon {
+   width: 34px;
+   height: 34px;
+   flex: 0 0 auto;
+   object-fit: contain;
+}
+
+.sidebar-button-icon-node {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+}

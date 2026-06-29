@@ -4,7 +4,8 @@ html, body {
  }
 
  .database-update,
- .feedback-export {
+ .feedback-export,
+ .analytics-dashboard {
    height: calc(100vh - 100px);
    overflow-y: auto;
  }
@@ -24,7 +25,8 @@ html, body {
  }
 
  .database-update,
- .feedback-export {
+ .feedback-export,
+ .analytics-dashboard {
    height: calc(100vh - 139px);
    overflow-y: auto;
  }
@@ -41,7 +43,8 @@ html, body {
       display: none;
    }
    .database-update,
-   .feedback-export {
+   .feedback-export,
+   .analytics-dashboard {
      height: calc(100vh - 102px);
    }
  }
