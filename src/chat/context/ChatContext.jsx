@@ -19,7 +19,7 @@ const KZ_LANGUAGE = "\u049b\u0430\u0437";
 const EN_LANGUAGE = "eng";
 
 const normalizeChatLanguage = (lang) => {
-  if (lang === EN_LANGUAGE || lang === "en") return RU_LANGUAGE;
+  if (lang === EN_LANGUAGE || lang === "en") return EN_LANGUAGE;
   if (lang === "ru" || lang === RU_LANGUAGE) return RU_LANGUAGE;
   if (lang === "kz" || lang === "kk" || lang === KZ_LANGUAGE) {
     return KZ_LANGUAGE;
@@ -28,16 +28,20 @@ const normalizeChatLanguage = (lang) => {
 };
 
 const getLocaleCode = (lang) => {
+  if (normalizeChatLanguage(lang) === EN_LANGUAGE) return "en";
   if (normalizeChatLanguage(lang) === KZ_LANGUAGE) return "kz";
   return "ru";
 };
 
 const getBackendLang = (lang) =>
-  normalizeChatLanguage(lang) === KZ_LANGUAGE ? "kk" : "ru";
+  normalizeChatLanguage(lang) === KZ_LANGUAGE
+    ? "kk"
+    : normalizeChatLanguage(lang) === EN_LANGUAGE
+    ? "en"
+    : "ru";
 
 const ChatProvider = ({ children }) => {
   const { t, i18n } = useTranslation(undefined, { i18n: chatI18n });
-  const [translationsKz, setTranslationsKz] = useState({});
   const [categories, setCategories] = useState([]);
   const [currentCategory, setCurrentCategory] = useState(null);
   const [currentSubcategory, setCurrentSubcategory] = useState(null);
@@ -282,6 +286,20 @@ const ChatProvider = ({ children }) => {
     isEmpty: false,
   });
 
+  const pickLocalized = (value, targetLocale = locale) => {
+    if (!value) return "";
+    if (typeof value === "string") return value;
+    if (targetLocale === "en") return value.en || value.ru || value.kz || "";
+    if (targetLocale === "kz") return value.kz || value.ru || value.en || "";
+    return value.ru || value.en || value.kz || "";
+  };
+
+  const getRussianValue = (value) => {
+    if (!value) return "";
+    if (typeof value === "string") return value;
+    return value.ru || value.en || value.kz || "";
+  };
+
   const normalizeSearchValue = (value) =>
     String(value || "")
       .toLocaleLowerCase()
@@ -502,21 +520,17 @@ const ChatProvider = ({ children }) => {
 
     try {
       let fetchedCategories = []; // Initialize with empty array
-      let fetchedTranslations = {};
 
       if (USE_MOCK_CATEGORIES) {
         // берём данные из локального mockCategories.json
         fetchedCategories = mockCategories.categories || [];
-        fetchedTranslations = mockCategories.translations_kz || {};
       } else {
         // реальный вызов на бэкенд
         const res = await api.get("/assistant/categories");
         fetchedCategories = res.data?.categories || [];
-        fetchedTranslations = res.data?.translations_kz || {};
       }
 
       setCategories(fetchedCategories);
-      setTranslationsKz(fetchedTranslations);
 
       // Only call updateChatWithCategories if we have categories
       if (fetchedCategories && fetchedCategories.length > 0) {
@@ -530,7 +544,6 @@ const ChatProvider = ({ children }) => {
       console.error("Ошибка при загрузке начальных сообщений:", error);
       // Set empty arrays to prevent undefined errors
       setCategories([]);
-      setTranslationsKz({});
     }
   };
 
@@ -643,10 +656,7 @@ const ChatProvider = ({ children }) => {
             messages: [
               chat.messages[0],
               ...fetchedCategories.slice(0, 4).map((cat) => ({
-                text:
-                  locale === "kz"
-                    ? translationsKz[cat.name] || cat.name
-                    : cat.name,
+                text: pickLocalized(cat.name),
                 isUser: true,
                 isFeedback: false,
                 isButton: true,
@@ -670,14 +680,11 @@ const ChatProvider = ({ children }) => {
             (chat.id === null && currentChatId === null))
         ) {
           const categoryButtons = categories.slice(0, 4).map((cat) => ({
-            text:
-              locale === "kz"
-                ? translationsKz[cat.name] || cat.name
-                : cat.name,
+            text: pickLocalized(cat.name),
             isUser: true,
             isFeedback: false,
             isButton: true,
-            name: cat.name,
+            name: getRussianValue(cat.name),
             category: cat,
             subcategories: cat.subcategories,
             faq: cat.faq,
@@ -870,7 +877,7 @@ const ChatProvider = ({ children }) => {
     const params = {
       prompt: text,
       locale,
-      category: apCategory ?? currentCategory?.name ?? null,
+      category: apCategory ?? getRussianValue(currentCategory?.name) ?? null,
       subcategory: apSubcategory ?? currentSubcategory?.name ?? null,
       subcategory_report: apSubReport ?? null,
     };
@@ -1173,7 +1180,7 @@ const ChatProvider = ({ children }) => {
       const categoryData = selectedItem.category || currentCategory;
       setCurrentCategory(categoryData);
       setCurrentSubcategory(selectedItem);
-      setCategoryFilter(categoryData.name);
+      setCategoryFilter(getRussianValue(categoryData.name));
 
       // Прячем старые кнопки и готовим FAQ-кнопки
       setChats((prevChats) =>
@@ -1185,10 +1192,7 @@ const ChatProvider = ({ children }) => {
 
           // Собираем кнопки FAQ по этой категории
           const faqButtons = (categoryData.faq || []).map((f, i) => ({
-            text:
-              locale === "kz"
-                ? translationsKz[f.question] || f.question
-                : f.question,
+            text: pickLocalized(f.question),
             isUser: true,
             isFeedback: false,
             isButton: true,
@@ -1213,9 +1217,9 @@ const ChatProvider = ({ children }) => {
     // 2. Отчёт
     if (selectedItem.isReport) {
       const categoryData = currentCategory;
-      setCategoryFilter(categoryData.name);
+      setCategoryFilter(getRussianValue(categoryData.name));
       createMessage(selectedItem.text, false, {
-        category: categoryData.name,
+        category: getRussianValue(categoryData.name),
         subcategory: currentSubcategory?.name ?? null,
         subcategory_report: selectedItem.reportText,
       });
@@ -1247,7 +1251,7 @@ const ChatProvider = ({ children }) => {
     const categoryData = selectedItem.category || selectedItem;
     setCurrentCategory(categoryData);
     setCurrentSubcategory(null);
-    setCategoryFilter(categoryData.name);
+    setCategoryFilter(getRussianValue(categoryData.name));
 
     if (categoryData.subcategories?.length > 0) {
       // Показываем кнопки подкатегорий
@@ -1259,13 +1263,12 @@ const ChatProvider = ({ children }) => {
           if (!isCurrent) return chat;
 
           const subButtons = categoryData.subcategories.map((sub) => ({
-            text:
-              locale === "kz" ? translationsKz[sub.name] || sub.name : sub.name,
+            text: pickLocalized(sub.name),
             isUser: true,
             isFeedback: false,
             isButton: true,
             isSubcategory: true,
-            name: sub.name,
+            name: getRussianValue(sub.name),
             category: categoryData,
           }));
 
@@ -1287,10 +1290,7 @@ const ChatProvider = ({ children }) => {
           if (!isCurrent) return chat;
 
           const faqButtons = categoryData.faq.map((f, i) => ({
-            text:
-              locale === "kz"
-                ? translationsKz[f.question] || f.question
-                : f.question,
+            text: pickLocalized(f.question),
             isUser: true,
             isFeedback: false,
             isButton: true,

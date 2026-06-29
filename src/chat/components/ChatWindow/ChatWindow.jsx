@@ -10,8 +10,9 @@ import botImage from "../../assets/bot-avatar.png";
 
 const RU_LANGUAGE = "\u0440\u0443\u0441";
 const KZ_LANGUAGE = "\u049b\u0430\u0437";
+const EN_LANGUAGE = "eng";
 const normalizeChatLanguage = (lang) =>
-  lang === "eng" || lang === "en" ? RU_LANGUAGE : lang;
+  lang === "en" ? EN_LANGUAGE : lang;
 
 export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
   const { i18n } = useTranslation(undefined, { i18n: chatI18n });
@@ -27,7 +28,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
   const currentLang = normalizeChatLanguage(i18n.language);
   const showAvatar = import.meta.env.VITE_SHOW_AVATAR === "true";
   const useAltGreeting = import.meta.env.VITE_USE_ALT_GREETING === "true";
-  const languageOptions = [KZ_LANGUAGE, RU_LANGUAGE];
+  const languageOptions = [KZ_LANGUAGE, RU_LANGUAGE, EN_LANGUAGE];
 
   const handleLanguageChange = (lang) => {
     updateLocale(lang);

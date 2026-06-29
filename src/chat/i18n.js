@@ -9,11 +9,11 @@ import translationEn from "./locales/en.json";
 const RU_LANGUAGE = "\u0440\u0443\u0441";
 const KZ_LANGUAGE = "\u049b\u0430\u0437";
 const EN_LANGUAGE = "eng";
-const supportedLanguages = [RU_LANGUAGE, KZ_LANGUAGE];
+const supportedLanguages = [RU_LANGUAGE, KZ_LANGUAGE, EN_LANGUAGE];
 const storedLocale = localStorage.getItem("locale");
 
 const normalizeStoredLanguage = (lang) => {
-  if (lang === EN_LANGUAGE || lang === "en") return RU_LANGUAGE;
+  if (lang === EN_LANGUAGE || lang === "en") return EN_LANGUAGE;
   if (lang === "ru" || lang === RU_LANGUAGE) return RU_LANGUAGE;
   if (lang === "kz" || lang === "kk" || lang === KZ_LANGUAGE) {
     return KZ_LANGUAGE;
@@ -36,7 +36,8 @@ chatI18n.use(initReactI18next).init({
     [EN_LANGUAGE]: { translation: translationEn },
   },
   lng: initialLanguage,
-  fallbackLng: initialLanguage,
+  fallbackLng: RU_LANGUAGE,
+  supportedLngs: supportedLanguages,
   interpolation: {
     escapeValue: false, // React уже экранирует строки
   },
