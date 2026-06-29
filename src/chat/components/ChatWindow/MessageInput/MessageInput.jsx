@@ -10,14 +10,20 @@ import "./MessageInput.css";
 
 export default function MessageInput() {
   const { t } = useTranslation(undefined, { i18n: chatI18n });
-  const { inputPrefill, setInputPrefill, createMessage } =
-    useContext(ChatContext);
+  const {
+    inputPrefill,
+    setInputPrefill,
+    createMessage,
+    isTyping,
+    cancelAssistantResponse,
+  } = useContext(ChatContext);
   const [message, setMessage] = useState(inputPrefill);
   const useAltGreeting = import.meta.env.VITE_USE_ALT_GREETING === "true";
 
   const [hideMicTooltip, setHideMicTooltip] = useState(true);
   const [hideDoneTooltip, setHideDoneTooltip] = useState(true);
   const [hideCancelTooltip, setHideCancelTooltip] = useState(true);
+  const [hideStopResponseTooltip, setHideStopResponseTooltip] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [showMicHint, setShowMicHint] = useState(false);
@@ -33,7 +39,7 @@ export default function MessageInput() {
   });
 
   const handleSend = () => {
-    if (isUploading || !message.trim()) return;
+    if (isUploading || isTyping || !message.trim()) return;
     createMessage(message);
     setInputPrefill("");
     setMessage("");
@@ -44,7 +50,10 @@ export default function MessageInput() {
   }, [inputPrefill]);
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") handleSend();
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
   };
 
   const pickSupportedMime = () => {
@@ -339,18 +348,44 @@ export default function MessageInput() {
             </button>
           )}
 
-          <button
-            type="button"
-            className="message-input-send"
-            onClick={handleSend}
-            disabled={isUploading}
-          >
-            <img
-              className="send-icon"
-              src={sendIcon}
-              alt={t("messageInput.sendIconAlt")}
-            />
-          </button>
+          {isTyping ? (
+            <button
+              type="button"
+              className={`message-input-action message-input-action--stop ${
+                hideStopResponseTooltip ? "tooltip-hide" : ""
+              }`}
+              aria-label={t("messageInput.stopResponseTooltip")}
+              onMouseEnter={() => setHideStopResponseTooltip(false)}
+              onMouseLeave={() => setHideStopResponseTooltip(true)}
+              onClick={(e) => {
+                e.preventDefault();
+                cancelAssistantResponse();
+                setHideStopResponseTooltip(true);
+              }}
+            >
+              <img
+                src={stopIcon}
+                alt={t("messageInput.stopResponseTooltip")}
+                className="icon-s"
+              />
+              <span className="tooltip mic-tooltip">
+                {t("messageInput.stopResponseTooltip")}
+              </span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="message-input-send"
+              onClick={handleSend}
+              disabled={isUploading || !message.trim()}
+            >
+              <img
+                className="send-icon"
+                src={sendIcon}
+                alt={t("messageInput.sendIconAlt")}
+              />
+            </button>
+          )}
         </div>
       </div>
 
