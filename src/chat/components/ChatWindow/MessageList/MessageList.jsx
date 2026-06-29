@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import Message from "../Message/Message";
 import FeedbackMessage from "../FeeadbackMessage/FeedbackMessage";
 import BadFeedbackRegistrationMessage from "../BadFeedbackRegistrationMessage/BadFeedbackRegistrationMessage";
@@ -12,13 +12,28 @@ import chatI18n from "../../../i18n";
 
 export default function MessageList({ isSidebarOpen, toggleSidebar }) {
    const { t } = useTranslation(undefined, { i18n: chatI18n });
-   const { chats, currentChatId, getBotMessageIndex, isTyping, handleButtonClick, showInitialButtons } =
-      useContext(ChatContext);
+   const {
+      chats,
+      currentChatId,
+      getBotMessageIndex,
+      isTyping,
+      handleButtonClick,
+      showInitialButtons,
+      chatSearchFocus,
+      clearChatSearchFocus,
+   } = useContext(ChatContext);
 
-   // Определяем текущий чат
-   const currentChat = chats.find((c) => (currentChatId === null && c.id === null) || c.id === currentChatId);
-   // Извлекаем сообщения текущего чата
-   const messages = currentChat?.messages || [];
+   const currentChat = useMemo(
+      () =>
+         chats.find(
+            (chat) =>
+               (currentChatId === null && chat.id === null) ||
+               chat.id === currentChatId,
+         ),
+      [chats, currentChatId],
+   );
+
+   const messages = useMemo(() => currentChat?.messages || [], [currentChat]);
 
    const scrollTargetRef = useRef(null);
    useEffect(() => {
@@ -26,6 +41,28 @@ export default function MessageList({ isSidebarOpen, toggleSidebar }) {
          scrollTargetRef.current.scrollIntoView({ behavior: "smooth" });
       }
    }, [messages]);
+
+   useEffect(() => {
+      if (!chatSearchFocus) return;
+      if (String(chatSearchFocus.chatId) !== String(currentChatId)) return;
+
+      const targetId = `chat-message-${String(currentChatId)}-${chatSearchFocus.renderedMessageIndex}`;
+      const targetNode = document.getElementById(targetId);
+
+      if (!targetNode) return;
+
+      targetNode.scrollIntoView({ behavior: "smooth", block: "center" });
+      targetNode.classList.remove("message--search-hit");
+      void targetNode.offsetWidth;
+      targetNode.classList.add("message--search-hit");
+
+      const timeoutId = window.setTimeout(() => {
+         targetNode.classList.remove("message--search-hit");
+         clearChatSearchFocus();
+      }, 2200);
+
+      return () => window.clearTimeout(timeoutId);
+   }, [messages, currentChatId, chatSearchFocus, clearChatSearchFocus]);
 
    const useWindowWidth = () => {
       const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -39,34 +76,47 @@ export default function MessageList({ isSidebarOpen, toggleSidebar }) {
 
    const windowWidth = useWindowWidth();
 
-   // Вычисляем массив сообщений с вычислением индекса для фидбека
    let botCount = 0;
    const renderedMessages = messages.map((message, index) => {
-      // Если сообщение является фидбеком – рендерим FeedbackMessage
       if (message.isGreeting && currentChat.isEmpty) {
          return null;
       }
+
       if (message.isFeedback) {
          const botMessageIndex = getBotMessageIndex(index);
-         return <FeedbackMessage key={index} text={message.text} messageIndex={botMessageIndex} />;
+         return (
+            <FeedbackMessage
+               key={index}
+               text={message.text}
+               messageIndex={botMessageIndex}
+            />
+         );
       }
-      // Если сообщение предназначено для плохого фидбека – рендерим кастомное сообщение
+
       if (message.badFeedbackPrompt) {
-         return <BadFeedbackRegistrationMessage key={index} currentChatId={currentChatId} />;
+         return (
+            <BadFeedbackRegistrationMessage
+               key={index}
+               currentChatId={currentChatId}
+            />
+         );
       }
-      // Для остальных сообщений – рендерим стандартное сообщение
+
       let feedbackIndex;
       if (!message.isUser && !message.isGreeting) {
-         botCount++;
+         botCount += 1;
          feedbackIndex = botCount * 2 - 1;
       }
+
       return (
          <Message
             key={index}
             text={message.text}
             isUser={message.isUser}
             isButton={message.isButton}
-            onClick={message.isButton ? () => handleButtonClick(message) : undefined}
+            onClick={
+               message.isButton ? () => handleButtonClick(message) : undefined
+            }
             filePath={message.filePath}
             filePaths={message.filePaths}
             isGreeting={message.isGreeting}
@@ -77,32 +127,53 @@ export default function MessageList({ isSidebarOpen, toggleSidebar }) {
             streaming={message.streaming || false}
             attachments={message.attachments}
             runnerBin={message.runnerBin}
+            messageDomId={`chat-message-${String(currentChatId)}-${index}`}
          >
-            {/* Текст для начальных категорий */}
             {index === 0 && showInitialButtons && (
-               <div className="suggestion-text mt-4">{t("chat.suggestionText")}</div>
+               <div className="suggestion-text mt-4">
+                  {t("chat.suggestionText")}
+               </div>
             )}
-            {index === 0 && messages.some((msg) => msg.isButton && msg.isSubcategory) && (
-               <div className="suggestion-text mt-4">{t("chat.interestingSuggestion")}</div>
-            )}
-            {index === 0 && messages.some((msg) => msg.isButton && msg.isReport) && (
-               <div className="suggestion-text mt-4">{t("chat.interestingSuggestion")}</div>
-            )}
-            {index === 0 && messages.some((msg) => msg.isButton && msg.isFaq) && (
-               <div className="suggestion-text mt-4">{t("chat.interestingSuggestion")}</div>
-            )}
+            {index === 0 &&
+               messages.some((msg) => msg.isButton && msg.isSubcategory) && (
+                  <div className="suggestion-text mt-4">
+                     {t("chat.interestingSuggestion")}
+                  </div>
+               )}
+            {index === 0 &&
+               messages.some((msg) => msg.isButton && msg.isReport) && (
+                  <div className="suggestion-text mt-4">
+                     {t("chat.interestingSuggestion")}
+                  </div>
+               )}
+            {index === 0 &&
+               messages.some((msg) => msg.isButton && msg.isFaq) && (
+                  <div className="suggestion-text mt-4">
+                     {t("chat.interestingSuggestion")}
+                  </div>
+               )}
          </Message>
       );
    });
 
    return (
       <div className="relative">
-         <Header isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-         {windowWidth < 700 && <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />}
+         <Header
+            isSidebarOpen={isSidebarOpen}
+            toggleSidebar={toggleSidebar}
+         />
+         {windowWidth < 700 && (
+            <Sidebar
+               isSidebarOpen={isSidebarOpen}
+               toggleSidebar={toggleSidebar}
+            />
+         )}
          <div className="overflow-y-auto message-list-wrap">
             <div className="message-list justify-end flex flex-col">
                {renderedMessages}
-               {isTyping && <TypingIndicator text={t("chatTyping.typingMessage")} />}
+               {isTyping && (
+                  <TypingIndicator text={t("chatTyping.typingMessage")} />
+               )}
                <div ref={scrollTargetRef}></div>
             </div>
          </div>

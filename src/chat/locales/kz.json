@@ -21,6 +21,13 @@
   "sidebar": {
     "close": "Бүйірлік панельді жабу",
     "newChat": "Жаңа чат",
+    "searchTitle": "Чаттар бойынша іздеу",
+    "searchPlaceholder": "Чаттар бойынша іздеу",
+    "searchHint": "Кемінде 2 таңба енгізіңіз",
+    "searchLoading": "Іздеу жүріп жатыр...",
+    "searchEmpty": "Чаттар табылмады",
+    "searchMatchTitle": "Атаудағы сәйкестік",
+    "searchMatchMessage": "Хабардағы сәйкестік",
     "previousRequest": "Алдыңғы сұрау",
     "previousChat": "Алдыңғы чат {{number}}",
     "warning": "Назар аударыңыз: 7 күннен асқан сұраныстар тарихы автоматты түрде тазаланады",

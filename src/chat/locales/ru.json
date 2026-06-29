@@ -21,6 +21,13 @@
   "sidebar": {
     "close": "Закрыть боковую панель",
     "newChat": "Новый чат",
+    "searchTitle": "Поиск по чатам",
+    "searchPlaceholder": "Поиск по чатам",
+    "searchHint": "Введите минимум 2 символа",
+    "searchLoading": "Идет поиск...",
+    "searchEmpty": "Чаты не найдены",
+    "searchMatchTitle": "Совпадение в названии",
+    "searchMatchMessage": "Совпадение в сообщении",
     "previousRequest": "Прошлый запрос",
     "previousChat": "Прошлый чат {{number}}",
     "warning": "Внимание: история запросов, старше 7 дней, автоматически очищается",

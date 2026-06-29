@@ -31,6 +31,7 @@ export default function Message({
   streaming,
   attachments,
   runnerBin,
+  messageDomId,
   isCustomMessage = false,
   isAssistantResponse = false,
 }) {
@@ -330,6 +331,7 @@ export default function Message({
 
   return (
     <div
+      id={messageDomId}
       className={`message mb-6 flex font-light ${
         isUser
           ? "user text-right self-end text-white"

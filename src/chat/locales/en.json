@@ -21,6 +21,13 @@
   "sidebar": {
     "close": "Close sidebar",
     "newChat": "New chat",
+    "searchTitle": "Search chats",
+    "searchPlaceholder": "Search chats",
+    "searchHint": "Enter at least 2 characters",
+    "searchLoading": "Searching...",
+    "searchEmpty": "No chats found",
+    "searchMatchTitle": "Match in title",
+    "searchMatchMessage": "Match in message",
     "previousRequest": "Previous request",
     "previousChat": "Previous chat {{number}}",
     "warning": "Attention: request history older than 7 days is cleared automatically",

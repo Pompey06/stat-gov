@@ -11,6 +11,25 @@
   gap: 8px; /* расстояние между аватаром и текстом */
 }
 
+.message {
+  scroll-margin-top: 24px;
+}
+
+.message,
+.bubble,
+.user {
+  transition: box-shadow 0.25s ease, background-color 0.25s ease;
+}
+
+.message--search-hit .bubble,
+.message--search-hit.user {
+  box-shadow: 0 0 0 3px rgba(0, 104, 191, 0.18), 0 14px 28px rgba(0, 104, 191, 0.14);
+}
+
+.message--search-hit .bubble {
+  background: #dfeefb;
+}
+
 .message-link {
   color: #007bff;
   text-decoration: underline;

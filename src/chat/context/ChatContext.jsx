@@ -43,7 +43,9 @@ const ChatProvider = ({ children }) => {
   const [currentSubcategory, setCurrentSubcategory] = useState(null);
   const [inputPrefill, setInputPrefill] = useState("");
   const streamingIndexRef = useRef(null);
+  const conversationSearchCacheRef = useRef(new Map());
   const [isInBinFlow, setIsInBinFlow] = useState(false);
+  const [chatSearchFocus, setChatSearchFocus] = useState(null);
   const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
     withCredentials: true, // <-- добавлено
@@ -257,25 +259,211 @@ const ChatProvider = ({ children }) => {
     }
   };
 
+  const normalizeChatsResponse = (payload) => {
+    if (Array.isArray(payload)) return payload;
+    if (payload && Array.isArray(payload.chats)) return payload.chats;
+    if (payload && Array.isArray(payload.data)) return payload.data;
+    return [];
+  };
+
+  const getChatLastUpdated = (chat) =>
+    chat.lastUpdated ||
+    chat.last_updated ||
+    chat.updated_at ||
+    chat.updatedAt ||
+    chat.created_at ||
+    new Date().toISOString();
+
+  const mapChatToSidebarState = (chat) => ({
+    ...createDefaultChat(),
+    id: chat.id,
+    title: chat.title,
+    lastUpdated: getChatLastUpdated(chat),
+    isEmpty: false,
+  });
+
+  const normalizeSearchValue = (value) =>
+    String(value || "")
+      .toLocaleLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const stripMarkdownForSearch = (value) =>
+    String(value || "")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      .replace(/[`*_>#~|]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const buildSearchSnippet = (text, query, radius = 80) => {
+    const source = String(text || "").trim();
+    if (!source) return "";
+
+    const normalizedSource = source.toLocaleLowerCase();
+    const normalizedQuery = String(query || "").trim().toLocaleLowerCase();
+    const matchIndex = normalizedSource.indexOf(normalizedQuery);
+
+    if (matchIndex === -1) {
+      return source.length > radius * 2
+        ? `${source.slice(0, radius * 2).trim()}...`
+        : source;
+    }
+
+    const start = Math.max(0, matchIndex - radius);
+    const end = Math.min(
+      source.length,
+      matchIndex + normalizedQuery.length + radius,
+    );
+    const prefix = start > 0 ? "..." : "";
+    const suffix = end < source.length ? "..." : "";
+
+    return `${prefix}${source.slice(start, end).trim()}${suffix}`;
+  };
+
+  const fetchConversationForSearch = async (chatId) => {
+    const cacheKey = String(chatId);
+    if (conversationSearchCacheRef.current.has(cacheKey)) {
+      return conversationSearchCacheRef.current.get(cacheKey);
+    }
+
+    const response = await api.get(`/conversation/by-id/${chatId}`);
+    conversationSearchCacheRef.current.set(cacheKey, response.data);
+    return response.data;
+  };
+
+  const searchChats = async (query) => {
+    const trimmedQuery = query.trim();
+
+    if (trimmedQuery.length < 2) {
+      return [];
+    }
+
+    try {
+      const [allChatsPayload, titleMatchesResponse] = await Promise.all([
+        fetchMyChats(),
+        api.get(`/conversation/my/search`, {
+          params: { q: trimmedQuery },
+        }),
+      ]);
+
+      const normalizedQuery = normalizeSearchValue(trimmedQuery);
+      const titleMatchIds = new Set(
+        normalizeChatsResponse(titleMatchesResponse.data).map((chat) =>
+          String(chat.id),
+        ),
+      );
+
+      const chatsArray = normalizeChatsResponse(allChatsPayload)
+        .filter((chat) => !isChatDeleted(chat.id))
+        .sort(
+          (a, b) =>
+            new Date(getChatLastUpdated(b)) - new Date(getChatLastUpdated(a)),
+        );
+
+      const detailedConversations = await Promise.all(
+        chatsArray.map(async (chat) => {
+          try {
+            const conversation = await fetchConversationForSearch(chat.id);
+            return { chat, conversation };
+          } catch (error) {
+            console.error(
+              `Error loading conversation ${chat.id} for search:`,
+              error,
+            );
+            return { chat, conversation: null };
+          }
+        }),
+      );
+
+      const results = detailedConversations
+        .map(({ chat, conversation }) => {
+          const title = String(chat.title || "").trim();
+          const titleMatch =
+            titleMatchIds.has(String(chat.id)) ||
+            normalizeSearchValue(title).includes(normalizedQuery);
+
+          const messages = Array.isArray(conversation?.messages)
+            ? conversation.messages
+            : [];
+
+          let messageMatchIndex = -1;
+          let messageMatchText = "";
+
+          for (let index = 0; index < messages.length; index += 1) {
+            const candidateText = stripMarkdownForSearch(messages[index]?.text);
+            if (!candidateText) continue;
+            if (normalizeSearchValue(candidateText).includes(normalizedQuery)) {
+              messageMatchIndex = index;
+              messageMatchText = candidateText;
+              break;
+            }
+          }
+
+          if (!titleMatch && messageMatchIndex === -1) {
+            return null;
+          }
+
+          return {
+            id: chat.id,
+            title,
+            lastUpdated: getChatLastUpdated(chat),
+            messageIndex: messageMatchIndex >= 0 ? messageMatchIndex : null,
+            snippet: buildSearchSnippet(
+              messageMatchIndex >= 0 ? messageMatchText : title,
+              trimmedQuery,
+            ),
+            titleMatch,
+            messageMatch: messageMatchIndex >= 0,
+          };
+        })
+        .filter(Boolean)
+        .sort((left, right) => {
+          const leftScore =
+            (left.messageMatch ? 2 : 0) + (left.titleMatch ? 1 : 0);
+          const rightScore =
+            (right.messageMatch ? 2 : 0) + (right.titleMatch ? 1 : 0);
+
+          if (leftScore !== rightScore) return rightScore - leftScore;
+
+          return new Date(right.lastUpdated) - new Date(left.lastUpdated);
+        });
+
+      return results.slice(0, 20);
+    } catch (error) {
+      console.error("Error searching chats:", error);
+      throw error;
+    }
+  };
+
+  const focusChatSearchResult = async ({ chatId, messageIndex, query }) => {
+    setChatSearchFocus({
+      chatId: String(chatId),
+      renderedMessageIndex:
+        Number.isInteger(messageIndex) && messageIndex >= 0
+          ? messageIndex + 1
+          : 1,
+      query,
+      key: Date.now(),
+    });
+
+    await switchChat(chatId);
+  };
+
+  const clearChatSearchFocus = () => {
+    setChatSearchFocus(null);
+  };
+
   useEffect(() => {
     const loadAndCleanChats = async () => {
       try {
         const myChats = await fetchMyChats();
 
-        // Ensure myChats is an array - handle different response structures
-        let chatsArray = [];
-        if (Array.isArray(myChats)) {
-          chatsArray = myChats;
-        } else if (myChats && Array.isArray(myChats.chats)) {
-          chatsArray = myChats.chats;
-        } else if (myChats && Array.isArray(myChats.data)) {
-          chatsArray = myChats.data;
-        } else {
+        const chatsArray = normalizeChatsResponse(myChats);
+        if (chatsArray.length === 0 && myChats) {
           console.warn(
             "Unexpected response format from fetchMyChats:",
             myChats,
           );
-          chatsArray = [];
         }
 
         const filteredChats = chatsArray.filter(
@@ -286,12 +474,7 @@ const ChatProvider = ({ children }) => {
           const defaultChat = prevChats.find((c) => c.id === null);
           return [
             defaultChat,
-            ...filteredChats.map((chat) => ({
-              ...createDefaultChat(),
-              id: chat.id,
-              title: chat.title,
-              isEmpty: false,
-            })),
+            ...filteredChats.map(mapChatToSidebarState),
           ];
         });
         // После загрузки чатов запускаем автоматическое удаление неактивных
@@ -413,6 +596,7 @@ const ChatProvider = ({ children }) => {
   function deleteChat(chatId) {
     // Помечаем чат как удалённый в localStorage
     markChatAsDeleted(chatId);
+    conversationSearchCacheRef.current.delete(String(chatId));
 
     setChats((prevChats) => {
       // Фильтруем чаты, удаляя чат с данным chatId
@@ -693,6 +877,7 @@ const ChatProvider = ({ children }) => {
 
     if (currentChat && currentChat.id) {
       params.conversation_id = currentChat.id;
+      conversationSearchCacheRef.current.delete(String(currentChat.id));
     }
 
     setIsTyping(true);
@@ -1414,6 +1599,10 @@ const ChatProvider = ({ children }) => {
         removeBadFeedbackMessage,
         isInBinFlow,
         setIsInBinFlow,
+        searchChats,
+        focusChatSearchResult,
+        chatSearchFocus,
+        clearChatSearchFocus,
       }}
     >
       {children}
