@@ -1,12 +1,12 @@
-import React, { useContext, useState, useEffect, useRef } from "react";
-import "./MessageInput.css";
-import sendIcon from "../../../assets/send.png";
-import microphoneIcon from "../../../assets/microphone.svg";
-import stopIcon from "../../../assets/stop.svg";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import axios from "axios";
 import { useTranslation } from "react-i18next";
+import microphoneIcon from "../../../assets/microphone.svg";
+import sendIcon from "../../../assets/send.png";
+import stopIcon from "../../../assets/stop.svg";
 import { ChatContext } from "../../../context/ChatContext";
 import chatI18n from "../../../i18n";
-import axios from "axios";
+import "./MessageInput.css";
 
 export default function MessageInput() {
   const { t } = useTranslation(undefined, { i18n: chatI18n });
@@ -16,6 +16,8 @@ export default function MessageInput() {
   const useAltGreeting = import.meta.env.VITE_USE_ALT_GREETING === "true";
 
   const [hideMicTooltip, setHideMicTooltip] = useState(true);
+  const [hideDoneTooltip, setHideDoneTooltip] = useState(true);
+  const [hideCancelTooltip, setHideCancelTooltip] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [showMicHint, setShowMicHint] = useState(false);
@@ -23,14 +25,15 @@ export default function MessageInput() {
   const mediaStreamRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
+  const shouldTranscribeRef = useRef(true);
 
   const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
     withCredentials: true,
   });
 
-  const handleSend = async () => {
-    if (!message.trim()) return;
+  const handleSend = () => {
+    if (isUploading || !message.trim()) return;
     createMessage(message);
     setInputPrefill("");
     setMessage("");
@@ -51,12 +54,27 @@ export default function MessageInput() {
       { mime: "audio/ogg;codecs=opus", ext: "ogg" },
       { mime: "audio/wav", ext: "wav" },
     ];
-    for (const c of candidates) {
-      if (window.MediaRecorder && MediaRecorder.isTypeSupported(c.mime)) {
-        return c;
+
+    for (const candidate of candidates) {
+      if (
+        window.MediaRecorder &&
+        MediaRecorder.isTypeSupported(candidate.mime)
+      ) {
+        return candidate;
       }
     }
+
     return { mime: "", ext: "webm" };
+  };
+
+  const releaseMedia = () => {
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
+    }
+
+    mediaRecorderRef.current = null;
+    chunksRef.current = [];
   };
 
   const startRecording = async () => {
@@ -69,78 +87,104 @@ export default function MessageInput() {
         stream,
         mime ? { mimeType: mime } : undefined,
       );
+
       mediaRecorderRef.current = recorder;
       chunksRef.current = [];
+      shouldTranscribeRef.current = true;
 
-      recorder.ondataavailable = (ev) => {
-        if (ev.data && ev.data.size > 0) chunksRef.current.push(ev.data);
+      recorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          chunksRef.current.push(event.data);
+        }
       };
 
       recorder.onstop = async () => {
         try {
           setIsRecording(false);
           setShowMicHint(false);
+
+          if (!shouldTranscribeRef.current) {
+            return;
+          }
+
           setIsUploading(true);
 
           const blob = new Blob(chunksRef.current, {
             type: recorder.mimeType || "audio/webm",
           });
           const filename = `record.${ext}`;
-          const fd = new FormData();
-          fd.append("audio_file", blob, filename);
+          const formData = new FormData();
+          formData.append("audio_file", blob, filename);
 
-          const res = await api.post("/audio/stt", fd, {
+          const response = await api.post("/audio/stt", formData, {
             headers: { "Content-Type": "multipart/form-data" },
             responseType: "text",
             transformResponse: [(data) => data],
           });
 
           const textFromStt =
-            typeof res.data === "string" ? res.data : String(res.data || "");
-          setMessage((prev) => (prev ? prev + " " : "") + textFromStt.trim());
-        } catch (err) {
-          console.error("STT upload error:", err);
+            typeof response.data === "string"
+              ? response.data
+              : String(response.data || "");
+
+          setMessage((prev) => {
+            const transcript = textFromStt.trim();
+            if (!transcript) return prev;
+            return prev ? `${prev} ${transcript}` : transcript;
+          });
+        } catch (error) {
+          console.error("STT upload error:", error);
         } finally {
+          shouldTranscribeRef.current = true;
           setIsUploading(false);
-          if (mediaStreamRef.current) {
-            mediaStreamRef.current.getTracks().forEach((t) => t.stop());
-            mediaStreamRef.current = null;
-          }
-          mediaRecorderRef.current = null;
-          chunksRef.current = [];
+          releaseMedia();
         }
       };
 
       recorder.start();
       setIsRecording(true);
       setShowMicHint(true);
-    } catch (err) {
-      console.error("Microphone permission or init error:", err);
+    } catch (error) {
+      console.error("Microphone permission or init error:", error);
       alert(t("messageInput.micPermissionDenied"));
     }
   };
 
-  const stopRecording = () => {
+  const finishRecording = () => {
+    shouldTranscribeRef.current = true;
+
     if (
       mediaRecorderRef.current &&
       mediaRecorderRef.current.state !== "inactive"
     ) {
       mediaRecorderRef.current.stop();
-    } else {
-      setIsRecording(false);
-      setShowMicHint(false);
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach((t) => t.stop());
-        mediaStreamRef.current = null;
-      }
-      chunksRef.current = [];
+      return;
     }
+
+    setIsRecording(false);
+    setShowMicHint(false);
+    releaseMedia();
+  };
+
+  const cancelRecording = () => {
+    shouldTranscribeRef.current = false;
+
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state !== "inactive"
+    ) {
+      mediaRecorderRef.current.stop();
+      return;
+    }
+
+    setIsRecording(false);
+    setShowMicHint(false);
+    releaseMedia();
   };
 
   const handleMicClick = () => {
-    if (isUploading) return;
-    if (isRecording) stopRecording();
-    else startRecording();
+    if (isRecording || isUploading) return;
+    startRecording();
   };
 
   useEffect(() => {
@@ -151,17 +195,18 @@ export default function MessageInput() {
       ) {
         mediaRecorderRef.current.stop();
       }
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach((t) => t.stop());
-        mediaStreamRef.current = null;
-      }
+      releaseMedia();
     };
   }, []);
 
   return (
     <div className="bottom__wrapper">
       <div className="message-input-container">
-        <div className="message-input mt-auto font-light bg-white flex items-center gap-2 relative">
+        <div
+          className={`message-input mt-auto font-light bg-white flex items-center gap-2 relative ${
+            showMicHint ? "input--with-hint" : ""
+          }`}
+        >
           <input
             type="text"
             value={message}
@@ -171,93 +216,145 @@ export default function MessageInput() {
             className="flex-1 p-2 border rounded-lg"
           />
           {showMicHint && (
-            <div className="mic-hint">{t("messageInput.micHint")}</div>
+            <div className="mic-hint">{t("messageInput.micRecordingHint")}</div>
           )}
         </div>
 
-        {/* Кнопка микрофона с тултипом сохранена */}
-        <button
-          type="button"
-          className={`copy-button flex items-center gap-1 text-sm text-gray-500 transition-colors ${
-            hideMicTooltip ? "tooltip-hide" : ""
-          }`}
-          style={{ touchAction: "manipulation", position: "relative" }}
-          aria-label={
-            isUploading
-              ? t("messageInput.micUploading")
-              : isRecording
-              ? t("messageInput.micRecording")
-              : t("messageInput.micTooltip")
-          }
-          onMouseEnter={() => setHideMicTooltip(false)}
-          onMouseLeave={() => setHideMicTooltip(true)}
-          onClick={(e) => {
-            e.preventDefault();
-            handleMicClick();
-            setHideMicTooltip(true);
-          }}
-          disabled={isUploading}
-        >
-          {isUploading ? (
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 50 50"
-              role="img"
-              aria-label="loading"
+        <div className="message-input-actions">
+          {!isRecording && (
+            <button
+              type="button"
+              className={`message-input-action ${
+                hideMicTooltip ? "tooltip-hide" : ""
+              }`}
+              aria-label={
+                isUploading
+                  ? t("messageInput.micUploading")
+                  : t("messageInput.micTooltip")
+              }
+              onMouseEnter={() => setHideMicTooltip(false)}
+              onMouseLeave={() => setHideMicTooltip(true)}
+              onClick={(e) => {
+                e.preventDefault();
+                handleMicClick();
+                setHideMicTooltip(true);
+              }}
+              disabled={isUploading}
             >
-              <circle
-                cx="25"
-                cy="25"
-                r="20"
-                fill="none"
-                stroke="#0068bf"
-                strokeWidth="6"
-                strokeLinecap="round"
-                strokeDasharray="31.4 188.4"
-              >
-                <animateTransform
-                  attributeName="transform"
-                  type="rotate"
-                  from="0 25 25"
-                  to="360 25 25"
-                  dur="0.8s"
-                  repeatCount="indefinite"
+              {isUploading ? (
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 50 50"
+                  role="img"
+                  aria-label="loading"
+                >
+                  <circle
+                    cx="25"
+                    cy="25"
+                    r="20"
+                    fill="none"
+                    stroke="#0068bf"
+                    strokeWidth="6"
+                    strokeLinecap="round"
+                    strokeDasharray="31.4 188.4"
+                  >
+                    <animateTransform
+                      attributeName="transform"
+                      type="rotate"
+                      from="0 25 25"
+                      to="360 25 25"
+                      dur="0.8s"
+                      repeatCount="indefinite"
+                    />
+                  </circle>
+                </svg>
+              ) : (
+                <img
+                  src={microphoneIcon}
+                  alt={t("messageInput.micTooltip")}
+                  className="icon-s"
                 />
-              </circle>
-            </svg>
-          ) : isRecording ? (
-            <img
-              src={stopIcon}
-              alt={t("messageInput.micRecording")}
-              className="icon-s"
-            />
-          ) : (
-            <img
-              src={microphoneIcon}
-              alt={t("messageInput.micTooltip")}
-              className="icon-s"
-            />
+              )}
+              <span className="tooltip mic-tooltip">
+                {isUploading
+                  ? t("messageInput.micUploading")
+                  : t("messageInput.micTooltip")}
+              </span>
+            </button>
           )}
-          <span className="tooltip mic-tooltip">
-            {isUploading
-              ? t("messageInput.micUploading")
-              : isRecording
-              ? t("messageInput.micRecording")
-              : t("messageInput.micTooltip")}
-          </span>
-        </button>
 
-        <button onClick={handleSend}>
-          <img
-            className="send-icon"
-            src={sendIcon}
-            alt={t("messageInput.sendIconAlt")}
-          />
-        </button>
+          {isRecording && (
+            <button
+              type="button"
+              className={`message-input-action message-input-action--stop ${
+                hideCancelTooltip ? "tooltip-hide" : ""
+              }`}
+              aria-label={t("messageInput.micRecording")}
+              onMouseEnter={() => setHideCancelTooltip(false)}
+              onMouseLeave={() => setHideCancelTooltip(true)}
+              onClick={(e) => {
+                e.preventDefault();
+                cancelRecording();
+                setHideCancelTooltip(true);
+              }}
+            >
+              <img
+                src={stopIcon}
+                alt={t("messageInput.micRecording")}
+                className="icon-s"
+              />
+              <span className="tooltip mic-tooltip">
+                {t("messageInput.micRecording")}
+              </span>
+            </button>
+          )}
+
+          {isRecording && (
+            <button
+              type="button"
+              className={`message-input-action message-input-action--primary ${
+                hideDoneTooltip ? "tooltip-hide" : ""
+              }`}
+              aria-label={t("messageInput.micDoneTooltip")}
+              onMouseEnter={() => setHideDoneTooltip(false)}
+              onMouseLeave={() => setHideDoneTooltip(true)}
+              onClick={(e) => {
+                e.preventDefault();
+                finishRecording();
+                setHideDoneTooltip(true);
+              }}
+            >
+              <span className="message-input-action__check" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M20.285 6.709a1 1 0 0 0-1.414 0L9 16.58l-3.871-3.87a1 1 0 1 0-1.414 1.414l4.578 4.578a1 1 0 0 0 1.414 0L20.285 8.123a1 1 0 0 0 0-1.414Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </span>
+              <span className="tooltip mic-tooltip">
+                {t("messageInput.micDoneTooltip")}
+              </span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            className="message-input-send"
+            onClick={handleSend}
+            disabled={isUploading}
+          >
+            <img
+              className="send-icon"
+              src={sendIcon}
+              alt={t("messageInput.sendIconAlt")}
+            />
+          </button>
+        </div>
       </div>
 
-      <div className={`ai__text` + (useAltGreeting ? ` ai__text--alt` : ``)}>
+      <div className={`ai__text${useAltGreeting ? " ai__text--alt" : ""}`}>
         {t(useAltGreeting ? "messageInput.textAlt" : "messageInput.text")}
       </div>
     </div>

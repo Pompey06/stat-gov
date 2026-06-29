@@ -65,9 +65,13 @@
     "textAlt": "Please note: the bot's answers are for reference only. During the testing period, some inaccuracies are possible. If you encounter inaccuracies, please let us know by leaving a rating or filling out the feedback form. This will help us improve the service.",
     "micTooltip": "Voice input",
     "micRecording": "Stop recording",
+    "micRecordingActive": "Recording in progress",
     "micUploading": "Uploading...",
     "micPermissionDenied": "No access to the microphone. Please check your browser settings.",
-    "micHint": "Press the \"Voice input\" button and say your question in the selected language (Kazakh, Russian, or English). To help us recognize your speech as accurately as possible, speak calmly and do not say links or website addresses."
+    "micHint": "Press the \"Voice input\" button and say your question in the selected language (Kazakh, Russian, or English). To help us recognize your speech as accurately as possible, speak calmly and do not say links or website addresses.",
+    "micRecordingHint": "Recording is in progress. When you are finished, press \"Done\" and the text will be added to the input field.",
+    "micDoneTooltip": "Done",
+    "stopResponseTooltip": "Stop response"
   },
   "chatError": {
     "errorMessage": "Sorry, an error occurred. Please rephrase your request."

@@ -1,4 +1,4 @@
-import axios from "axios";
+﻿import axios from "axios";
 import React, { createContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import chatI18n from "../i18n";
@@ -49,6 +49,10 @@ const ChatProvider = ({ children }) => {
   const [inputPrefill, setInputPrefill] = useState("");
   const streamingIndexRef = useRef(null);
   const conversationSearchCacheRef = useRef(new Map());
+  const activeRequestControllerRef = useRef(null);
+  const activeConversationIdRef = useRef(null);
+  const currentChatIdRef = useRef(null);
+  const cancelRequestedRef = useRef(false);
   const [isInBinFlow, setIsInBinFlow] = useState(false);
   const [chatSearchFocus, setChatSearchFocus] = useState(null);
   const api = axios.create({
@@ -127,6 +131,10 @@ const ChatProvider = ({ children }) => {
   const [locale, setLocale] = useState(() => getLocaleCode(i18n.language));
 
   useEffect(() => {
+    currentChatIdRef.current = currentChatId;
+  }, [currentChatId]);
+
+  useEffect(() => {
     setChats((prevChats) =>
       prevChats.map((chat) => ({
         ...chat,
@@ -158,6 +166,67 @@ const ChatProvider = ({ children }) => {
     setLocale(newLocale);
     i18n.changeLanguage(normalizedLanguage);
     localStorage.setItem("locale", normalizedLanguage);
+  };
+
+  const stopStreamingMessage = () => {
+    setChats((prevChats) =>
+      prevChats.map((chat) => {
+        const idx = chat.messages.findIndex((msg) => msg.streaming);
+        if (idx === -1) return chat;
+
+        const currentMessage = chat.messages[idx];
+        const normalizedText =
+          typeof currentMessage.text === "string"
+            ? currentMessage.text.replace(/\s*\|$/, "").trimEnd()
+            : currentMessage.text;
+
+        if (
+          !normalizedText &&
+          (!Array.isArray(currentMessage.filePaths) ||
+            currentMessage.filePaths.length === 0)
+        ) {
+          return {
+            ...chat,
+            messages: chat.messages.filter((_, messageIndex) => messageIndex !== idx),
+          };
+        }
+
+        const updatedMessages = [...chat.messages];
+        updatedMessages[idx] = {
+          ...currentMessage,
+          text: normalizedText,
+          streaming: false,
+        };
+
+        return {
+          ...chat,
+          messages: updatedMessages,
+        };
+      }),
+    );
+  };
+
+  const cancelAssistantResponse = async () => {
+    cancelRequestedRef.current = true;
+    stopStreamingMessage();
+    setIsTyping(false);
+
+    const controller = activeRequestControllerRef.current;
+    activeRequestControllerRef.current = null;
+    controller?.abort();
+
+    const conversationId =
+      activeConversationIdRef.current ?? currentChatIdRef.current;
+
+    if (!conversationId) {
+      return;
+    }
+
+    try {
+      await api.post(`/assistant/by-id/${conversationId}/cancel`);
+    } catch (error) {
+      console.error("Error cancelling assistant response:", error);
+    }
   };
 
   const fetchChatHistory = async (chatId) => {
@@ -916,6 +985,9 @@ const ChatProvider = ({ children }) => {
       conversationSearchCacheRef.current.delete(String(currentChat.id));
     }
 
+    cancelRequestedRef.current = false;
+    activeConversationIdRef.current = currentChat?.id ?? null;
+
     setIsTyping(true);
 
     setChats((prevChats) =>
@@ -981,6 +1053,42 @@ const ChatProvider = ({ children }) => {
             const updatedMessages = [...chat.messages];
             updatedMessages[idx] = updatedMsg;
             return { ...chat, messages: updatedMessages };
+          }),
+        );
+      };
+
+      const processConversationChunk = (convId, convTitle) => {
+        activeConversationIdRef.current = convId;
+        setCurrentChatId(convId);
+        setChats((prevChats) => {
+          const idx = prevChats.findIndex((chat) =>
+            chat.messages.some((msg) => msg.streaming),
+          );
+          if (idx === -1) return prevChats;
+          const updated = {
+            ...prevChats[idx],
+            id: convId,
+            title: convTitle,
+          };
+          return [
+            ...prevChats.slice(0, idx),
+            updated,
+            ...prevChats.slice(idx + 1),
+          ];
+        });
+      };
+
+      const processDocumentsChunk = (documents) => {
+        setChats((prevChats) =>
+          prevChats.map((chat) => {
+            const idx = chat.messages.findIndex((msg) => msg.streaming);
+            if (idx === -1) return chat;
+            const updated = [...chat.messages];
+            updated[idx] = {
+              ...updated[idx],
+              filePaths: documents || [],
+            };
+            return { ...chat, messages: updated };
           }),
         );
       };
@@ -1104,9 +1212,12 @@ const ChatProvider = ({ children }) => {
       const url = `${
         import.meta.env.VITE_API_URL
       }/assistant/ask?${searchParams.toString()}`;
+      const controller = new AbortController();
+      activeRequestControllerRef.current = controller;
       const response = await fetch(url, {
         method: "POST",
         credentials: "include",
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -1136,38 +1247,18 @@ const ChatProvider = ({ children }) => {
               const jsonObj = JSON.parse(trimmed.slice(2));
               if (jsonObj.type === "conversation") {
                 const { id: convId, title: convTitle } = jsonObj.conversation;
-                setCurrentChatId(convId);
-                setChats((prevChats) => {
-                  const idx = prevChats.findIndex((chat) =>
-                    chat.messages.some((msg) => msg.streaming),
-                  );
-                  if (idx === -1) return prevChats;
-                  const updated = {
-                    ...prevChats[idx],
-                    id: convId,
-                    title: convTitle,
-                  };
-                  return [
-                    ...prevChats.slice(0, idx),
-                    updated,
-                    ...prevChats.slice(idx + 1),
-                  ];
-                });
+                processConversationChunk(convId, convTitle);
               } else if (jsonObj.type === "relevant_documents") {
-                setChats((prevChats) =>
-                  prevChats.map((chat) => {
-                    const idx = chat.messages.findIndex((msg) => msg.streaming);
-                    if (idx === -1) return chat;
-                    const updated = [...chat.messages];
-                    updated[idx] = {
-                      ...updated[idx],
-                      filePaths: jsonObj.documents || [],
-                    };
-                    return { ...chat, messages: updated };
-                  }),
-                );
+                processDocumentsChunk(jsonObj.documents);
               } else if (jsonObj.type === "final_text") {
-                updateLastMessage(jsonObj.final_text, true);
+                accumulatedText = jsonObj.final_text || accumulatedText;
+                updateLastMessage(accumulatedText, true);
+              } else if (jsonObj.type === "cancelled") {
+                cancelRequestedRef.current = true;
+                stopStreamingMessage();
+                setIsTyping(false);
+                done = true;
+                break;
               } else if (jsonObj.type === "status") {
                 console.log("Status chunk:", jsonObj.status);
               }
@@ -1180,6 +1271,11 @@ const ChatProvider = ({ children }) => {
         }
       }
     } catch (error) {
+      if (error?.name === "AbortError" || cancelRequestedRef.current) {
+        stopStreamingMessage();
+        return;
+      }
+
       console.error("Ошибка стриминга:", error);
       const errorMessage = {
         text: t("chatError.errorMessage"),
@@ -1198,6 +1294,7 @@ const ChatProvider = ({ children }) => {
         }),
       );
     } finally {
+      activeRequestControllerRef.current = null;
       setIsTyping(false);
     }
   }
@@ -1606,6 +1703,7 @@ const ChatProvider = ({ children }) => {
         createNewChat,
         switchChat,
         createMessage,
+        cancelAssistantResponse,
         handleButtonClick,
         sendFeedback,
         getBotMessageIndex,
