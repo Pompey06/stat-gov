@@ -37,9 +37,30 @@ const AnalyticsIcon = () => (
   </svg>
 );
 
+const FaqIcon = () => (
+  <svg
+    width="34"
+    height="34"
+    viewBox="0 0 34 34"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <path
+      d="M8 10.5C8 8.01472 10.0147 6 12.5 6H21.5C23.9853 6 26 8.01472 26 10.5V18.5C26 20.9853 23.9853 23 21.5 23H15.3L10.8 27.5V23H12.5C10.0147 23 8 20.9853 8 18.5V10.5Z"
+      stroke="white"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+    <path d="M12 12H22" stroke="white" strokeWidth="2" strokeLinecap="round" />
+    <path d="M12 16H19" stroke="white" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
+
 const Sidebar = ({ activeTab, setActiveTab, isOpen, onMenuToggle }) => {
   const { t, i18n } = useTranslation(undefined, { i18n: adminI18n });
   const [activeLang, setActiveLang] = useState("ru");
+  const faqLabel = i18n.language === "kz" ? "Жиі сұрақтар" : "Частые вопросы";
 
   const handleLangChange = (lang) => {
     setActiveLang(lang);
@@ -83,6 +104,12 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, onMenuToggle }) => {
           text={t("sidebar.analytics")}
           active={activeTab === 3}
           onClick={() => handleButtonClick(3)}
+        />
+        <SidebarButton
+          icon={<FaqIcon />}
+          text={faqLabel}
+          active={activeTab === 4}
+          onClick={() => handleButtonClick(4)}
         />
       </nav>
       <div className="sidebar-bottom show-768">

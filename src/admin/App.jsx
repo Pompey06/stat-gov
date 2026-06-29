@@ -5,6 +5,7 @@ import Header from "./components/Header/Header";
 import DatabaseUpdate from "./components/DatabaseUpdate/DatabaseUpdate";
 import FeedbackExport from "./components/FeedbackExport/FeedbackExport";
 import AnalyticsDashboard from "./components/AnalyticsDashboard/AnalyticsDashboard";
+import FaqSettings from "./components/FaqSettings/FaqSettings";
 import { useState } from "react";
 import "./i18n.js";
 
@@ -45,6 +46,7 @@ function AppAdmin() {
                   {activeTab === 1 && <DatabaseUpdate credentials={credentials} />}
                   {activeTab === 2 && <FeedbackExport credentials={credentials} />}
                   {activeTab === 3 && <AnalyticsDashboard credentials={credentials} />}
+                  {activeTab === 4 && <FaqSettings credentials={credentials} />}
                </div>
             </>
          )}
