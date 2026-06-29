@@ -805,7 +805,7 @@ const ChatProvider = ({ children }) => {
         // Если есть выбранная подкатегория, показываем её reports
         handleButtonClick({
           ...currentSubcategory,
-          subcategory: true,
+          isSubcategory: true,
           category: currentCategory,
         });
       } else if (currentCategory) {
@@ -976,7 +976,8 @@ const ChatProvider = ({ children }) => {
       prompt: text,
       locale,
       category: apCategory ?? getRussianValue(currentCategory?.name) ?? null,
-      subcategory: apSubcategory ?? currentSubcategory?.name ?? null,
+      subcategory:
+        apSubcategory ?? getRussianValue(currentSubcategory?.name) ?? null,
       subcategory_report: apSubReport ?? null,
     };
 
@@ -1304,11 +1305,30 @@ const ChatProvider = ({ children }) => {
 
     if (selectedItem.isSubcategory) {
       const categoryData = selectedItem.category || currentCategory;
+      const subcategoryData = selectedItem.subcategoryData || selectedItem;
+      const reportButtons = (subcategoryData.reports || []).map(
+        (report, index) => ({
+          text: pickLocalized(report),
+          isUser: true,
+          isFeedback: false,
+          isButton: true,
+          isReport: true,
+          reportText: getRussianValue(report),
+          reportData: report,
+          key: `report-${index}`,
+        }),
+      );
+
       setCurrentCategory(categoryData);
-      setCurrentSubcategory(selectedItem);
+      setCurrentSubcategory({
+        ...subcategoryData,
+        category: categoryData,
+        isSubcategory: true,
+      });
       setCategoryFilter(getRussianValue(categoryData.name));
 
-      // Прячем старые кнопки и готовим FAQ-кнопки
+      // Сначала показываем отчеты выбранной подкатегории.
+      // Если их нет, оставляем FAQ категории как запасной сценарий.
       setChats((prevChats) =>
         prevChats.map((chat) => {
           const isCurrent =
@@ -1316,7 +1336,15 @@ const ChatProvider = ({ children }) => {
             (chat.id === null && currentChatId === null);
           if (!isCurrent) return chat;
 
-          // Собираем кнопки FAQ по этой категории
+          if (reportButtons.length > 0) {
+            return {
+              ...chat,
+              showInitialButtons: false,
+              buttonsWereHidden: true,
+              messages: [chat.messages[0], ...reportButtons],
+            };
+          }
+
           const faqButtons = (categoryData.faq || []).map((f, i) => ({
             text: pickLocalized(f.question),
             isUser: true,
@@ -1331,7 +1359,6 @@ const ChatProvider = ({ children }) => {
             ...chat,
             showInitialButtons: false,
             buttonsWereHidden: true,
-            // Оставляем только приветствие + все FAQ-кнопки
             messages: [chat.messages[0], ...faqButtons],
           };
         }),
@@ -1346,7 +1373,7 @@ const ChatProvider = ({ children }) => {
       setCategoryFilter(getRussianValue(categoryData.name));
       createMessage(selectedItem.text, false, {
         category: getRussianValue(categoryData.name),
-        subcategory: currentSubcategory?.name ?? null,
+        subcategory: getRussianValue(currentSubcategory?.name) ?? null,
         subcategory_report: selectedItem.reportText,
       });
       return;
@@ -1394,8 +1421,10 @@ const ChatProvider = ({ children }) => {
             isFeedback: false,
             isButton: true,
             isSubcategory: true,
-            name: getRussianValue(sub.name),
+            name: sub.name,
             category: categoryData,
+            subcategoryData: sub,
+            reports: sub.reports || [],
           }));
 
           return {
