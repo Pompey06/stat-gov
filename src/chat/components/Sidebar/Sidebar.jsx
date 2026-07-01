@@ -1,16 +1,218 @@
-// Sidebar.jsx
-
-import "./Sidebar.css";
-import React, { useState, useEffect, useContext } from "react";
-import newBurgerIcon from "../../assets/newBurgerIcon.svg";
-import logo from "../../assets/logo.png";
-import newPlusIcon from "../../assets/newPlusIcon.svg";
-import SidebarButton from "../SidebarButton/SidebarButton";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ChatContext } from "../../context/ChatContext";
 import chatI18n from "../../i18n";
-import DeleteChatModal from "../ChatWindow/Modal/DeleteChatModal";
+import { ChatContext } from "../../context/ChatContext";
+import SidebarButton from "../SidebarButton/SidebarButton";
 import SearchChatsModal from "./SearchChatsModal";
+import DeleteChatModal from "../ChatWindow/Modal/DeleteChatModal";
+import logo from "../../assets/logo.png";
+import newBurgerIcon from "../../assets/newBurgerIcon.svg";
+import newPlusIcon from "../../assets/newPlusIcon.svg";
+import "./Sidebar.css";
+
+const PINNED_CHATS_STORAGE_KEY = "chatSidebarPinnedIds";
+
+const getStoredPinnedChats = () => {
+   if (typeof window === "undefined") {
+      return [];
+   }
+
+   try {
+      const rawValue = window.localStorage.getItem(PINNED_CHATS_STORAGE_KEY);
+      const parsedValue = rawValue ? JSON.parse(rawValue) : [];
+      return Array.isArray(parsedValue)
+         ? parsedValue.map((value) => String(value))
+         : [];
+   } catch (error) {
+      console.error("Failed to read pinned chats:", error);
+      return [];
+   }
+};
+
+function SearchIcon({ className = "" }) {
+   return (
+      <svg
+         className={className}
+         width="18"
+         height="18"
+         viewBox="0 0 18 18"
+         fill="none"
+         xmlns="http://www.w3.org/2000/svg"
+         aria-hidden="true"
+      >
+         <path
+            d="M8.25 14.25C11.5637 14.25 14.25 11.5637 14.25 8.25C14.25 4.93629 11.5637 2.25 8.25 2.25C4.93629 2.25 2.25 4.93629 2.25 8.25C2.25 11.5637 4.93629 14.25 8.25 14.25Z"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+         />
+         <path
+            d="M15.75 15.75L12.4875 12.4875"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+         />
+      </svg>
+   );
+}
+
+function PenIcon({ className = "" }) {
+   return (
+      <svg
+         className={className}
+         width="18"
+         height="18"
+         viewBox="0 0 18 18"
+         fill="none"
+         xmlns="http://www.w3.org/2000/svg"
+         aria-hidden="true"
+      >
+         <path
+            d="M11.8947 2.72741C12.1018 2.52026 12.3832 2.4039 12.6762 2.4039C12.9691 2.4039 13.2506 2.52026 13.4577 2.72741L15.2726 4.54232C15.4797 4.74946 15.5961 5.03091 15.5961 5.32385C15.5961 5.61679 15.4797 5.89824 15.2726 6.10538L6.15691 15.221L2.25 15.75L2.77896 11.8431L11.8947 2.72741Z"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+         />
+         <path
+            d="M10.5 4.125L13.875 7.5"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+         />
+      </svg>
+   );
+}
+
+function DocumentIcon({ className = "" }) {
+   return (
+      <svg
+         className={className}
+         width="18"
+         height="18"
+         viewBox="0 0 18 18"
+         fill="none"
+         xmlns="http://www.w3.org/2000/svg"
+         aria-hidden="true"
+      >
+         <path
+            d="M5.25 2.25H9.75L13.5 6V15C13.5 15.4142 13.1642 15.75 12.75 15.75H5.25C4.83579 15.75 4.5 15.4142 4.5 15V3C4.5 2.58579 4.83579 2.25 5.25 2.25Z"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+         />
+         <path
+            d="M9.75 2.25V6H13.5"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+         />
+         <path
+            d="M6.75 9H11.25"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+         />
+         <path
+            d="M6.75 11.625H11.25"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+         />
+      </svg>
+   );
+}
+
+function TrashIcon({ className = "" }) {
+   return (
+      <svg
+         className={className}
+         width="16"
+         height="16"
+         viewBox="0 0 16 16"
+         fill="none"
+         xmlns="http://www.w3.org/2000/svg"
+         aria-hidden="true"
+      >
+         <path
+            d="M2.5 4H13.5"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+         />
+         <path
+            d="M6.5 2.5H9.5"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+         />
+         <path
+            d="M4 4L4.6 12.1C4.66 12.92 5.34 13.55 6.16 13.55H9.84C10.66 13.55 11.34 12.92 11.4 12.1L12 4"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+         />
+         <path
+            d="M6.75 6.5V11"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+         />
+         <path
+            d="M9.25 6.5V11"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+         />
+      </svg>
+   );
+}
+
+function PinIcon({ className = "" }) {
+   return (
+      <svg
+         className={className}
+         width="16"
+         height="16"
+         viewBox="0 0 16 16"
+         fill="none"
+         xmlns="http://www.w3.org/2000/svg"
+         aria-hidden="true"
+      >
+         <path
+            d="M10.8334 2.66675L13.3334 5.16675L10.8334 6.00008V9.16675L8.50008 11.5001V13.3334L7.50008 12.3334L6.50008 13.3334V11.5001L4.16675 9.16675V6.00008L1.66675 5.16675L4.16675 2.66675H10.8334Z"
+            stroke="currentColor"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+         />
+      </svg>
+   );
+}
+
+function DotsIcon({ className = "" }) {
+   return (
+      <svg
+         className={className}
+         width="16"
+         height="16"
+         viewBox="0 0 16 16"
+         fill="none"
+         xmlns="http://www.w3.org/2000/svg"
+         aria-hidden="true"
+      >
+         <circle cx="3" cy="8" r="1.25" fill="currentColor" />
+         <circle cx="8" cy="8" r="1.25" fill="currentColor" />
+         <circle cx="13" cy="8" r="1.25" fill="currentColor" />
+      </svg>
+   );
+}
 
 export default function Sidebar({
    isSidebarOpen,
@@ -20,11 +222,6 @@ export default function Sidebar({
    onOpenRegistration,
 }) {
    const { t } = useTranslation(undefined, { i18n: chatI18n });
-   const [isMobile, setIsMobile] = useState(window.innerWidth < 700);
-   const [chatToDelete, setChatToDelete] = useState(null);
-   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-   const [isDeleteAllModalOpen, setIsDeleteAllModalOpen] = useState(false);
-
    const {
       chats,
       currentChatId,
@@ -34,284 +231,349 @@ export default function Sidebar({
       deleteAllChats,
    } = useContext(ChatContext);
 
+   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+   const [menuChatId, setMenuChatId] = useState(null);
+   const [pinnedChatIds, setPinnedChatIds] = useState(getStoredPinnedChats);
+   const [deleteState, setDeleteState] = useState({
+      isOpen: false,
+      mode: "single",
+      chatId: null,
+   });
+
    useEffect(() => {
-      const handleResize = () => {
-         setIsMobile(window.innerWidth < 700);
+      if (typeof window === "undefined") {
+         return;
+      }
+
+      window.localStorage.setItem(
+         PINNED_CHATS_STORAGE_KEY,
+         JSON.stringify(pinnedChatIds),
+      );
+   }, [pinnedChatIds]);
+
+   const historyChats = useMemo(
+      () =>
+         chats
+            .filter((chat) => chat.id !== null)
+            .sort(
+               (left, right) =>
+                  new Date(right.lastUpdated || 0) -
+                  new Date(left.lastUpdated || 0),
+            ),
+      [chats],
+   );
+
+   useEffect(() => {
+      const availableIds = new Set(historyChats.map((chat) => String(chat.id)));
+
+      setPinnedChatIds((prev) => {
+         const next = prev.filter((chatId) => availableIds.has(chatId));
+         return next.length === prev.length ? prev : next;
+      });
+   }, [historyChats]);
+
+   useEffect(() => {
+      const handleClickOutside = (event) => {
+         if (!event.target.closest(".sidebar__chat-menu-wrapper")) {
+            setMenuChatId(null);
+         }
       };
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
+
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
    }, []);
+
+   const closeSidebarOnMobile = () => {
+      if (
+         typeof window !== "undefined" &&
+         window.matchMedia("(max-width: 700px)").matches &&
+         isSidebarOpen
+      ) {
+         toggleSidebar();
+      }
+   };
 
    const handleNewChat = () => {
       createNewChat();
-      if (isMobile) toggleSidebar();
+      setMenuChatId(null);
+      closeSidebarOnMobile();
    };
 
-   const handleSpecialFormsClick = () => {
-      onOpenSpecialForms();
-      if (isMobile) toggleSidebar();
+   const handleSwitchChat = async (chatId) => {
+      setMenuChatId(null);
+      await switchChat(chatId);
+      closeSidebarOnMobile();
    };
 
-   const handleRegistrationClick = () => {
-      onOpenRegistration();
-      if (isMobile) toggleSidebar();
+   const handleTogglePin = (chatId) => {
+      const normalizedId = String(chatId);
+
+      setPinnedChatIds((prev) =>
+         prev.includes(normalizedId)
+            ? prev.filter((id) => id !== normalizedId)
+            : [normalizedId, ...prev],
+      );
+
+      setMenuChatId(null);
    };
 
-   const handleSearchClick = () => {
-      setIsSearchModalOpen(true);
+   const handleOpenDeleteChat = (chatId) => {
+      setDeleteState({
+         isOpen: true,
+         mode: "single",
+         chatId,
+      });
+      setMenuChatId(null);
    };
 
-   const handleCloseSearchModal = () => {
-      setIsSearchModalOpen(false);
+   const handleOpenDeleteAllChats = () => {
+      setDeleteState({
+         isOpen: true,
+         mode: "all",
+         chatId: null,
+      });
+      setMenuChatId(null);
    };
 
-   const openDeleteModal = (chatId) => setChatToDelete(chatId);
-   const closeDeleteModal = () => setChatToDelete(null);
-   const confirmDeleteChat = () => {
-      if (chatToDelete) return deleteChat(chatToDelete);
-      return Promise.resolve();
-   };
-   const openDeleteAllModal = () => setIsDeleteAllModalOpen(true);
-   const closeDeleteAllModal = () => setIsDeleteAllModalOpen(false);
-   const confirmDeleteAllChats = () => deleteAllChats();
-
-   const handleSwitchChat = (chatId) => {
-      switchChat(chatId);
-      if (isMobile) toggleSidebar();
+   const handleCloseDeleteModal = () => {
+      setDeleteState({
+         isOpen: false,
+         mode: "single",
+         chatId: null,
+      });
    };
 
-   const formatChatDate = (dateStr) => {
-      const date = new Date(dateStr);
-      const today = new Date();
-      const yesterday = new Date();
-      yesterday.setDate(today.getDate() - 1);
+   const handleConfirmDelete = async () => {
+      if (deleteState.mode === "all") {
+         await deleteAllChats();
+         setPinnedChatIds([]);
+         return;
+      }
 
-      const isSameDay = (d1, d2) =>
-         d1.getFullYear() === d2.getFullYear() &&
-         d1.getMonth() === d2.getMonth() &&
-         d1.getDate() === d2.getDate();
+      if (deleteState.chatId == null) {
+         return;
+      }
 
-      if (isSameDay(date, today)) return t("sidebar.today");
-      if (isSameDay(date, yesterday)) return t("sidebar.yesterday");
-
-      const dd = String(date.getDate()).padStart(2, "0");
-      const mm = String(date.getMonth() + 1).padStart(2, "0");
-      const yyyy = date.getFullYear();
-      return `${dd}.${mm}.${yyyy}`;
+      await deleteChat(deleteState.chatId);
+      setPinnedChatIds((prev) =>
+         prev.filter((chatId) => chatId !== String(deleteState.chatId)),
+      );
    };
 
-   const sortedChats = chats
-      .filter((chat) => chat.id !== null)
-      .sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+   const pinnedChats = pinnedChatIds
+      .map((pinnedId) =>
+         historyChats.find((chat) => String(chat.id) === String(pinnedId)),
+      )
+      .filter(Boolean);
 
-   const groupedChats = sortedChats.reduce((groups, chat) => {
-      const key = formatChatDate(chat.lastUpdated);
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(chat);
-      return groups;
-   }, {});
-
-   const renderChatButton = (chat) => (
-      <SidebarButton
-         key={chat.id}
-         text={chat.title || t("sidebar.newChat")}
-         icon={
-            <svg
-               xmlns="http://www.w3.org/2000/svg"
-               className="w-5 h-5 text-gray-600 hover:text-red-500 transition-colors"
-               viewBox="0 0 482.428 482.429"
-               fill="currentColor"
-               onClick={(event) => {
-                  event.stopPropagation();
-                  openDeleteModal(chat.id);
-               }}
-            >
-               <path d="M381.163,57.799h-75.094C302.323,25.316,274.686,0,241.214,0c-33.471,0-61.104,25.315-64.85,57.799h-75.098c-30.39,0-55.111,24.728-55.111,55.117v2.828c0,23.223,14.46,43.1,34.83,51.199v260.369c0,30.39,24.724,55.117,55.112,55.117h210.236c30.389,0,55.111-24.729,55.111-55.117V166.944c20.369-8.1,34.83-27.977,34.83-51.199v-2.828C436.274,82.527,411.551,57.799,381.163,57.799z" />
-            </svg>
-         }
-         onClick={() => handleSwitchChat(chat.id)}
-         className={`py-2 px-4 rounded-md ${
-            chat.id === currentChatId
-               ? "bg-gray-300 text-black _active"
-               : "bg-white text-gray-600"
-         }`}
-      />
+   const regularChats = historyChats.filter(
+      (chat) => !pinnedChatIds.includes(String(chat.id)),
    );
 
-   return (
-      <div
-         className={`sidebar overflow-hidden flex xl:p-8 flex-col ${
-            isSidebarOpen
-               ? "sidebar--close p-8"
-               : "xl:min-w-96 p-3 py-[32px] min-w-[248px]"
-         }`}
-      >
-         <div className="sidebar__top flex justify-between items-start gap-2.5">
-            <img src={logo} alt="logo" className="sidebar__logo" />
-            <p className="logo__text">{t("logo.text")}</p>
-            <img
-               onClick={toggleSidebar}
-               src={newBurgerIcon}
-               className="sidebar__icon self-end cursor-pointer"
-               alt={t("sidebar.close")}
-            />
-         </div>
+   const renderChatItem = (chat) => {
+      const normalizedId = String(chat.id);
+      const isPinned = pinnedChatIds.includes(normalizedId);
+      const isActive = String(currentChatId) === normalizedId;
 
-         <div className="sidebar__actions flex flex-col gap-2.5 mt-16">
-            <SidebarButton
-               key="new-chat"
-               text={t("sidebar.newChat")}
-               icon={
-                  <img
-                     src={newPlusIcon}
-                     alt={t("sidebar.newChat")}
-                     className="w-5 h-5"
-                  />
-               }
-               onClick={handleNewChat}
-               className="bg-white sidebar__button--primary"
-            />
+      return (
+         <div
+            key={normalizedId}
+            className={`sidebar__chat-item ${
+               isActive ? "sidebar__chat-item--active" : ""
+            }`}
+         >
+            <button
+               type="button"
+               className="sidebar__chat-main"
+               onClick={() => handleSwitchChat(chat.id)}
+            >
+               <span className="sidebar__chat-title">
+                  {chat.title || t("sidebar.previousRequest")}
+               </span>
+            </button>
 
-            {showSpecialButton && (
-               <SidebarButton
-                  key="special-forms"
-                  text={t("binModal.specialFormsButton")}
-                  icon={
-                     <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-5 h-5"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
+            <div className="sidebar__chat-menu-wrapper">
+               <button
+                  type="button"
+                  className="sidebar__chat-menu-trigger"
+                  aria-label={t("sidebar.chatActions")}
+                  title={t("sidebar.chatActions")}
+                  onClick={(event) => {
+                     event.stopPropagation();
+                     setMenuChatId((prev) =>
+                        prev === normalizedId ? null : normalizedId,
+                     );
+                  }}
+               >
+                  <DotsIcon />
+               </button>
+
+               {menuChatId === normalizedId && (
+                  <div className="sidebar__chat-menu">
+                     <button
+                        type="button"
+                        className="sidebar__chat-menu-button"
+                        onClick={() => handleTogglePin(chat.id)}
                      >
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <path d="M14 2v6h6" />
-                        <path d="M8 13h8" />
-                        <path d="M8 17h8" />
-                        <path d="M8 9h2" />
-                     </svg>
-                  }
-                  onClick={handleSpecialFormsClick}
-                  className="bg-white sidebar__button--primary"
-               />
-            )}
+                        <PinIcon />
+                        <span>
+                           {isPinned
+                              ? t("sidebar.unpinChat")
+                              : t("sidebar.pinChat")}
+                        </span>
+                     </button>
 
-            <SidebarButton
-               key="registration"
-               text={t("feedback.openRegistrationForm")}
-               icon={
-                  <svg
-                     xmlns="http://www.w3.org/2000/svg"
-                     className="w-5 h-5"
-                     viewBox="0 0 24 24"
-                     fill="none"
-                     stroke="currentColor"
-                     strokeWidth="2"
-                     strokeLinecap="round"
-                     strokeLinejoin="round"
-                     aria-hidden="true"
-                  >
-                     <path d="M12 20h9" />
-                     <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
-                  </svg>
-               }
-               onClick={handleRegistrationClick}
-               className="bg-white sidebar__button--primary"
-            />
-
-            <SidebarButton
-               key="search-chats"
-               text={t("sidebar.searchPlaceholder")}
-               icon={
-                  <svg
-                     xmlns="http://www.w3.org/2000/svg"
-                     className="w-5 h-5"
-                     viewBox="0 0 24 24"
-                     fill="currentColor"
-                     aria-hidden="true"
-                  >
-                     <path d="M10 2a8 8 0 1 0 4.906 14.32l4.387 4.387 1.414-1.414-4.387-4.387A8 8 0 0 0 10 2Zm0 2a6 6 0 1 1 0 12a6 6 0 0 1 0-12Z" />
-                  </svg>
-               }
-               onClick={handleSearchClick}
-               className="bg-white sidebar__button--primary"
-            />
-
-            <SidebarButton
-               key="delete-all-chats"
-               text={t("sidebar.clearHistory")}
-               icon={
-                  <svg
-                     xmlns="http://www.w3.org/2000/svg"
-                     className="w-5 h-5"
-                     viewBox="0 0 24 24"
-                     fill="none"
-                     stroke="currentColor"
-                     strokeWidth="2"
-                     strokeLinecap="round"
-                     strokeLinejoin="round"
-                     aria-hidden="true"
-                  >
-                     <path d="M3 6h18" />
-                     <path d="M8 6V4h8v2" />
-                     <path d="M19 6l-1 14H6L5 6" />
-                     <path d="M10 11v6" />
-                     <path d="M14 11v6" />
-                  </svg>
-               }
-               onClick={openDeleteAllModal}
-               className="bg-white sidebar__button--danger"
-            />
-         </div>
-
-         <div className="sidebar__history flex flex-col gap-2.5 mt-8">
-            {Object.keys(groupedChats)
-               .sort((a, b) => {
-                  const maxA = Math.max(
-                     ...groupedChats[a].map((chat) => new Date(chat.lastUpdated)),
-                  );
-                  const maxB = Math.max(
-                     ...groupedChats[b].map((chat) => new Date(chat.lastUpdated)),
-                  );
-                  return maxB - maxA;
-               })
-               .map((groupKey) => (
-                  <div key={groupKey} className="flex flex-col gap-[10px]">
-                     <div className="sidebar__group-heading text-sm font-bold">
-                        {groupKey}
-                     </div>
-                     {groupedChats[groupKey].map(renderChatButton)}
+                     <button
+                        type="button"
+                        className="sidebar__chat-menu-button sidebar__chat-menu-button--danger"
+                        onClick={() => handleOpenDeleteChat(chat.id)}
+                     >
+                        <TrashIcon />
+                        <span>{t("deleteChatModal.confirm")}</span>
+                     </button>
                   </div>
-               ))}
+               )}
+            </div>
          </div>
+      );
+   };
 
-         <DeleteChatModal
-            isOpen={!!chatToDelete}
-            onClose={closeDeleteModal}
-            onConfirm={confirmDeleteChat}
-         />
+   return (
+      <>
+         <aside
+            className={`sidebar flex h-full flex-col px-[26px] pb-7 pt-7 ${
+               isSidebarOpen ? "sidebar--close" : ""
+            }`}
+         >
+            <div className="sidebar__top mb-10 flex justify-between gap-3">
+               <div className="sidebar__logo flex items-start gap-3">
+                  <img
+                     src={logo}
+                     alt="QazStat"
+                     className="max-h-[58px] w-auto object-contain"
+                  />
+                  <div className="logo__text max-w-[180px]">
+                     {t("logo.text")}
+                  </div>
+               </div>
 
-         <DeleteChatModal
-            isOpen={isDeleteAllModalOpen}
-            onClose={closeDeleteAllModal}
-            onConfirm={confirmDeleteAllChats}
-            title={t("deleteChatModal.clearAllTitle")}
-            message={t("deleteChatModal.clearAllMessage")}
-            confirmText={t("deleteChatModal.clearAllConfirm")}
-         />
+               <img
+                  src={newBurgerIcon}
+                  alt={t("sidebar.close")}
+                  className="sidebar__icon"
+                  onClick={toggleSidebar}
+               />
+            </div>
+
+            <div className="sidebar__actions">
+               <SidebarButton
+                  text={t("sidebar.newChat")}
+                  icon={
+                     <img
+                        src={newPlusIcon}
+                        alt=""
+                        className="sidebar__button-icon"
+                     />
+                  }
+                  className="sidebar__button--primary"
+                  onClick={handleNewChat}
+               />
+
+               {showSpecialButton && (
+                  <SidebarButton
+                     text={t("binModal.specialFormsButton")}
+                     icon={<DocumentIcon className="sidebar__button-svg-icon" />}
+                     className="sidebar__button--primary mt-2"
+                     onClick={onOpenSpecialForms}
+                  />
+               )}
+
+               <SidebarButton
+                  text={t("feedback.openRegistrationForm")}
+                  icon={<PenIcon className="sidebar__button-svg-icon" />}
+                  className="sidebar__button--primary mt-2"
+                  onClick={onOpenRegistration}
+               />
+
+               <SidebarButton
+                  text={t("sidebar.searchTitle")}
+                  icon={<SearchIcon className="sidebar__button-svg-icon" />}
+                  className="sidebar__button--primary mt-2"
+                  onClick={() => {
+                     setMenuChatId(null);
+                     setIsSearchModalOpen(true);
+                  }}
+               />
+
+               <SidebarButton
+                  text={t("sidebar.clearHistory")}
+                  icon={<TrashIcon className="sidebar__button-svg-icon" />}
+                  className="sidebar__button--danger mt-2"
+                  onClick={handleOpenDeleteAllChats}
+               />
+            </div>
+
+            <div className="sidebar__bottom">
+               <div className="sidebar__history">
+                  {pinnedChats.length > 0 && (
+                     <section className="sidebar__section">
+                        <div className="sidebar__section-title">
+                           {t("sidebar.pinnedChats")}
+                        </div>
+                        <div className="sidebar__chat-list">
+                           {pinnedChats.map(renderChatItem)}
+                        </div>
+                     </section>
+                  )}
+
+                  <section className="sidebar__section">
+                     <div className="sidebar__section-title">
+                        {t("sidebar.recentRequests")}
+                     </div>
+
+                     {regularChats.length > 0 ? (
+                        <div className="sidebar__chat-list">
+                           {regularChats.map(renderChatItem)}
+                        </div>
+                     ) : (
+                        <div className="sidebar__history-empty">
+                           {t("sidebar.searchEmpty")}
+                        </div>
+                     )}
+                  </section>
+               </div>
+
+               <div className="sidebar__warning rounded-[8px] border border-[#E7D9A8] bg-[#FFF9E8] px-4 py-3 text-[14px] leading-[1.3] text-[#BC6A00]">
+                  {t("sidebar.warning")}
+               </div>
+            </div>
+         </aside>
 
          <SearchChatsModal
             isOpen={isSearchModalOpen}
-            onClose={handleCloseSearchModal}
+            onClose={() => setIsSearchModalOpen(false)}
          />
 
-         <div className="mt-4 sidebar__warning p-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 text-sm leading-tight rounded-r shadow-sm">
-            {t("sidebar.warning")}
-         </div>
-      </div>
+         <DeleteChatModal
+            isOpen={deleteState.isOpen}
+            onClose={handleCloseDeleteModal}
+            onConfirm={handleConfirmDelete}
+            title={
+               deleteState.mode === "all"
+                  ? t("deleteChatModal.clearAllTitle")
+                  : t("deleteChatModal.title")
+            }
+            message={
+               deleteState.mode === "all"
+                  ? t("deleteChatModal.clearAllMessage")
+                  : t("deleteChatModal.message")
+            }
+            confirmText={
+               deleteState.mode === "all"
+                  ? t("deleteChatModal.clearAllConfirm")
+                  : t("deleteChatModal.confirm")
+            }
+         />
+      </>
    );
 }
