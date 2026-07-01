@@ -126,6 +126,21 @@ const CONTENT = {
   },
 };
 
+const WEBUI_TEXT_OVERRIDES = {
+  ru: {
+    webuiTitle: "Загрузка файлов",
+    webuiSubtitle:
+      "Массовая загрузка и замена файлов, которые используются в ответах для конечного пользователя.",
+    openWebui: "Открыть",
+  },
+  kz: {
+    webuiTitle: "Файлдарды жүктеу",
+    webuiSubtitle:
+      "Соңғы пайдаланушыға берілетін жауаптарда қолданылатын файлдарды жаппай жүктеу және ауыстыру.",
+    openWebui: "Ашу",
+  },
+};
+
 const mapFileRecord = (item) => ({
   id: typeof item?.id === "string" ? item.id : "",
   storage_key: item?.storage_key || "",
@@ -172,7 +187,10 @@ const FileManager = ({ credentials }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const text = i18n.language === "kz" ? CONTENT.kz : CONTENT.ru;
+  const baseText = i18n.language === "kz" ? CONTENT.kz : CONTENT.ru;
+  const overrideText =
+    i18n.language === "kz" ? WEBUI_TEXT_OVERRIDES.kz : WEBUI_TEXT_OVERRIDES.ru;
+  const text = { ...baseText, ...overrideText };
 
   const authHeaders = useMemo(() => {
     const encoded = btoa(`${credentials.login}:${credentials.password}`);
