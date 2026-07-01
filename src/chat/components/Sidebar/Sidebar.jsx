@@ -526,21 +526,17 @@ export default function Sidebar({
                      </section>
                   )}
 
-                  <section className="sidebar__section">
-                     <div className="sidebar__section-title">
-                        {t("sidebar.recentRequests")}
-                     </div>
+                  {regularChats.length > 0 && (
+                     <section className="sidebar__section">
+                        <div className="sidebar__section-title">
+                           {t("sidebar.recentRequests")}
+                        </div>
 
-                     {regularChats.length > 0 ? (
                         <div className="sidebar__chat-list">
                            {regularChats.map(renderChatItem)}
                         </div>
-                     ) : (
-                        <div className="sidebar__history-empty">
-                           {t("sidebar.searchEmpty")}
-                        </div>
-                     )}
-                  </section>
+                     </section>
+                  )}
                </div>
 
                <div className="sidebar__warning rounded-[8px] border border-[#E7D9A8] bg-[#FFF9E8] px-4 py-3 text-[14px] leading-[1.3] text-[#BC6A00]">
