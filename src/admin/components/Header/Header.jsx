@@ -1,4 +1,3 @@
-// src/components/Header/Header.jsx
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
@@ -16,12 +15,14 @@ const Header = ({ activeTab, onMenuToggle }) => {
   const faqLabel = i18n.language === "kz" ? "Жиі сұрақтар" : "Частые вопросы";
   const mobileTitle =
     activeTab === 1
-      ? filesLabel
+      ? t("sidebar.databaseUpdate")
       : activeTab === 2
-        ? t("sidebar.feedbackExport")
+        ? filesLabel
         : activeTab === 3
-          ? t("sidebar.analytics")
-          : faqLabel;
+          ? t("sidebar.feedbackExport")
+          : activeTab === 4
+            ? t("sidebar.analytics")
+            : faqLabel;
 
   const handleLangChange = (lang) => {
     setActiveLang(lang);
@@ -30,22 +31,17 @@ const Header = ({ activeTab, onMenuToggle }) => {
 
   return (
     <header className="header">
-      {/* Десктоп-версия Header */}
       <div className="desktop-header">
         <div className="header-top">
           <div className="language-switcher">
             <button
-              className={`lang-button ru ${
-                activeLang === "ru" ? "active" : ""
-              }`}
+              className={`lang-button ru ${activeLang === "ru" ? "active" : ""}`}
               onClick={() => handleLangChange("ru")}
             >
               рус
             </button>
             <button
-              className={`lang-button kz ${
-                activeLang === "kz" ? "active" : ""
-              }`}
+              className={`lang-button kz ${activeLang === "kz" ? "active" : ""}`}
               onClick={() => handleLangChange("kz")}
             >
               қаз
@@ -66,7 +62,6 @@ const Header = ({ activeTab, onMenuToggle }) => {
         <div className="header-bottom-border"></div>
       </div>
 
-      {/* Мобильная версия Header */}
       <div className="mobile-header show-768">
         <div className="mobile-header-left" onClick={onMenuToggle}>
           <img

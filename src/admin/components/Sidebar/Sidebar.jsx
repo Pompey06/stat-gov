@@ -1,12 +1,13 @@
 import PropTypes from "prop-types";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import logo from "../../assets/logo.svg";
+import newIcon from "../../assets/new.svg";
 import downloadIcon from "../../assets/download.svg";
 import burgerIcon from "../../assets/burgerIcon.svg";
-import SidebarButton from "../SidebarButton/SidebarButton";
 import userIcon from "../../assets/userIcon.svg";
 import arrowIcon from "../../assets/arrowIcon.svg";
-import { useTranslation } from "react-i18next";
+import SidebarButton from "../SidebarButton/SidebarButton";
 import "./Sidebar.css";
 import adminI18n from "../../i18n";
 
@@ -90,7 +91,6 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, onMenuToggle }) => {
 
   const handleButtonClick = (tab) => {
     setActiveTab(tab);
-    // Если экран мобильный, закрываем меню
     if (window.innerWidth <= 768) {
       onMenuToggle();
     }
@@ -109,28 +109,34 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, onMenuToggle }) => {
       </div>
       <nav className="sidebar-nav">
         <SidebarButton
-          icon={<FilesIcon />}
-          text={filesLabel}
+          icon={newIcon}
+          text={t("sidebar.databaseUpdate")}
           active={activeTab === 1}
           onClick={() => handleButtonClick(1)}
         />
         <SidebarButton
-          icon={downloadIcon}
-          text={t("sidebar.feedbackExport")}
+          icon={<FilesIcon />}
+          text={filesLabel}
           active={activeTab === 2}
           onClick={() => handleButtonClick(2)}
         />
         <SidebarButton
-          icon={<AnalyticsIcon />}
-          text={t("sidebar.analytics")}
+          icon={downloadIcon}
+          text={t("sidebar.feedbackExport")}
           active={activeTab === 3}
           onClick={() => handleButtonClick(3)}
         />
         <SidebarButton
-          icon={<FaqIcon />}
-          text={faqLabel}
+          icon={<AnalyticsIcon />}
+          text={t("sidebar.analytics")}
           active={activeTab === 4}
           onClick={() => handleButtonClick(4)}
+        />
+        <SidebarButton
+          icon={<FaqIcon />}
+          text={faqLabel}
+          active={activeTab === 5}
+          onClick={() => handleButtonClick(5)}
         />
       </nav>
       <div className="sidebar-bottom show-768">

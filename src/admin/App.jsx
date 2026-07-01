@@ -2,6 +2,7 @@ import "./App.css";
 import Login from "./components/Login/Login";
 import Sidebar from "./components/Sidebar/Sidebar";
 import Header from "./components/Header/Header";
+import DatabaseUpdate from "./components/DatabaseUpdate/DatabaseUpdate";
 import FileManager from "./components/FileManager/FileManager";
 import FeedbackExport from "./components/FeedbackExport/FeedbackExport";
 import AnalyticsDashboard from "./components/AnalyticsDashboard/AnalyticsDashboard";
@@ -13,6 +14,8 @@ function AppAdmin() {
    const [activeTab, setActiveTab] = useState(1);
 
    // === НОВАЯ ЛОГИКА: показываем Login, пока credentials === null ===
+   // Для локальной разработки сразу попадаем в админку без формы логина.
+   // Чтобы вернуть обычный вход, замените объект ниже на `null`.
    const [credentials, setCredentials] = useState(null);
 
    const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -43,10 +46,11 @@ function AppAdmin() {
                      onMenuToggle={handleMenuToggle}
                      onLogout={handleLogout} // если надо вывести кнопку «Выйти»
                   />
-                  {activeTab === 1 && <FileManager credentials={credentials} />}
-                  {activeTab === 2 && <FeedbackExport credentials={credentials} />}
-                  {activeTab === 3 && <AnalyticsDashboard credentials={credentials} />}
-                  {activeTab === 4 && <FaqSettings credentials={credentials} />}
+                  {activeTab === 1 && <DatabaseUpdate credentials={credentials} />}
+                  {activeTab === 2 && <FileManager credentials={credentials} />}
+                  {activeTab === 3 && <FeedbackExport credentials={credentials} />}
+                  {activeTab === 4 && <AnalyticsDashboard credentials={credentials} />}
+                  {activeTab === 5 && <FaqSettings credentials={credentials} />}
                </div>
             </>
          )}
