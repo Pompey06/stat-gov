@@ -777,15 +777,6 @@ const AnalyticsDashboard = ({ credentials }) => {
             <div className="analytics-credentials">
               <div className="analytics-credential-field">
                 <span className="analytics-credential-label">
-                  {t("analytics.langfuse.path")}
-                </span>
-                <span className="analytics-credential-value">
-                  {langfusePath || "-"}
-                </span>
-              </div>
-
-              <div className="analytics-credential-field">
-                <span className="analytics-credential-label">
                   {t("analytics.langfuse.login")}
                 </span>
                 <span className="analytics-credential-value">

@@ -495,14 +495,6 @@
   margin-left: 8px;
   padding: 0;
 }
-
-.file-manager__sync-line {
-  margin-top: 14px;
-  color: #647384;
-  font-size: 14px;
-  line-height: 1.45;
-}
-
 .file-manager__action:disabled,
 .file-manager .button:disabled {
   opacity: 0.6;

@@ -22,7 +22,6 @@ const CONTENT = {
     pageSubtitle:
       "Справочники и документы, которые бот может приложить к ответу пользователю.",
     refresh: "Обновить",
-    sync: "Синхронизировать",
     loading: "Загрузка...",
     partialError: "Часть данных не загрузилась.",
     searchPlaceholder: "Поиск по keyword или пути",
@@ -42,24 +41,19 @@ const CONTENT = {
     uploadError: "Не удалось загрузить файл.",
     saveSuccess: "Сохранено.",
     saveError: "Не удалось сохранить.",
-    syncSuccess: "Синхронизация запущена.",
-    syncError: "Не удалось запустить синхронизацию.",
     loadSuccess: "Данные обновлены.",
     loadError: "Не удалось загрузить данные.",
     invalidId: "Некорректный ID файла.",
     downloadError: "Не удалось скачать файл.",
     pathMissing: "Путь не указан.",
-    uploadTitle: "Загрузка файлов",
-    uploadHint: "Массовая замена файлов через WebUI.",
-    openWebui: "Открыть WebUI",
+    uploadTitle: "MinIO",
+    uploadHint: "Прямой доступ к файловому хранилищу.",
+    openWebui: "Открыть MinIO",
     login: "Логин",
     password: "Пароль",
     show: "Показать",
     hide: "Скрыть",
     notSpecified: "—",
-    syncRunning: "Синхронизация выполняется…",
-    syncIdle: "Синхронизация не запущена",
-    lastRun: "Последний запуск",
     filesCount: "файлов",
     noPath: "Без пути",
     selectFile: "Выберите файл",
@@ -89,7 +83,6 @@ const CONTENT = {
     pageSubtitle:
       "Бот пайдаланушы жауабына қоса алатын анықтамалықтар мен құжаттар.",
     refresh: "Жаңарту",
-    sync: "Синхрондау",
     loading: "Жүктелуде...",
     partialError: "Деректердің бір бөлігі жүктелмеді.",
     searchPlaceholder: "Keyword немесе жол бойынша іздеу",
@@ -109,24 +102,19 @@ const CONTENT = {
     uploadError: "Файлды жүктеу мүмкін болмады.",
     saveSuccess: "Сақталды.",
     saveError: "Сақтау мүмкін болмады.",
-    syncSuccess: "Синхрондау іске қосылды.",
-    syncError: "Синхрондауды іске қосу мүмкін болмады.",
     loadSuccess: "Деректер жаңартылды.",
     loadError: "Деректерді жүктеу мүмкін болмады.",
     invalidId: "Файл ID дұрыс емес.",
     downloadError: "Файлды жүктеу мүмкін болмады.",
     pathMissing: "Жол көрсетілмеген.",
-    uploadTitle: "Файлдарды жүктеу",
-    uploadHint: "WebUI арқылы файлдарды жаппай ауыстыру.",
-    openWebui: "WebUI ашу",
+    uploadTitle: "MinIO",
+    uploadHint: "Файлдық сақтауға тікелей кіру.",
+    openWebui: "MinIO ашу",
     login: "Логин",
     password: "Құпиясөз",
     show: "Көрсету",
     hide: "Жасыру",
     notSpecified: "—",
-    syncRunning: "Синхрондау орындалуда…",
-    syncIdle: "Синхрондау іске қосылмаған",
-    lastRun: "Соңғы іске қосу",
     filesCount: "файл",
     noPath: "Жолы жоқ",
     selectFile: "Файлды таңдаңыз",
@@ -228,10 +216,8 @@ const FileManager = ({ credentials }) => {
   const [storagePaths, setStoragePaths] = useState(() => new Set());
   const [originalFiles, setOriginalFiles] = useState({});
   const [webui, setWebui] = useState(null);
-  const [syncStatus, setSyncStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [syncing, setSyncing] = useState(false);
   const [savingId, setSavingId] = useState("");
   const [deletingId, setDeletingId] = useState("");
   const [uploadingPath, setUploadingPath] = useState("");
@@ -244,39 +230,6 @@ const FileManager = ({ credentials }) => {
   const [editingFileId, setEditingFileId] = useState("");
   const [renameValue, setRenameValue] = useState("");
   const [draftFile, setDraftFile] = useState(null);
-
-  const formatTimestamp = useCallback(
-    (value) => {
-      if (!value) return text.notSpecified;
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return value;
-      return new Intl.DateTimeFormat(i18n.language === "kz" ? "kk-KZ" : "ru-RU", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      }).format(date);
-    },
-    [i18n.language, text.notSpecified],
-  );
-
-  const syncStatusText = useMemo(() => {
-    if (!syncStatus) return text.syncIdle;
-    if (syncStatus.running) return text.syncRunning;
-
-    const parts = [];
-    if (syncStatus.last_run) {
-      parts.push(`${text.lastRun}: ${formatTimestamp(syncStatus.last_run)}`);
-    } else {
-      parts.push(text.syncIdle);
-    }
-    if (syncStatus.created) parts.push(`+${syncStatus.created}`);
-    if (syncStatus.updated) parts.push(`~${syncStatus.updated}`);
-    if (syncStatus.deleted) parts.push(`−${syncStatus.deleted}`);
-
-    return parts.join(" · ");
-  }, [formatTimestamp, syncStatus, text.lastRun, text.syncIdle, text.syncRunning]);
 
   const filteredFiles = useMemo(() => {
     const query = searchTerm.trim().toLocaleLowerCase();
@@ -413,11 +366,10 @@ const FileManager = ({ credentials }) => {
       setStatus(null);
 
       try {
-        const [webuiResponse, filesResponse, syncResponse, storageResponse] =
+        const [webuiResponse, filesResponse, storageResponse] =
           await Promise.allSettled([
             api.get("/files/webui", { headers: authHeaders }),
             api.get("/files/", { headers: authHeaders }),
-            api.get("/files/sync/status", { headers: authHeaders }),
             api.get("/files/storage", { headers: authHeaders }),
           ]);
 
@@ -445,12 +397,6 @@ const FileManager = ({ credentials }) => {
               return acc;
             }, {}),
           );
-        } else {
-          hasError = true;
-        }
-
-        if (syncResponse.status === "fulfilled") {
-          setSyncStatus(syncResponse.value.data || {});
         } else {
           hasError = true;
         }
@@ -770,22 +716,6 @@ const FileManager = ({ credentials }) => {
     }
   };
 
-  const handleSync = async () => {
-    setSyncing(true);
-    setStatus(null);
-
-    try {
-      await api.post("/files/sync", {}, { headers: authHeaders });
-      setStatus({ type: "success", message: text.syncSuccess });
-      await loadData({ silent: true });
-    } catch (error) {
-      console.error("Failed to start sync:", error);
-      setStatus({ type: "error", message: text.syncError });
-    } finally {
-      setSyncing(false);
-    }
-  };
-
   const handleOpenWebui = () => {
     const target = normalizeExternalUrl(webui?.path);
     if (!target) return;
@@ -810,19 +740,11 @@ const FileManager = ({ credentials }) => {
         <div className="file-manager__actions">
           <Button
             type="button"
-            className="file-manager__action"
+            className="file-manager__action file-manager__action_primary"
             onClick={() => loadData({ silent: true, showSuccess: true })}
             disabled={refreshing}
           >
             {refreshing ? text.loading : text.refresh}
-          </Button>
-          <Button
-            type="button"
-            className="file-manager__action file-manager__action_primary"
-            onClick={handleSync}
-            disabled={syncing}
-          >
-            {syncing ? text.loading : text.sync}
           </Button>
         </div>
       </div>
@@ -942,7 +864,6 @@ const FileManager = ({ credentials }) => {
             )}
           </span>
         </div>
-        <p className="file-manager__sync-line">{syncStatusText}</p>
       </section>
     </div>
   );
