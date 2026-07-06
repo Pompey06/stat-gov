@@ -1,5 +1,6 @@
 .feedback-export {
-   padding: 51px 9vw 20px 5.83vw;
+   display: flex;
+   flex-direction: column;
 }
 
 .export-title {
@@ -169,12 +170,6 @@
    }
 }
 
-@media (max-width: 1024px) {
-   .feedback-export {
-      padding: 50px 20px;
-   }
-}
-
 @media (max-width: 900px) {
    .date-picker-container {
       flex-direction: column;
@@ -184,7 +179,6 @@
 
 @media (max-width: 768px) {
    .feedback-export {
-      padding: 16px;
       display: flex;
       flex-direction: column;
    }

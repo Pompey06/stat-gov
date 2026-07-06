@@ -1,12 +1,9 @@
 .database-update {
    display: flex;
    flex-direction: column;
-   padding: 20px;
-   overflow-y: auto;
 }
 
 .upload-block {
-   padding: 51px 9vw 0px 5.83vw;
    display: flex;
    flex-direction: column;
 }
@@ -185,7 +182,6 @@
 
 @media (max-width: 1024px) {
    .database-update {
-      padding: 20px;
       align-items: center;
    }
    .upload-button {
@@ -195,12 +191,9 @@
 
 @media (max-width: 768px) {
    .database-update {
-      padding: 16px;
-      padding-bottom: 0;
       overflow-x: hidden;
    }
    .upload-block {
-      padding: 0;
       padding-bottom: 20px;
    }
    .upload-title {

@@ -1,185 +1,330 @@
 .file-manager {
-  height: calc(100vh - 139px);
-  overflow-y: auto;
-  padding: 36px 48px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.file-manager__loader,
-.file-manager__empty {
-  min-height: 240px;
+.file-manager__header {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #fff;
-  border: 1px solid #d6ebfa;
-  border-radius: 24px;
-  color: #5d7690;
-  font-size: 22px;
-}
-
-.file-manager__header,
-.file-manager__actions,
-.file-manager__panel-header,
-.file-manager__credential-row,
-.file-manager__file-header,
-.file-manager__file-actions {
-  display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
 }
 
 .file-manager__title {
-  margin: 0;
-  font-size: 27px;
-  font-weight: 400;
-  color: #09182f;
+  color: #000;
+  font-size: 28px;
+  font-weight: 300;
+  line-height: 1.1;
+  margin-bottom: 8px;
 }
 
 .file-manager__subtitle {
-  margin: 12px 0 0;
-  max-width: 920px;
-  color: #5d7690;
-  font-size: 18px;
-  line-height: 1.5;
+  color: #4a5664;
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 1.45;
+  max-width: 720px;
 }
 
 .file-manager__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
-.file-manager__button {
-  min-width: 220px;
-  font-size: 18px;
-}
-
-.file-manager__button_secondary {
-  background: #fff;
-  color: #0086bf;
-  border: 1px solid #9fd4ef;
-}
-
-.file-manager__button_secondary:hover {
-  background: #edf8ff;
-}
-
-.file-manager__status {
-  margin-top: 24px;
-  padding: 16px 20px;
-  border-radius: 18px;
+.file-manager__action {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 16px;
-  line-height: 1.45;
 }
 
-.file-manager__status_success {
-  background: #ecf9f1;
-  color: #1d7a45;
-}
-
-.file-manager__status_error {
-  background: #fbece6;
-  color: #bd5f27;
-}
-
-.file-manager__summary-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 18px;
-  margin-top: 24px;
-}
-
-.file-manager__summary-card,
-.file-manager__panel,
-.file-manager__file-card {
-  background: #fff;
-  border: 1px solid #d6ebfa;
-  border-radius: 24px;
-  box-shadow: 0 18px 50px rgba(0, 111, 170, 0.08);
-}
-
-.file-manager__summary-card {
-  padding: 20px 22px;
-}
-
-.file-manager__summary-card span,
-.file-manager__meta-item span,
-.file-manager__credential-card span,
-.file-manager__field span,
-.file-manager__status-label {
-  display: block;
-  color: #7f90a5;
-  font-size: 14px;
-  line-height: 1.35;
-}
-
-.file-manager__summary-card strong {
-  display: block;
-  margin-top: 14px;
-  font-size: 34px;
-  font-weight: 400;
-  color: #0758ab;
-}
-
-.file-manager__grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
-  gap: 22px;
-  margin-top: 24px;
+.file-manager__action_primary {
+  min-width: 180px;
 }
 
 .file-manager__panel {
-  padding: 24px;
+  background: #fff;
+  border: 1px solid rgba(0, 134, 191, 0.12);
+  border-radius: 18px;
+  box-shadow: 0 12px 24px rgba(0, 72, 108, 0.06);
+  padding: 16px;
 }
 
-.file-manager__panel_full {
-  margin-top: 24px;
+.file-manager__status {
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 15px;
+  line-height: 1.4;
 }
 
-.file-manager__panel-header h3 {
-  margin: 0;
-  font-size: 26px;
-  font-weight: 400;
-  color: #09182f;
+.file-manager__status_success {
+  background: rgba(61, 153, 112, 0.12);
+  color: #256545;
 }
 
-.file-manager__panel-header p {
-  margin: 8px 0 0;
-  color: #5d7690;
-  font-size: 16px;
-  line-height: 1.5;
+.file-manager__status_error {
+  background: rgba(229, 122, 68, 0.12);
+  color: #9a4f22;
 }
 
-.file-manager__credential-grid,
-.file-manager__meta-grid,
-.file-manager__fields {
+.file-manager__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.file-manager__toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.file-manager__action_compact {
+  min-height: 40px;
+  min-width: auto;
+  padding: 0 16px;
+  white-space: nowrap;
+}
+
+.file-manager__tree-empty {
+  padding: 32px 16px;
+  color: #647384;
+  font-size: 14px;
+  text-align: center;
+}
+
+.file-manager__search {
+  flex: 1;
+  border: 1px solid #d8e1e8;
+  border-radius: 10px;
+  background: #fff;
+  color: #223040;
+  font-size: 15px;
+  line-height: 1.4;
+  padding: 12px 14px;
+  outline: none;
+}
+
+.file-manager__search:focus {
+  border-color: #0086bf;
+  box-shadow: 0 0 0 3px rgba(0, 134, 191, 0.12);
+}
+
+.file-manager__count {
+  color: #647384;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.file-manager__panel_workspace {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.file-manager__workspace {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  height: clamp(360px, calc(100vh - 320px), 780px);
+  min-height: 0;
+  border: 1px solid #dfe6ec;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.file-manager__explorer {
+  background: #f3f6f8;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px 0 12px;
+}
+
+.file-tree {
+  font-size: 13px;
+  line-height: 22px;
+  user-select: none;
+}
+
+.file-tree__roots,
+.file-tree__group {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.file-tree__row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 26px;
+  padding-right: 12px;
+  padding-left: calc(4px + var(--depth, 0) * 16px);
+  color: #223040;
+  cursor: default;
+}
+
+.file-tree__row_file {
+  cursor: pointer;
+}
+
+.file-tree__row_file:hover {
+  background: rgba(0, 134, 191, 0.08);
+}
+
+.file-tree__row_selected {
+  background: rgba(0, 134, 191, 0.16);
+  color: #004868;
+}
+
+.file-tree__row_selected:hover {
+  background: rgba(0, 134, 191, 0.2);
+}
+
+.file-tree__row_deleted {
+  opacity: 0.55;
+}
+
+.file-tree__twistie {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: #647384;
+}
+
+.file-tree__chevron {
+  display: block;
+  width: 0;
+  height: 0;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 5px solid currentColor;
+  transition: transform 0.12s ease;
+}
+
+.file-tree__chevron_open {
+  transform: rotate(90deg);
+}
+
+.file-tree__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.file-tree__label_button {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.file-tree__rename {
+  flex: 1;
+  min-width: 0;
+  height: 22px;
+  border: 1px solid #0086bf;
+  border-radius: 4px;
+  background: #fff;
+  color: #223040;
+  font: inherit;
+  padding: 0 6px;
+  outline: none;
+}
+
+.file-tree__badge {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(229, 122, 68, 0.15);
+  color: #9a4f22;
+  font-size: 11px;
+}
+
+.file-details {
+  background: #fff;
+  padding: 16px;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
 }
 
-.file-manager__credential-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: 20px;
+.file-details_empty {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: #647384;
 }
 
-.file-manager__credential-card,
-.file-manager__meta-item {
-  padding: 18px;
-  border-radius: 18px;
-  background: #f7fbfe;
-  border: 1px solid #d6ebfa;
+.file-details__title {
+  color: #101820;
+  font-size: 18px;
+  font-weight: 300;
+  margin: 0;
 }
 
-.file-manager__credential-card strong,
-.file-manager__meta-item strong {
-  display: block;
-  margin-top: 10px;
-  color: #0b2f59;
-  font-size: 19px;
-  font-weight: 400;
-  word-break: break-word;
+.file-details__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.file-manager__toggle-secret {
+.file-details__label-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.file-details__label {
+  color: #647384;
+  font-size: 13px;
+}
+
+.file-details__missing {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(229, 122, 68, 0.15);
+  color: #9a4f22;
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.file-details__path-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.file-details__path-button {
   border: none;
   background: none;
   color: #0086bf;
@@ -188,158 +333,216 @@
   padding: 0;
 }
 
-.file-manager__status-box {
-  margin-top: 20px;
-  padding: 18px;
-  border-radius: 18px;
-  background: #f7fbfe;
-  border: 1px solid #d6ebfa;
+.file-details__path-button:disabled,
+.file-details__path-button_disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
-.file-manager__status-preview {
-  margin: 12px 0 0;
-  white-space: pre-wrap;
-  word-break: break-word;
-  color: #0b2f59;
+.file-details__file-input {
+  display: none;
+}
+
+.file-details__input {
+  border: 1px solid #d8e1e8;
+  border-radius: 8px;
+  background: #fff;
+  color: #223040;
   font-size: 14px;
-  line-height: 1.55;
+  line-height: 1.4;
+  padding: 10px 12px;
+  outline: none;
 }
 
-.file-manager__search {
-  margin-top: 18px;
+.file-details__input:focus {
+  border-color: #0086bf;
+  box-shadow: 0 0 0 3px rgba(0, 134, 191, 0.12);
 }
 
-.file-manager__field {
+.file-details__badge {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(229, 122, 68, 0.12);
+  color: #9a4f22;
+  font-size: 12px;
+}
+
+.file-details__actions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+  margin-top: 4px;
 }
 
-.file-manager__input {
-  width: 100%;
-  min-height: 52px;
-  border-radius: 16px;
-  border: 1px solid #cde2f3;
-  padding: 14px 16px;
-  font-size: 16px;
-  color: #0b2f59;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+.file-details__cancel {
+  align-self: flex-start;
 }
 
-.file-manager__input:focus {
-  border-color: #4aa8d9;
-  box-shadow: 0 0 0 3px rgba(74, 168, 217, 0.12);
+.file-details__delete {
+  align-self: flex-start;
+  color: #b42318;
+  border-color: rgba(180, 35, 24, 0.35);
 }
 
-.file-manager__list {
-  margin-top: 20px;
-  display: grid;
-  gap: 18px;
+.file-details__delete:hover:not(:disabled) {
+  background: rgba(180, 35, 24, 0.08);
 }
 
-.file-manager__file-card {
-  padding: 22px;
-}
-
-.file-manager__file-header h4 {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 400;
-  color: #09182f;
-}
-
-.file-manager__file-header p {
-  margin: 8px 0 0;
-  color: #6d819a;
-  font-size: 14px;
-}
-
-.file-manager__badge {
-  display: inline-flex;
+.file-details__upload-zone {
+  display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 92px;
-  padding: 8px 14px;
-  border-radius: 999px;
-  background: #eaf8ef;
-  color: #1d7a45;
+  min-height: 120px;
+  border: 2px dashed #c5d3de;
+  border-radius: 12px;
+  background: #f8fbfd;
+  color: #0086bf;
+  cursor: pointer;
+  font-size: 15px;
+  text-align: center;
+  padding: 24px 16px;
+}
+
+.file-details__upload-zone:hover:not(.file-details__upload-zone_disabled) {
+  border-color: #0086bf;
+  background: rgba(0, 134, 191, 0.04);
+}
+
+.file-details__upload-zone_disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.file-details__uploaded,
+.file-details__selected {
+  margin: -4px 0 0;
+  color: #647384;
+  font-size: 13px;
+}
+
+.file-details__skip {
+  align-self: flex-start;
+  margin-top: -4px;
+}
+
+.file-details__action {
+  min-height: 44px;
+  width: 100%;
+}
+
+.file-details__hint {
+  margin: 0;
+  color: #8a96a3;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.file-details_empty .file-details__hint {
+  max-width: 240px;
+}
+
+.file-manager__empty,
+.file-manager-loader {
+  padding: 48px 16px;
+  color: #546476;
+  font-size: 16px;
+  text-align: center;
+}
+
+.file-manager__section-title {
+  color: #101820;
+  font-size: 18px;
+  font-weight: 300;
+  margin-bottom: 4px;
+}
+
+.file-manager__upload-hint {
+  color: #647384;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.file-manager__upload-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.file-manager__upload-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 16px;
+  color: #546476;
   font-size: 14px;
 }
 
-.file-manager__badge_deleted {
-  background: #fbece6;
-  color: #bd5f27;
+.file-manager__upload-meta strong {
+  color: #223040;
+  font-weight: 400;
 }
 
-.file-manager__fields {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: 18px;
+.file-manager__toggle-secret {
+  border: none;
+  background: none;
+  color: #0086bf;
+  cursor: pointer;
+  font-size: 13px;
+  margin-left: 8px;
+  padding: 0;
 }
 
-.file-manager__meta-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-top: 18px;
+.file-manager__sync-line {
+  margin-top: 14px;
+  color: #647384;
+  font-size: 14px;
+  line-height: 1.45;
 }
 
-.file-manager__file-actions {
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  margin-top: 18px;
-}
-
-.file-manager__file-actions .button {
-  min-width: 180px;
-  font-size: 16px;
-}
-
-@media (max-width: 1280px) {
-  .file-manager__summary-grid,
-  .file-manager__meta-grid,
-  .file-manager__fields,
-  .file-manager__credential-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .file-manager__grid {
-    grid-template-columns: 1fr;
-  }
+.file-manager__action:disabled,
+.file-manager .button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {
   .file-manager {
-    height: calc(100vh - 102px);
-    padding: 20px 16px 32px;
+    gap: 18px;
   }
 
   .file-manager__header,
   .file-manager__actions,
-  .file-manager__panel-header,
-  .file-manager__credential-row,
-  .file-manager__file-header {
+  .file-manager__upload-header,
+  .file-manager__toolbar {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .file-manager__summary-grid,
-  .file-manager__meta-grid,
-  .file-manager__fields,
-  .file-manager__credential-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .file-manager__button,
-  .file-manager__file-actions .button {
+  .file-manager__actions .button,
+  .file-manager__action {
     width: 100%;
-    min-width: 0;
   }
 
-  .file-manager__title {
-    font-size: 24px;
+  .file-manager__panel {
+    padding: 16px;
   }
 
-  .file-manager__panel,
-  .file-manager__file-card {
-    padding: 18px;
+  .file-manager__workspace {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(240px, 45vh) minmax(200px, auto);
+    height: auto;
+    max-height: none;
+  }
+
+  .file-manager__explorer {
+    border-bottom: 1px solid #dfe6ec;
+  }
+
+  .file-details {
+    border-top: none;
   }
 }

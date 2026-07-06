@@ -2,8 +2,6 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
 import "./Header.css";
-import userIcon from "../../assets/userIcon.svg";
-import arrowIcon from "../../assets/arrowIcon.svg";
 import whiteArrowIcon from "../../assets/whiteArrow.svg";
 import adminI18n from "../../i18n";
 
@@ -12,7 +10,8 @@ const Header = ({ activeTab, onMenuToggle }) => {
   const [activeLang, setActiveLang] = useState("ru");
   const filesLabel =
     i18n.language === "kz" ? "Файлдарды жаңарту" : "Обновление файлов";
-  const faqLabel = i18n.language === "kz" ? "Жиі сұрақтар" : "Частые вопросы";
+  const faqLabel = i18n.language === "kz" ? "Санаттар мен FAQ" : "Категории и FAQ";
+  const sitemapLabel = i18n.language === "kz" ? "Сайт картасы" : "Карта сайта";
   const mobileTitle =
     activeTab === 1
       ? t("sidebar.databaseUpdate")
@@ -22,7 +21,9 @@ const Header = ({ activeTab, onMenuToggle }) => {
           ? t("sidebar.feedbackExport")
           : activeTab === 4
             ? t("sidebar.analytics")
-            : faqLabel;
+            : activeTab === 5
+              ? faqLabel
+              : sitemapLabel;
 
   const handleLangChange = (lang) => {
     setActiveLang(lang);
@@ -47,17 +48,6 @@ const Header = ({ activeTab, onMenuToggle }) => {
               қаз
             </button>
           </div>
-
-          <div className="user-info">
-            <div className="user-details">
-              <img src={userIcon} alt="User" className="user-info-icon" />
-              <div className="user-info-text">
-                <p className="user-email">userlogin@gmail.com</p>
-                <p className="user-name">admin</p>
-              </div>
-            </div>
-            <img src={arrowIcon} alt="Arrow" className="user-info-arrow" />
-          </div>
         </div>
         <div className="header-bottom-border"></div>
       </div>
@@ -72,9 +62,6 @@ const Header = ({ activeTab, onMenuToggle }) => {
         </div>
         <div className="mobile-header-center">
           <h2 className="mobile-header-title">{mobileTitle}</h2>
-        </div>
-        <div className="mobile-header-right">
-          <img src={userIcon} alt="User" className="mobile-user-icon" />
         </div>
       </div>
     </header>
