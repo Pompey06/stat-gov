@@ -753,7 +753,7 @@ const ChatProvider = ({ children }) => {
             ...chat,
             messages: [
               chat.messages[0],
-              ...fetchedCategories.slice(0, 4).map((cat) => ({
+              ...fetchedCategories.map((cat) => ({
                 text: pickLocalized(cat.name),
                 isUser: true,
                 isFeedback: false,
@@ -777,7 +777,7 @@ const ChatProvider = ({ children }) => {
           (String(chat.id) === String(currentChatId) ||
             (chat.id === null && currentChatId === null))
         ) {
-          const categoryButtons = categories.slice(0, 4).map((cat) => ({
+          const categoryButtons = categories.map((cat) => ({
             text: pickLocalized(cat.name),
             isUser: true,
             isFeedback: false,
