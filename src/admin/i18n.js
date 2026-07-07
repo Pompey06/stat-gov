@@ -63,6 +63,7 @@ const resources = {
           notFound: "Не найдено информации",
           cancelled: "Остановленные ответы",
           unanswered: "Остались без ответа",
+          errors: "Ошибки",
         },
         chart: {
           title: "Нагрузка и стабильность по времени",
@@ -89,6 +90,15 @@ const resources = {
           open: "Открыть Langfuse",
           show: "Показать",
           hide: "Скрыть",
+        },
+        errors: {
+          title: "Последние ошибки",
+          subtitle:
+            "Ошибки генерации, сохранённые в MongoDB. Подробные трассировки — в Langfuse.",
+          empty: "За выбранный период ошибок не зафиксировано.",
+          userMessage: "Запрос пользователя",
+          errorText: "Ошибка",
+          time: "Время",
         },
       },
     },
@@ -155,6 +165,7 @@ const resources = {
           notFound: "Ақпарат табылмады",
           cancelled: "Тоқтатылған жауаптар",
           unanswered: "Жауапсыз қалғандар",
+          errors: "Қателер",
         },
         chart: {
           title: "Уақыт бойынша жүктеме және тұрақтылық",
@@ -181,6 +192,15 @@ const resources = {
           open: "Langfuse ашу",
           show: "Көрсету",
           hide: "Жасыру",
+        },
+        errors: {
+          title: "Соңғы қателер",
+          subtitle:
+            "MongoDB-ге сақталған генерация қателері. Толық трассировкалар — Langfuse-та.",
+          empty: "Таңдалған кезеңде қателер тіркелмеген.",
+          userMessage: "Пайдаланушы сұранысы",
+          errorText: "Қате",
+          time: "Уақыт",
         },
       },
     },
