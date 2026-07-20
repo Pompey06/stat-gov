@@ -182,7 +182,9 @@ const mapFileRecord = (item) => ({
   storage_key: item?.storage_key || "",
   path_ru: item?.path_ru || "",
   path_kz: item?.path_kz || "",
-  keyword: item?.keyword || "",
+  keyword: ["nan", "none", "null"].includes(String(item?.keyword || "").trim().toLowerCase())
+    ? ""
+    : item?.keyword || "",
   etag: item?.etag || "",
   parsed_at: item?.parsed_at || "",
   linked_ids: Array.isArray(item?.linked_ids) ? item.linked_ids : [],
