@@ -63,11 +63,11 @@
     "feedbackSubmitted": "Feedback sent"
   },
   "messageInput": {
-    "placeholder": "Send a message...",
+    "placeholder": "Ask your question...",
     "sendIconAlt": "Send icon",
     "sentMessage": "Message sent",
     "text": "Our bot uses AI and is currently in the testing stage. Inaccuracies in the answers are possible. If you encounter any inaccuracies, please let us know by filling out the feedback form.",
-    "textAlt": "Please note: the bot's answers are for reference only. During the testing period, some inaccuracies are possible. If you encounter inaccuracies, please let us know by leaving a rating or filling out the feedback form. This will help us improve the service.",
+    "textAlt": "AI Stat may make mistakes. If you encounter inaccuracies in the response, please let us know by leaving a rating or filling out the feedback form. This will help us improve the service.",
     "micTooltip": "Voice input",
     "micRecording": "Stop recording",
     "micRecordingActive": "Recording in progress",
