@@ -494,27 +494,26 @@ export default function Sidebar({
                   className="sidebar__button--primary mt-2"
                   onClick={onOpenRegistration}
                />
-
-               <SidebarButton
-                  text={t("sidebar.searchTitle")}
-                  icon={<SearchIcon className="sidebar__button-svg-icon" />}
-                  className="sidebar__button--primary mt-2"
-                  onClick={() => {
-                     setMenuChatId(null);
-                     setIsSearchModalOpen(true);
-                  }}
-               />
-
-               <SidebarButton
-                  text={t("sidebar.clearHistory")}
-                  icon={<TrashIcon className="sidebar__button-svg-icon" />}
-                  className="sidebar__button--danger mt-2"
-                  onClick={handleOpenDeleteAllChats}
-               />
             </div>
 
             <div className="sidebar__bottom">
                <div className="sidebar__history">
+                  <section className="sidebar__section">
+                     <div className="sidebar__section-title">
+                        {t("sidebar.recentRequests")}
+                     </div>
+
+                     <SidebarButton
+                        text={t("sidebar.searchTitle")}
+                        icon={<SearchIcon className="sidebar__button-svg-icon" />}
+                        className="sidebar__button--primary"
+                        onClick={() => {
+                           setMenuChatId(null);
+                           setIsSearchModalOpen(true);
+                        }}
+                     />
+                  </section>
+
                   {pinnedChats.length > 0 && (
                      <section className="sidebar__section">
                         <div className="sidebar__section-title">
@@ -528,15 +527,20 @@ export default function Sidebar({
 
                   {regularChats.length > 0 && (
                      <section className="sidebar__section">
-                        <div className="sidebar__section-title">
-                           {t("sidebar.recentRequests")}
-                        </div>
-
                         <div className="sidebar__chat-list">
                            {regularChats.map(renderChatItem)}
                         </div>
                      </section>
                   )}
+
+                  <section className="sidebar__section">
+                     <SidebarButton
+                        text={t("sidebar.clearHistory")}
+                        icon={<TrashIcon className="sidebar__button-svg-icon" />}
+                        className="sidebar__button--danger"
+                        onClick={handleOpenDeleteAllChats}
+                     />
+                  </section>
                </div>
 
                <div className="sidebar__warning rounded-[8px] border border-[#E7D9A8] bg-[#FFF9E8] px-4 py-3 text-[14px] leading-[1.3] text-[#BC6A00]">
