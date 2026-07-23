@@ -1,12 +1,12 @@
 import "./App.css";
 import Login from "./components/Login/Login";
-import Sidebar from "./components/Sidebar/Sidebar";
-import Header from "./components/Header/Header";
+import AdminLayout from "./components/AdminLayout/AdminLayout";
 import DatabaseUpdate from "./components/DatabaseUpdate/DatabaseUpdate";
 import FileManager from "./components/FileManager/FileManager";
 import FeedbackExport from "./components/FeedbackExport/FeedbackExport";
 import AnalyticsDashboard from "./components/AnalyticsDashboard/AnalyticsDashboard";
 import FaqSettings from "./components/FaqSettings/FaqSettings";
+import SitemapSettings from "./components/SitemapSettings/SitemapSettings";
 import { useState } from "react";
 import "./i18n.js";
 
@@ -22,9 +22,6 @@ function AppAdmin() {
    const handleMenuToggle = () => {
       setSidebarOpen((prev) => !prev);
    };
-   const handleLogout = () => {
-      setCredentials(null);
-   };
 
    return (
       <div className="app">
@@ -32,27 +29,19 @@ function AppAdmin() {
             // Показываем форму входа
             <Login onLogin={(login, password) => setCredentials({ login, password })} />
          ) : (
-            // После успешного Login — вся админка
-            <>
-               <Sidebar
-                  activeTab={activeTab}
-                  setActiveTab={setActiveTab}
-                  isOpen={sidebarOpen}
-                  onMenuToggle={handleMenuToggle}
-               />
-               <div className="main-content">
-                  <Header
-                     activeTab={activeTab}
-                     onMenuToggle={handleMenuToggle}
-                     onLogout={handleLogout} // если надо вывести кнопку «Выйти»
-                  />
-                  {activeTab === 1 && <DatabaseUpdate credentials={credentials} />}
-                  {activeTab === 2 && <FileManager credentials={credentials} />}
-                  {activeTab === 3 && <FeedbackExport credentials={credentials} />}
-                  {activeTab === 4 && <AnalyticsDashboard credentials={credentials} />}
-                  {activeTab === 5 && <FaqSettings credentials={credentials} />}
-               </div>
-            </>
+            <AdminLayout
+               activeTab={activeTab}
+               setActiveTab={setActiveTab}
+               sidebarOpen={sidebarOpen}
+               onMenuToggle={handleMenuToggle}
+            >
+               {activeTab === 1 && <DatabaseUpdate credentials={credentials} />}
+               {activeTab === 2 && <FileManager credentials={credentials} />}
+               {activeTab === 3 && <FeedbackExport credentials={credentials} />}
+               {activeTab === 4 && <AnalyticsDashboard credentials={credentials} />}
+               {activeTab === 5 && <FaqSettings credentials={credentials} />}
+               {activeTab === 6 && <SitemapSettings credentials={credentials} />}
+            </AdminLayout>
          )}
       </div>
    );

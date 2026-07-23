@@ -1,0 +1,20 @@
+.sitemap-editor {
+  border: 1px solid #d8e1e8;
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 14px;
+}
+
+.sitemap-editor .cm-editor {
+  background: #fbfdff;
+}
+
+.sitemap-editor .cm-scroller {
+  font-family: Consolas, "Courier New", monospace;
+  line-height: 1.5;
+}
+
+.sitemap-editor .cm-gutters {
+  background: #f3f7fa;
+  border-right: 1px solid #e2e9ef;
+}

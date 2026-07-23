@@ -10,15 +10,8 @@ import { useApi } from "../Context/Context";
 import calendarIcon from "../../assets/сalendarIcon.svg";
 import clearIcon from "../../assets/clearIcon.svg";
 import adminI18n from "../../i18n";
+import AnalyticsTimelineChart from "./AnalyticsTimelineChart";
 import "./AnalyticsDashboard.css";
-
-const CHART_HEIGHT = 340;
-const CHART_MARGIN = {
-  top: 20,
-  right: 20,
-  bottom: 60,
-  left: 58,
-};
 
 const CustomDateInput = forwardRef(
   ({ value, onClick, placeholder, onClear }, ref) => (
@@ -82,23 +75,6 @@ const formatDateTimeParam = (date, endOfDay = false) => {
   return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${offsetSign}${offsetHours}:${offsetMins}`;
 };
 
-const formatPointLabel = (value, bucket, locale) => {
-  const date = new Date(value);
-
-  if (bucket === "day") {
-    return new Intl.DateTimeFormat(locale, {
-      day: "2-digit",
-      month: "short",
-    }).format(date);
-  }
-
-  return new Intl.DateTimeFormat(locale, {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-  }).format(date);
-};
-
 const formatInsightPointLabel = (value, bucket, locale) => {
   const date = new Date(value);
 
@@ -118,102 +94,6 @@ const formatInsightPointLabel = (value, bucket, locale) => {
     minute: "2-digit",
   }).format(date);
 };
-
-const formatAxisValue = (value, locale) =>
-  new Intl.NumberFormat(locale, {
-    maximumFractionDigits: Number.isInteger(value) ? 0 : 1,
-  }).format(value);
-
-const getNiceStep = (roughStep) => {
-  if (roughStep <= 1) {
-    return 1;
-  }
-
-  const magnitude = 10 ** Math.floor(Math.log10(roughStep));
-  const normalized = roughStep / magnitude;
-
-  if (normalized <= 1) {
-    return magnitude;
-  }
-  if (normalized <= 2) {
-    return 2 * magnitude;
-  }
-  if (normalized <= 5) {
-    return 5 * magnitude;
-  }
-
-  return 10 * magnitude;
-};
-
-const getAxisConfig = (maxValue) => {
-  if (maxValue <= 0) {
-    return {
-      axisMax: 1,
-      ticks: [1, 0],
-    };
-  }
-
-  const step = getNiceStep(maxValue / 4);
-  const axisMax = Math.ceil(maxValue / step) * step;
-  const ticks = [];
-
-  for (let value = axisMax; value >= 0; value -= step) {
-    ticks.push(Number(value.toFixed(2)));
-  }
-
-  if (ticks[ticks.length - 1] !== 0) {
-    ticks.push(0);
-  }
-
-  return { axisMax, ticks };
-};
-
-const getChartWidth = (pointCount, bucket) => {
-  const minWidth = 820;
-  const spacing = bucket === "day" ? 82 : 72;
-
-  if (pointCount <= 1) {
-    return minWidth;
-  }
-
-  return Math.max(
-    minWidth,
-    CHART_MARGIN.left + CHART_MARGIN.right + spacing * (pointCount - 1),
-  );
-};
-
-const getPointCoordinates = (items, key, axisMax, chartWidth) => {
-  if (!items.length) {
-    return [];
-  }
-
-  const plotWidth = chartWidth - CHART_MARGIN.left - CHART_MARGIN.right;
-  const plotHeight = CHART_HEIGHT - CHART_MARGIN.top - CHART_MARGIN.bottom;
-
-  return items.map((item, index) => {
-    const x =
-      items.length === 1
-        ? CHART_MARGIN.left + plotWidth / 2
-        : CHART_MARGIN.left + (index / (items.length - 1)) * plotWidth;
-    const y =
-      CHART_MARGIN.top +
-      plotHeight -
-      ((Number(item[key]) || 0) / Math.max(axisMax, 1)) * plotHeight;
-
-    return {
-      x,
-      y,
-      value: Number(item[key]) || 0,
-      ts: item.ts,
-      key: `${key}-${item.ts}-${index}`,
-    };
-  });
-};
-
-const buildPolyline = (items, key, axisMax, chartWidth) =>
-  getPointCoordinates(items, key, axisMax, chartWidth)
-    .map((point) => `${point.x},${point.y}`)
-    .join(" ");
 
 const maskSecret = (value) => {
   if (!value) {
@@ -260,6 +140,7 @@ const AnalyticsDashboard = ({ credentials }) => {
   const [bucket, setBucket] = useState("day");
   const [summary, setSummary] = useState(null);
   const [timeline, setTimeline] = useState([]);
+  const [errors, setErrors] = useState([]);
   const [langfuse, setLangfuse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -285,12 +166,18 @@ const AnalyticsDashboard = ({ credentials }) => {
       to: formatDateTimeParam(endDate, true),
     };
 
-    const [summaryResult, timelineResult, langfuseResult] =
+    const [summaryResult, timelineResult, errorsResult, langfuseResult] =
       await Promise.allSettled([
         api.get("/analytics/summary", { headers, params }),
         api.get("/analytics/timeline", {
           headers,
           params: { ...params, bucket },
+        }),
+        api.get("/analytics/errors", {
+          headers,
+          params,
+          validateStatus: (status) =>
+            (status >= 200 && status < 300) || status === 404,
         }),
         api.get("/analytics/langfuse", { headers }),
       ]);
@@ -304,14 +191,19 @@ const AnalyticsDashboard = ({ credentials }) => {
         ? timelineResult.value.data
         : [],
     );
+    setErrors(
+      errorsResult.status === "fulfilled" &&
+        Array.isArray(errorsResult.value.data)
+        ? errorsResult.value.data
+        : [],
+    );
     setLangfuse(
       langfuseResult.status === "fulfilled" ? langfuseResult.value.data : null,
     );
 
     if (
       summaryResult.status === "rejected" ||
-      timelineResult.status === "rejected" ||
-      langfuseResult.status === "rejected"
+      timelineResult.status === "rejected"
     ) {
       setError(t("analytics.partialError"));
     }
@@ -321,7 +213,7 @@ const AnalyticsDashboard = ({ credentials }) => {
 
   useEffect(() => {
     loadAnalytics();
-  }, [bucket]);
+  }, [bucket, startDate, endDate, credentials]);
 
   const summaryCards = useMemo(
     () => [
@@ -360,82 +252,23 @@ const AnalyticsDashboard = ({ credentials }) => {
         label: t("analytics.cards.unanswered"),
         value: summary?.unanswered ?? 0,
       },
+      {
+        key: "errors",
+        label: t("analytics.cards.errors"),
+        value: summary?.errors ?? 0,
+      },
     ],
     [summary, t],
   );
 
-  const chartSeries = useMemo(
-    () => [
-      {
-        key: "count",
-        color: "#0086BF",
-        label: t("analytics.chart.requests"),
-      },
-      {
-        key: "errors",
-        color: "#E57A44",
-        label: t("analytics.chart.errors"),
-      },
-      {
-        key: "not_found",
-        color: "#6B7A90",
-        label: t("analytics.chart.notFound"),
-      },
-    ],
+  const chartSeriesLabels = useMemo(
+    () => ({
+      count: t("analytics.chart.requests"),
+      errors: t("analytics.chart.errors"),
+      not_found: t("analytics.chart.notFound"),
+    }),
     [t],
   );
-
-  const maxSeriesValue = useMemo(() => {
-    if (!timeline.length) {
-      return 0;
-    }
-
-    return Math.max(
-      0,
-      ...timeline.flatMap((point) =>
-        chartSeries.map((series) => Number(point[series.key]) || 0),
-      ),
-    );
-  }, [chartSeries, timeline]);
-
-  const axisConfig = useMemo(
-    () => getAxisConfig(maxSeriesValue),
-    [maxSeriesValue],
-  );
-
-  const chartWidth = useMemo(
-    () => getChartWidth(timeline.length, bucket),
-    [timeline.length, bucket],
-  );
-
-  const visibleLabelStep = useMemo(() => {
-    if (bucket === "day") {
-      return 1;
-    }
-
-    return Math.max(1, Math.ceil(timeline.length / 10));
-  }, [bucket, timeline.length]);
-
-  const xAxisPoints = useMemo(() => {
-    const plotWidth = chartWidth - CHART_MARGIN.left - CHART_MARGIN.right;
-
-    return timeline.map((point, index) => {
-      const x =
-        timeline.length === 1
-          ? CHART_MARGIN.left + plotWidth / 2
-          : CHART_MARGIN.left + (index / (timeline.length - 1)) * plotWidth;
-
-      return {
-        key: `${point.ts}-${index}`,
-        x,
-        label: formatPointLabel(point.ts, bucket, locale),
-        show:
-          bucket === "day" ||
-          index % visibleLabelStep === 0 ||
-          index === timeline.length - 1,
-      };
-    });
-  }, [bucket, chartWidth, locale, timeline, visibleLabelStep]);
 
   const peakLoadPoint = useMemo(() => {
     if (!timeline.length) {
@@ -564,136 +397,15 @@ const AnalyticsDashboard = ({ credentials }) => {
             </div>
           </div>
 
-          {timeline.length ? (
-            <>
-              <div className="analytics-legend">
-                {chartSeries.map((series) => (
-                  <div className="analytics-legend-item" key={series.key}>
-                    <span
-                      className="analytics-legend-dot"
-                      style={{ backgroundColor: series.color }}
-                    />
-                    <span>{series.label}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="analytics-chart-wrapper">
-                <svg
-                  className="analytics-chart"
-                  viewBox={`0 0 ${chartWidth} ${CHART_HEIGHT}`}
-                  preserveAspectRatio="none"
-                >
-                  {axisConfig.ticks.map((tick) => {
-                    const plotHeight =
-                      CHART_HEIGHT - CHART_MARGIN.top - CHART_MARGIN.bottom;
-                    const y =
-                      CHART_MARGIN.top +
-                      plotHeight -
-                      (tick / axisConfig.axisMax) * plotHeight;
-
-                    return (
-                      <g key={tick}>
-                        <line
-                          x1={CHART_MARGIN.left}
-                          x2={chartWidth - CHART_MARGIN.right}
-                          y1={y}
-                          y2={y}
-                          className="analytics-grid-line"
-                        />
-                        <text
-                          x={CHART_MARGIN.left - 12}
-                          y={y + 4}
-                          textAnchor="end"
-                          className="analytics-axis-text"
-                        >
-                          {formatAxisValue(tick, locale)}
-                        </text>
-                      </g>
-                    );
-                  })}
-
-                  <line
-                    x1={CHART_MARGIN.left}
-                    x2={CHART_MARGIN.left}
-                    y1={CHART_MARGIN.top}
-                    y2={CHART_HEIGHT - CHART_MARGIN.bottom}
-                    className="analytics-axis-line"
-                  />
-                  <line
-                    x1={CHART_MARGIN.left}
-                    x2={chartWidth - CHART_MARGIN.right}
-                    y1={CHART_HEIGHT - CHART_MARGIN.bottom}
-                    y2={CHART_HEIGHT - CHART_MARGIN.bottom}
-                    className="analytics-axis-line"
-                  />
-
-                  {chartSeries.map((series) => (
-                    <g key={series.key}>
-                      <polyline
-                        fill="none"
-                        stroke={series.color}
-                        strokeWidth="4"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        points={buildPolyline(
-                          timeline,
-                          series.key,
-                          axisConfig.axisMax,
-                          chartWidth,
-                        )}
-                      />
-                      {getPointCoordinates(
-                        timeline,
-                        series.key,
-                        axisConfig.axisMax,
-                        chartWidth,
-                      ).map((point) => (
-                        <circle
-                          key={point.key}
-                          cx={point.x}
-                          cy={point.y}
-                          r="5"
-                          fill={series.color}
-                          stroke="#FFFFFF"
-                          strokeWidth="2"
-                        >
-                          <title>
-                            {`${series.label}: ${formatAxisValue(
-                              point.value,
-                              locale,
-                            )} - ${formatInsightPointLabel(
-                              point.ts,
-                              bucket,
-                              locale,
-                            )}`}
-                          </title>
-                        </circle>
-                      ))}
-                    </g>
-                  ))}
-
-                  {xAxisPoints.map((point) =>
-                    point.show ? (
-                      <text
-                        key={point.key}
-                        x={point.x}
-                        y={CHART_HEIGHT - 18}
-                        textAnchor="middle"
-                        className="analytics-axis-text analytics-axis-text_x"
-                      >
-                        {point.label}
-                      </text>
-                    ) : null,
-                  )}
-                </svg>
-              </div>
-            </>
-          ) : (
-            <div className="analytics-empty-state">
-              {t("analytics.chart.empty")}
-            </div>
-          )}
+          <AnalyticsTimelineChart
+            timeline={timeline}
+            bucket={bucket}
+            startDate={startDate}
+            endDate={endDate}
+            locale={locale}
+            seriesLabels={chartSeriesLabels}
+            emptyText={t("analytics.chart.empty")}
+          />
         </section>
 
         <div className="analytics-side-column">
@@ -777,15 +489,6 @@ const AnalyticsDashboard = ({ credentials }) => {
             <div className="analytics-credentials">
               <div className="analytics-credential-field">
                 <span className="analytics-credential-label">
-                  {t("analytics.langfuse.path")}
-                </span>
-                <span className="analytics-credential-value">
-                  {langfusePath || "-"}
-                </span>
-              </div>
-
-              <div className="analytics-credential-field">
-                <span className="analytics-credential-label">
                   {t("analytics.langfuse.login")}
                 </span>
                 <span className="analytics-credential-value">
@@ -818,6 +521,54 @@ const AnalyticsDashboard = ({ credentials }) => {
           </section>
         </div>
       </div>
+
+      <section className="analytics-panel analytics-errors-panel">
+        <div className="analytics-panel-header">
+          <div>
+            <h3 className="analytics-panel-title">
+              {t("analytics.errors.title")}
+            </h3>
+            <p className="analytics-panel-subtitle">
+              {t("analytics.errors.subtitle")}
+            </p>
+          </div>
+        </div>
+
+        {errors.length ? (
+          <div className="analytics-errors-table-wrapper">
+            <table className="analytics-errors-table">
+              <thead>
+                <tr>
+                  <th>{t("analytics.errors.time")}</th>
+                  <th>{t("analytics.errors.userMessage")}</th>
+                  <th>{t("analytics.errors.errorText")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {errors.map((item) => (
+                  <tr key={`${item.conversation_id}-${item.created_at}`}>
+                    <td className="analytics-errors-time">
+                      {formatInsightPointLabel(
+                        item.created_at,
+                        bucket,
+                        locale,
+                      )}
+                    </td>
+                    <td className="analytics-errors-prompt">
+                      {item.user_message || "-"}
+                    </td>
+                    <td className="analytics-errors-message">{item.error}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="analytics-empty-state">
+            {t("analytics.errors.empty")}
+          </div>
+        )}
+      </section>
     </div>
   );
 };

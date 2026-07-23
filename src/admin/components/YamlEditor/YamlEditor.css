@@ -1,0 +1,42 @@
+.yaml-editor-wrap {
+  border: 1px solid #d8e1e8;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.yaml-editor-wrap_error {
+  border-color: rgba(229, 122, 68, 0.5);
+}
+
+.yaml-editor {
+  font-size: 14px;
+}
+
+.yaml-editor .cm-editor {
+  background: #fbfdff;
+}
+
+.yaml-editor .cm-scroller {
+  font-family: Consolas, "Courier New", monospace;
+  line-height: 1.5;
+}
+
+.yaml-editor .cm-gutters {
+  background: #f3f7fa;
+  border-right: 1px solid #e2e9ef;
+}
+
+.yaml-editor__errors {
+  margin: 0;
+  padding: 12px 16px;
+  list-style: none;
+  border-top: 1px solid rgba(229, 122, 68, 0.25);
+  background: rgba(229, 122, 68, 0.08);
+  color: #9a4f22;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.yaml-editor__errors li + li {
+  margin-top: 4px;
+}

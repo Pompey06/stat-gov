@@ -1,8 +1,18 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
 import Button from "../Button/Button";
 import { useApi } from "../Context/Context";
+import useAuthHeaders from "../../hooks/useAuthHeaders";
+import {
+  buildFileTree,
+  collectAllFolderPaths,
+  collectExpandPathsForFiles,
+  replacePathLastSegment,
+} from "../../utils/fileTree";
+import { normalizeStoragePaths, normalizePath } from "../../utils/storagePaths";
+import FileTree from "./FileTree";
+import FileDetails from "./FileDetails";
 import adminI18n from "../../i18n";
 import "./FileManager.css";
 
@@ -10,143 +20,171 @@ const CONTENT = {
   ru: {
     pageTitle: "Обновление файлов",
     pageSubtitle:
-      "Управление прикрепляемыми файлами: доступ к webui, синхронизация и обновление карточек справочников, классификаторов и НПА.",
-    refresh: "Обновить данные",
-    sync: "Запустить синхронизацию",
-    loading: "Загрузка данных...",
-    partialError:
-      "Часть данных не загрузилась. Доступные блоки показаны ниже.",
-    totalFiles: "Всего файлов",
-    deletedFiles: "Удаленные записи",
-    linkedFiles: "Связей с индексом",
-    lastParsed: "Последняя обработка",
-    webuiTitle: "Файловый WebUI",
-    webuiSubtitle:
-      "Используйте этот блок для входа в webui, замены файлов и последующего запуска синхронизации.",
-    webuiPath: "Ссылка",
-    webuiLogin: "Логин",
-    webuiPassword: "Пароль",
-    openWebui: "Открыть WebUI",
-    show: "Показать",
-    hide: "Скрыть",
-    syncTitle: "Синхронизация",
-    syncSubtitle:
-      "Ручной запуск и контроль статуса обновления прикрепляемых файлов.",
-    syncStatus: "Статус",
-    syncStatusEmpty: "Статус пока не вернул подробностей.",
-    refreshStatus: "Проверить статус",
-    catalogTitle: "Каталог файлов",
-    catalogSubtitle:
-      "По каждому файлу можно обновить keyword и локализованные пути, а также скачать текущую версию.",
-    searchPlaceholder: "Поиск по keyword, storage key или пути",
+      "Справочники и документы, которые бот может приложить к ответу пользователю.",
+    refresh: "Обновить",
+    loading: "Загрузка...",
+    partialError: "Часть данных не загрузилась.",
+    searchPlaceholder: "Поиск по keyword или пути",
     noFiles: "Файлы не найдены.",
-    keyword: "Keyword",
+    keyword: "Ключевые слова",
     pathRu: "Путь RU",
     pathKz: "Путь KZ",
-    storageKey: "Storage key",
-    parsedAt: "Обработан",
-    etag: "ETag",
-    linkedIds: "Linked IDs",
-    fileId: "ID файла",
-    deleted: "Удален",
+    deleted: "Удалён",
     active: "Активен",
-    notSpecified: "Не указано",
     save: "Сохранить",
-    downloadRu: "Скачать RU",
-    downloadKz: "Скачать KZ",
-    saveSuccess: "Изменения по файлу сохранены.",
-    saveError: "Не удалось сохранить изменения по файлу.",
-    syncSuccess: "Синхронизация запущена.",
-    syncError: "Не удалось запустить синхронизацию.",
-    statusSuccess: "Статус синхронизации обновлен.",
-    statusError: "Не удалось получить статус синхронизации.",
-    loadSuccess: "Данные по файлам обновлены.",
-    loadError: "Не удалось загрузить данные по файлам.",
-    invalidId: "У записи нет корректного ID для обновления.",
+    downloadRu: "RU",
+    downloadKz: "KZ",
+    upload: "Загрузить",
+    download: "Скачать",
+    fileMissing: "Файл отсутствует в хранилище",
+    uploadSuccess: "Файл загружен.",
+    uploadError: "Не удалось загрузить файл.",
+    saveSuccess: "Сохранено.",
+    saveError: "Не удалось сохранить.",
+    loadSuccess: "Данные обновлены.",
+    loadError: "Не удалось загрузить данные.",
+    invalidId: "Некорректный ID файла.",
     downloadError: "Не удалось скачать файл.",
-    pathMissing: "Путь к файлу не указан.",
+    pathMissing: "Путь не указан.",
+    uploadTitle: "MinIO",
+    uploadHint: "Прямой доступ к файловому хранилищу.",
+    openWebui: "Открыть MinIO",
+    login: "Логин",
+    password: "Пароль",
+    show: "Показать",
+    hide: "Скрыть",
+    notSpecified: "—",
+    filesCount: "файлов",
+    noPath: "Без пути",
+    selectFile: "Выберите файл",
+    selectFileHint: "Кликните по файлу в дереве слева",
+    fileDetails: "Свойства",
+    renameHint: "Двойной клик по имени в дереве — быстрое переименование",
+    newFile: "Новый файл",
+    create: "Создать",
+    cancel: "Отмена",
+    createSuccess: "Файл создан.",
+    createError: "Не удалось создать файл.",
+    pathRuRequired: "Укажите путь RU.",
+    delete: "Удалить",
+    deleteConfirm: "Удалить запись и файлы из хранилища?",
+    deleteSuccess: "Файл удалён.",
+    deleteError: "Не удалось удалить файл.",
+    createStepRuHint: "Шаг 1. Выберите русскоязычный файл для загрузки.",
+    createStepKzHint: "Шаг 2. Загрузите казахскую версию или пропустите этот шаг.",
+    createStepConfigureHint: "Шаг 3. При необходимости измените пути и ключевые слова.",
+    selectRuFile: "Выбрать файл (RU)",
+    selectKzFile: "Выбрать файл (KZ)",
+    skipKz: "Пропустить",
+    selectedFile: "Выбран",
   },
   kz: {
     pageTitle: "Файлдарды жаңарту",
     pageSubtitle:
-      "Тіркелетін файлдарды басқару: webui қолжетімділігі, синхрондау және анықтамалықтар, классификаторлар мен НҚА файл карточкаларын жаңарту.",
-    refresh: "Деректерді жаңарту",
-    sync: "Синхрондауды іске қосу",
-    loading: "Деректер жүктелуде...",
-    partialError: "Деректердің бір бөлігі жүктелмеді. Қол жетімді блоктар төменде көрсетілді.",
-    totalFiles: "Файлдар саны",
-    deletedFiles: "Жойылған жазбалар",
-    linkedFiles: "Индекспен байланыстар",
-    lastParsed: "Соңғы өңдеу",
-    webuiTitle: "Файлдық WebUI",
-    webuiSubtitle:
-      "Осы блок арқылы webui-ге кіріп, файлдарды ауыстырып, кейін синхрондауды іске қоса аласыз.",
-    webuiPath: "Сілтеме",
-    webuiLogin: "Логин",
-    webuiPassword: "Құпиясөз",
-    openWebui: "WebUI ашу",
-    show: "Көрсету",
-    hide: "Жасыру",
-    syncTitle: "Синхрондау",
-    syncSubtitle:
-      "Тіркелетін файлдарды жаңартуды қолмен іске қосу және статусын бақылау.",
-    syncStatus: "Статус",
-    syncStatusEmpty: "Статус әлі толық мәлімет қайтармады.",
-    refreshStatus: "Статусты тексеру",
-    catalogTitle: "Файлдар тізімі",
-    catalogSubtitle:
-      "Әр файл бойынша keyword пен локализацияланған жолдарды жаңартуға және ағымдағы нұсқаны жүктеуге болады.",
-    searchPlaceholder: "Keyword, storage key немесе жол бойынша іздеу",
+      "Бот пайдаланушы жауабына қоса алатын анықтамалықтар мен құжаттар.",
+    refresh: "Жаңарту",
+    loading: "Жүктелуде...",
+    partialError: "Деректердің бір бөлігі жүктелмеді.",
+    searchPlaceholder: "Keyword немесе жол бойынша іздеу",
     noFiles: "Файлдар табылмады.",
     keyword: "Keyword",
     pathRu: "RU жолы",
     pathKz: "KZ жолы",
-    storageKey: "Storage key",
-    parsedAt: "Өңделген уақыты",
-    etag: "ETag",
-    linkedIds: "Linked IDs",
-    fileId: "Файл ID",
     deleted: "Жойылған",
     active: "Белсенді",
-    notSpecified: "Көрсетілмеген",
     save: "Сақтау",
-    downloadRu: "RU жүктеу",
-    downloadKz: "KZ жүктеу",
-    saveSuccess: "Файл бойынша өзгерістер сақталды.",
-    saveError: "Файл бойынша өзгерістерді сақтау мүмкін болмады.",
-    syncSuccess: "Синхрондау іске қосылды.",
-    syncError: "Синхрондауды іске қосу мүмкін болмады.",
-    statusSuccess: "Синхрондау статусы жаңартылды.",
-    statusError: "Синхрондау статусын алу мүмкін болмады.",
-    loadSuccess: "Файл деректері жаңартылды.",
-    loadError: "Файл деректерін жүктеу мүмкін болмады.",
-    invalidId: "Жазбада жаңарту үшін дұрыс ID жоқ.",
+    downloadRu: "RU",
+    downloadKz: "KZ",
+    upload: "Жүктеу",
+    download: "Жүктеп алу",
+    fileMissing: "Файл сақтауда жоқ",
+    uploadSuccess: "Файл жүктелді.",
+    uploadError: "Файлды жүктеу мүмкін болмады.",
+    saveSuccess: "Сақталды.",
+    saveError: "Сақтау мүмкін болмады.",
+    loadSuccess: "Деректер жаңартылды.",
+    loadError: "Деректерді жүктеу мүмкін болмады.",
+    invalidId: "Файл ID дұрыс емес.",
     downloadError: "Файлды жүктеу мүмкін болмады.",
-    pathMissing: "Файл жолы көрсетілмеген.",
+    pathMissing: "Жол көрсетілмеген.",
+    uploadTitle: "MinIO",
+    uploadHint: "Файлдық сақтауға тікелей кіру.",
+    openWebui: "MinIO ашу",
+    login: "Логин",
+    password: "Құпиясөз",
+    show: "Көрсету",
+    hide: "Жасыру",
+    notSpecified: "—",
+    filesCount: "файл",
+    noPath: "Жолы жоқ",
+    selectFile: "Файлды таңдаңыз",
+    selectFileHint: "Сол жақтағы ағаштан файлды басыңыз",
+    fileDetails: "Қасиеттер",
+    renameHint: "Ағаштағы атауға екі рет басу — жылдам атауды өзгерту",
+    newFile: "Жаңа файл",
+    create: "Қосу",
+    cancel: "Болдырмау",
+    createSuccess: "Файл қосылды.",
+    createError: "Файлды қосу мүмкін болмады.",
+    pathRuRequired: "RU жолын көрсетіңіз.",
+    delete: "Жою",
+    deleteConfirm: "Жазба мен файлдарды сақтаудан жою керек пе?",
+    deleteSuccess: "Файл жойылды.",
+    deleteError: "Файлды жою мүмкін болмады.",
+    createStepRuHint: "1-қадам. Орыс тіліндегі файлды таңдап жүктеңіз.",
+    createStepKzHint: "2-қадам. Қазақ тіліндегі нұсқасын жүктеңіз немесе өткізіп жіберіңіз.",
+    createStepConfigureHint: "3-қадам. Қажет болса, жолдар мен keyword-ті өзгертіңіз.",
+    selectRuFile: "Файл таңдау (RU)",
+    selectKzFile: "Файл таңдау (KZ)",
+    skipKz: "Өткізу",
+    selectedFile: "Таңдалды",
   },
 };
 
-const WEBUI_TEXT_OVERRIDES = {
-  ru: {
-    webuiTitle: "Загрузка файлов",
-    webuiSubtitle:
-      "Массовая загрузка и замена файлов, которые используются в ответах для конечного пользователя.",
-    openWebui: "Открыть",
-  },
-  kz: {
-    webuiTitle: "Файлдарды жүктеу",
-    webuiSubtitle:
-      "Соңғы пайдаланушыға берілетін жауаптарда қолданылатын файлдарды жаппай жүктеу және ауыстыру.",
-    openWebui: "Ашу",
-  },
+const NEW_FILE_ID = "__new__";
+
+const CREATE_STEP = {
+  UPLOAD_RU: "upload_ru",
+  UPLOAD_KZ: "upload_kz",
+  CONFIGURE: "configure",
 };
+
+const RU_PREFIX = "Рус/";
+const KZ_PREFIX = "Каз/";
+
+const deriveRuPath = (fileName) => `${RU_PREFIX}${fileName}`;
+
+const deriveKzPathFromRu = (pathRu) => {
+  const normalized = normalizePath(pathRu);
+  if (normalized.startsWith(RU_PREFIX)) {
+    return `${KZ_PREFIX}${normalized.slice(RU_PREFIX.length)}`;
+  }
+  return `${KZ_PREFIX}${getFileNameFromPath(normalized)}`;
+};
+
+const createEmptyDraft = () => ({
+  id: NEW_FILE_ID,
+  createStep: CREATE_STEP.UPLOAD_RU,
+  storage_key: "",
+  path_ru: "",
+  path_kz: "",
+  keyword: "",
+  etag: "",
+  parsed_at: "",
+  linked_ids: [],
+  deleted: false,
+  pendingRuFile: null,
+  pendingKzFile: null,
+});
 
 const mapFileRecord = (item) => ({
   id: typeof item?.id === "string" ? item.id : "",
   storage_key: item?.storage_key || "",
   path_ru: item?.path_ru || "",
   path_kz: item?.path_kz || "",
-  keyword: item?.keyword || "",
+  keyword: ["nan", "none", "null"].includes(String(item?.keyword || "").trim().toLowerCase())
+    ? ""
+    : item?.keyword || "",
   etag: item?.etag || "",
   parsed_at: item?.parsed_at || "",
   linked_ids: Array.isArray(item?.linked_ids) ? item.linked_ids : [],
@@ -173,75 +211,27 @@ const getFileNameFromPath = (path) => {
 const FileManager = ({ credentials }) => {
   const { i18n } = useTranslation(undefined, { i18n: adminI18n });
   const api = useApi();
+  const authHeaders = useAuthHeaders(credentials);
+  const text = i18n.language === "kz" ? CONTENT.kz : CONTENT.ru;
+
   const [files, setFiles] = useState([]);
+  const [storagePaths, setStoragePaths] = useState(() => new Set());
   const [originalFiles, setOriginalFiles] = useState({});
   const [webui, setWebui] = useState(null);
-  const [syncStatus, setSyncStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [syncing, setSyncing] = useState(false);
-  const [statusLoading, setStatusLoading] = useState(false);
   const [savingId, setSavingId] = useState("");
+  const [deletingId, setDeletingId] = useState("");
+  const [uploadingPath, setUploadingPath] = useState("");
   const [downloadingPath, setDownloadingPath] = useState("");
   const [status, setStatus] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
-  const baseText = i18n.language === "kz" ? CONTENT.kz : CONTENT.ru;
-  const overrideText =
-    i18n.language === "kz" ? WEBUI_TEXT_OVERRIDES.kz : WEBUI_TEXT_OVERRIDES.ru;
-  const text = { ...baseText, ...overrideText };
-
-  const authHeaders = useMemo(() => {
-    const encoded = btoa(`${credentials.login}:${credentials.password}`);
-    return {
-      Authorization: `Basic ${encoded}`,
-    };
-  }, [credentials.login, credentials.password]);
-
-  const formatTimestamp = (value) => {
-    if (!value) return text.notSpecified;
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return value;
-    return new Intl.DateTimeFormat(i18n.language === "kz" ? "kk-KZ" : "ru-RU", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(date);
-  };
-
-  const updateStatus = (type, message) => {
-    setStatus({ type, message });
-  };
-
-  const syncStatusPreview = useMemo(() => {
-    if (!syncStatus || typeof syncStatus !== "object") return "";
-    const keys = Object.keys(syncStatus);
-    if (!keys.length) return text.syncStatusEmpty;
-    return JSON.stringify(syncStatus, null, 2);
-  }, [syncStatus, text.syncStatusEmpty]);
-
-  const summary = useMemo(() => {
-    const totalLinked = files.reduce(
-      (acc, item) => acc + (item.linked_ids?.length || 0),
-      0,
-    );
-    const deletedCount = files.filter((item) => item.deleted).length;
-    const lastParsed = files
-      .map((item) => item.parsed_at)
-      .filter(Boolean)
-      .sort()
-      .at(-1);
-
-    return {
-      totalFiles: files.length,
-      deletedCount,
-      totalLinked,
-      lastParsed,
-    };
-  }, [files]);
+  const [expandedNodes, setExpandedNodes] = useState(() => new Set());
+  const [selectedFileId, setSelectedFileId] = useState("");
+  const [editingFileId, setEditingFileId] = useState("");
+  const [renameValue, setRenameValue] = useState("");
+  const [draftFile, setDraftFile] = useState(null);
 
   const filteredFiles = useMemo(() => {
     const query = searchTerm.trim().toLocaleLowerCase();
@@ -254,7 +244,6 @@ const FileManager = ({ credentials }) => {
         item.path_ru,
         item.path_kz,
         item.id,
-        ...(item.linked_ids || []),
       ]
         .join(" ")
         .toLocaleLowerCase();
@@ -262,6 +251,100 @@ const FileManager = ({ credentials }) => {
       return haystack.includes(query);
     });
   }, [files, searchTerm]);
+
+  const { roots: treeRoots, orphans } = useMemo(
+    () => buildFileTree(filteredFiles),
+    [filteredFiles],
+  );
+
+  const effectiveExpanded = useMemo(() => {
+    const query = searchTerm.trim();
+    if (!query) return expandedNodes;
+
+    const next = new Set(expandedNodes);
+    for (const path of collectExpandPathsForFiles(filteredFiles)) {
+      next.add(path);
+    }
+    return next;
+  }, [expandedNodes, filteredFiles, searchTerm]);
+
+  useEffect(() => {
+    if (!treeRoots.length) return;
+
+    setExpandedNodes((previous) => {
+      if (previous.size) return previous;
+
+      return collectAllFolderPaths(treeRoots);
+    });
+  }, [treeRoots]);
+
+  const toggleNode = (fullPath) => {
+    setExpandedNodes((previous) => {
+      const next = new Set(previous);
+      if (next.has(fullPath)) {
+        next.delete(fullPath);
+      } else {
+        next.add(fullPath);
+      }
+      return next;
+    });
+  };
+
+  const isCreating = draftFile !== null;
+
+  const selectedFile = useMemo(() => {
+    if (isCreating) return draftFile;
+    return files.find((item) => item.id === selectedFileId) || null;
+  }, [draftFile, files, isCreating, selectedFileId]);
+
+  const handleSelectFile = (fileId) => {
+    if (fileId === NEW_FILE_ID) return;
+    setDraftFile(null);
+    setSelectedFileId(fileId);
+  };
+
+  const handleStartCreate = () => {
+    setDraftFile(createEmptyDraft());
+    setSelectedFileId(NEW_FILE_ID);
+    setEditingFileId("");
+    setRenameValue("");
+    setStatus(null);
+  };
+
+  const handleCancelCreate = () => {
+    setDraftFile(null);
+    setSelectedFileId("");
+  };
+
+  const handleRenameStart = (fileId, currentName) => {
+    setEditingFileId(fileId);
+    setRenameValue(currentName);
+    setSelectedFileId(fileId);
+  };
+
+  const handleRenameCancel = () => {
+    setEditingFileId("");
+    setRenameValue("");
+  };
+
+  const handleRenameCommit = (fileId) => {
+    const trimmed = renameValue.trim();
+    setEditingFileId("");
+    setRenameValue("");
+
+    if (!trimmed) return;
+
+    setFiles((previous) =>
+      previous.map((item) => {
+        if (item.id !== fileId) return item;
+
+        const nextPath = replacePathLastSegment(item.path_ru, trimmed);
+        if (nextPath === item.path_ru) return item;
+
+        return { ...item, path_ru: nextPath };
+      }),
+    );
+  };
 
   const isFileChanged = (item) => {
     const source = originalFiles[item.id];
@@ -274,75 +357,93 @@ const FileManager = ({ credentials }) => {
     );
   };
 
-  const loadData = async ({ silent = false, showSuccess = false } = {}) => {
-    if (!silent) {
-      setLoading(true);
-    } else {
-      setRefreshing(true);
-    }
-
-    try {
-      const [webuiResponse, filesResponse, syncResponse] = await Promise.allSettled([
-        api.get("/files/webui", { headers: authHeaders }),
-        api.get("/files/", { headers: authHeaders }),
-        api.get("/files/sync/status", { headers: authHeaders }),
-      ]);
-
-      let hasError = false;
-
-      if (webuiResponse.status === "fulfilled") {
-        setWebui(webuiResponse.value.data || null);
+  const loadData = useCallback(
+    async ({ silent = false, showSuccess = false } = {}) => {
+      if (!silent) {
+        setLoading(true);
       } else {
-        hasError = true;
+        setRefreshing(true);
       }
 
-      if (filesResponse.status === "fulfilled") {
-        const mappedFiles = Array.isArray(filesResponse.value.data)
-          ? filesResponse.value.data.map(mapFileRecord)
-          : [];
+      setStatus(null);
 
-        setFiles(mappedFiles);
-        setOriginalFiles(
-          mappedFiles.reduce((acc, item) => {
-            acc[item.id] = {
-              keyword: item.keyword,
-              path_ru: item.path_ru,
-              path_kz: item.path_kz,
-            };
-            return acc;
-          }, {}),
-        );
-      } else {
-        hasError = true;
-      }
+      try {
+        const [webuiResponse, filesResponse, storageResponse] =
+          await Promise.allSettled([
+            api.get("/files/webui", { headers: authHeaders }),
+            api.get("/files/", { headers: authHeaders }),
+            api.get("/files/storage", { headers: authHeaders }),
+          ]);
 
-      if (syncResponse.status === "fulfilled") {
-        setSyncStatus(syncResponse.value.data || {});
-      } else {
-        hasError = true;
-      }
+        let hasError = false;
 
-      if (hasError) {
-        updateStatus("error", text.partialError);
-      } else if (showSuccess) {
-        updateStatus("success", text.loadSuccess);
+        if (webuiResponse.status === "fulfilled") {
+          setWebui(webuiResponse.value.data || null);
+        } else {
+          hasError = true;
+        }
+
+        if (filesResponse.status === "fulfilled") {
+          const mappedFiles = Array.isArray(filesResponse.value.data)
+            ? filesResponse.value.data.map(mapFileRecord)
+            : [];
+
+          setFiles(mappedFiles);
+          setOriginalFiles(
+            mappedFiles.reduce((acc, item) => {
+              acc[item.id] = {
+                keyword: item.keyword,
+                path_ru: item.path_ru,
+                path_kz: item.path_kz,
+              };
+              return acc;
+            }, {}),
+          );
+        } else {
+          hasError = true;
+        }
+
+        if (storageResponse.status === "fulfilled") {
+          setStoragePaths(normalizeStoragePaths(storageResponse.value.data));
+        } else {
+          hasError = true;
+        }
+
+        if (hasError) {
+          setStatus({ type: "error", message: text.partialError });
+        } else if (showSuccess) {
+          setStatus({ type: "success", message: text.loadSuccess });
+        }
+      } catch (error) {
+        console.error("Failed to load file manager data:", error);
+        setStatus({ type: "error", message: text.loadError });
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-    } catch (error) {
-      console.error("Failed to load file manager data:", error);
-      updateStatus("error", text.loadError);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+    },
+    [api, authHeaders, text.loadError, text.loadSuccess, text.partialError],
+  );
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const handleFieldChange = (fileId, field, value) => {
-    setFiles((prev) =>
-      prev.map((item) =>
+    if (fileId === NEW_FILE_ID) {
+      setDraftFile((previous) =>
+        previous
+          ? {
+              ...previous,
+              [field]: value,
+            }
+          : previous,
+      );
+      return;
+    }
+
+    setFiles((previous) =>
+      previous.map((item) =>
         item.id === fileId
           ? {
               ...item,
@@ -353,9 +454,137 @@ const FileManager = ({ credentials }) => {
     );
   };
 
+  const uploadFileToStorage = async (path, file) => {
+    const normalizedPath = normalizePath(path);
+    if (!normalizedPath || !file) {
+      throw new Error("pathMissing");
+    }
+
+    const formData = new FormData();
+    formData.append("path", normalizedPath);
+    formData.append("file", file);
+
+    await api.post("/files/upload", formData, { headers: authHeaders });
+    setStoragePaths((previous) => new Set([...previous, normalizedPath]));
+    return normalizedPath;
+  };
+
+  const handleCreate = async (item) => {
+    const pathRu = normalizePath(item.path_ru);
+    if (!pathRu) {
+      setStatus({ type: "error", message: text.pathRuRequired });
+      return;
+    }
+
+    if (!item.pendingRuFile) {
+      setStatus({ type: "error", message: text.pathRuRequired });
+      return;
+    }
+
+    const pathKz = normalizePath(item.path_kz) || null;
+
+    setSavingId(NEW_FILE_ID);
+    setStatus(null);
+
+    try {
+      await uploadFileToStorage(pathRu, item.pendingRuFile);
+
+      if (item.pendingKzFile && pathKz) {
+        await uploadFileToStorage(pathKz, item.pendingKzFile);
+      }
+
+      const response = await api.post(
+        "/files/",
+        {
+          path_ru: pathRu,
+          path_kz: pathKz,
+          keyword: item.keyword || undefined,
+        },
+        { headers: authHeaders },
+      );
+
+      const createdFile = mapFileRecord(response.data || item);
+
+      setFiles((previous) => [...previous, createdFile]);
+      setOriginalFiles((previous) => ({
+        ...previous,
+        [createdFile.id]: {
+          keyword: createdFile.keyword,
+          path_ru: createdFile.path_ru,
+          path_kz: createdFile.path_kz,
+        },
+      }));
+      setDraftFile(null);
+      setSelectedFileId(createdFile.id);
+      setStatus({ type: "success", message: text.createSuccess });
+    } catch (error) {
+      console.error("Failed to create file:", error);
+      const detail = error?.response?.data?.detail;
+      const message =
+        typeof detail === "string"
+          ? detail
+          : Array.isArray(detail)
+            ? detail.map((entry) => entry.msg).join(", ")
+            : text.createError;
+      setStatus({ type: "error", message });
+    } finally {
+      setSavingId("");
+    }
+  };
+
+  const handleDraftRuSelect = (file) => {
+    if (!file) return;
+
+    const pathRu = deriveRuPath(file.name);
+    const pathKz = deriveKzPathFromRu(pathRu);
+
+    setDraftFile((previous) =>
+      previous
+        ? {
+            ...previous,
+            createStep: CREATE_STEP.UPLOAD_KZ,
+            path_ru: pathRu,
+            path_kz: pathKz,
+            pendingRuFile: file,
+          }
+        : previous,
+    );
+    setStatus(null);
+  };
+
+  const handleDraftKzSelect = (file) => {
+    if (!file || !draftFile) return;
+
+    const pathKz =
+      normalizePath(draftFile.path_kz) || deriveKzPathFromRu(draftFile.path_ru);
+
+    setDraftFile((previous) =>
+      previous
+        ? {
+            ...previous,
+            createStep: CREATE_STEP.CONFIGURE,
+            path_kz: pathKz,
+            pendingKzFile: file,
+          }
+        : previous,
+    );
+    setStatus(null);
+  };
+
+  const handleSkipKzUpload = () => {
+    setDraftFile((previous) =>
+      previous
+        ? {
+            ...previous,
+            createStep: CREATE_STEP.CONFIGURE,
+          }
+        : previous,
+    );
+  };
+
   const handleSave = async (item) => {
     if (!item.id || item.id === "None") {
-      updateStatus("error", text.invalidId);
+      setStatus({ type: "error", message: text.invalidId });
       return;
     }
 
@@ -374,86 +603,118 @@ const FileManager = ({ credentials }) => {
 
       const updatedFile = mapFileRecord(response.data || item);
 
-      setFiles((prev) =>
-        prev.map((file) => (file.id === item.id ? updatedFile : file)),
+      setFiles((previous) =>
+        previous.map((file) => (file.id === item.id ? updatedFile : file)),
       );
-      setOriginalFiles((prev) => ({
-        ...prev,
+      setOriginalFiles((previous) => ({
+        ...previous,
         [updatedFile.id]: {
           keyword: updatedFile.keyword,
           path_ru: updatedFile.path_ru,
           path_kz: updatedFile.path_kz,
         },
       }));
-      updateStatus("success", text.saveSuccess);
+      setStatus({ type: "success", message: text.saveSuccess });
     } catch (error) {
       console.error("Failed to save file metadata:", error);
-      updateStatus("error", text.saveError);
+      setStatus({ type: "error", message: text.saveError });
     } finally {
       setSavingId("");
     }
   };
 
   const handleDownload = async (path) => {
-    if (!path) {
-      updateStatus("error", text.pathMissing);
+    const normalizedPath = String(path || "").trim();
+    if (!normalizedPath) {
+      setStatus({ type: "error", message: text.pathMissing });
       return;
     }
 
-    setDownloadingPath(path);
+    setDownloadingPath(normalizedPath);
 
     try {
-      const response = await api.get(`/files/${encodeURIComponent(path)}`, {
-        headers: authHeaders,
-        responseType: "blob",
-      });
+      const response = await api.get(
+        `/files/${encodeURIComponent(normalizedPath)}`,
+        {
+          headers: authHeaders,
+          responseType: "blob",
+        },
+      );
 
       const blob = new Blob([response.data]);
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = getFileNameFromPath(path);
+      link.download = getFileNameFromPath(normalizedPath);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Failed to download file:", error);
-      updateStatus("error", text.downloadError);
+      setStatus({ type: "error", message: text.downloadError });
     } finally {
       setDownloadingPath("");
     }
   };
 
-  const handleSync = async () => {
-    setSyncing(true);
+  const handleUpload = async (path, file) => {
+    const normalizedPath = String(path || "").trim();
+    if (!normalizedPath || !file) {
+      setStatus({ type: "error", message: text.pathMissing });
+      return;
+    }
+
+    setUploadingPath(normalizedPath);
+    setStatus(null);
 
     try {
-      await api.post("/files/sync", {}, { headers: authHeaders });
-      updateStatus("success", text.syncSuccess);
-      await loadData({ silent: true });
+      await uploadFileToStorage(normalizedPath, file);
+      setStatus({ type: "success", message: text.uploadSuccess });
     } catch (error) {
-      console.error("Failed to start sync:", error);
-      updateStatus("error", text.syncError);
+      console.error("Failed to upload file:", error);
+      setStatus({ type: "error", message: text.uploadError });
     } finally {
-      setSyncing(false);
+      setUploadingPath("");
     }
   };
 
-  const handleRefreshStatus = async () => {
-    setStatusLoading(true);
+  const handleDelete = async (item) => {
+    if (!item?.id || item.id === NEW_FILE_ID) return;
+    if (!window.confirm(text.deleteConfirm)) return;
+
+    setDeletingId(item.id);
+    setStatus(null);
+
+    const pathsToRemove = [item.path_ru, item.path_kz, item.storage_key]
+      .filter(Boolean)
+      .map(normalizePath);
 
     try {
-      const response = await api.get("/files/sync/status", {
-        headers: authHeaders,
+      await api.delete(`/files/${item.id}`, { headers: authHeaders });
+
+      setFiles((previous) => previous.filter((file) => file.id !== item.id));
+      setOriginalFiles((previous) => {
+        const next = { ...previous };
+        delete next[item.id];
+        return next;
       });
-      setSyncStatus(response.data || {});
-      updateStatus("success", text.statusSuccess);
+      setStoragePaths((previous) => {
+        const next = new Set(previous);
+        for (const path of pathsToRemove) {
+          next.delete(path);
+        }
+        return next;
+      });
+      if (selectedFileId === item.id) {
+        setSelectedFileId("");
+      }
+      setStatus({ type: "success", message: text.deleteSuccess });
     } catch (error) {
-      console.error("Failed to load sync status:", error);
-      updateStatus("error", text.statusError);
+      console.error("Failed to delete file:", error);
+      setStatus({ type: "error", message: text.deleteError });
     } finally {
-      setStatusLoading(false);
+      setDeletingId("");
     }
   };
 
@@ -466,7 +727,7 @@ const FileManager = ({ credentials }) => {
   if (loading) {
     return (
       <div className="file-manager">
-        <div className="file-manager__loader">{text.loading}</div>
+        <div className="file-manager-loader">{text.loading}</div>
       </div>
     );
   }
@@ -481,19 +742,11 @@ const FileManager = ({ credentials }) => {
         <div className="file-manager__actions">
           <Button
             type="button"
-            className="file-manager__button file-manager__button_secondary"
+            className="file-manager__action file-manager__action_primary"
             onClick={() => loadData({ silent: true, showSuccess: true })}
             disabled={refreshing}
           >
-            {refreshing ? <span className="loader loader_inline" /> : text.refresh}
-          </Button>
-          <Button
-            type="button"
-            className="file-manager__button"
-            onClick={handleSync}
-            disabled={syncing}
-          >
-            {syncing ? <span className="loader loader_inline" /> : text.sync}
+            {refreshing ? text.loading : text.refresh}
           </Button>
         </div>
       </div>
@@ -504,238 +757,114 @@ const FileManager = ({ credentials }) => {
         </div>
       )}
 
-      <section className="file-manager__summary-grid">
-        <article className="file-manager__summary-card">
-          <span>{text.totalFiles}</span>
-          <strong>{summary.totalFiles}</strong>
-        </article>
-        <article className="file-manager__summary-card">
-          <span>{text.deletedFiles}</span>
-          <strong>{summary.deletedCount}</strong>
-        </article>
-        <article className="file-manager__summary-card">
-          <span>{text.linkedFiles}</span>
-          <strong>{summary.totalLinked}</strong>
-        </article>
-        <article className="file-manager__summary-card">
-          <span>{text.lastParsed}</span>
-          <strong>{formatTimestamp(summary.lastParsed)}</strong>
-        </article>
-      </section>
-
-      <div className="file-manager__grid">
-        <section className="file-manager__panel">
-          <div className="file-manager__panel-header">
-            <div>
-              <h3>{text.webuiTitle}</h3>
-              <p>{text.webuiSubtitle}</p>
-            </div>
-            <Button
-              type="button"
-              className="file-manager__button"
-              onClick={handleOpenWebui}
-              disabled={!webui?.path}
-            >
-              {text.openWebui}
-            </Button>
-          </div>
-
-          <div className="file-manager__credential-grid">
-            <div className="file-manager__credential-card">
-              <span>{text.webuiPath}</span>
-              <strong>{webui?.path || text.notSpecified}</strong>
-            </div>
-            <div className="file-manager__credential-card">
-              <span>{text.webuiLogin}</span>
-              <strong>{webui?.login || text.notSpecified}</strong>
-            </div>
-            <div className="file-manager__credential-card">
-              <div className="file-manager__credential-row">
-                <span>{text.webuiPassword}</span>
-                <button
-                  type="button"
-                  className="file-manager__toggle-secret"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                >
-                  {showPassword ? text.hide : text.show}
-                </button>
-              </div>
-              <strong>
-                {showPassword
-                  ? webui?.password || text.notSpecified
-                  : webui?.password
-                    ? "••••••••"
-                    : text.notSpecified}
-              </strong>
-            </div>
-          </div>
-        </section>
-
-        <section className="file-manager__panel">
-          <div className="file-manager__panel-header">
-            <div>
-              <h3>{text.syncTitle}</h3>
-              <p>{text.syncSubtitle}</p>
-            </div>
-            <Button
-              type="button"
-              className="file-manager__button file-manager__button_secondary"
-              onClick={handleRefreshStatus}
-              disabled={statusLoading}
-            >
-              {statusLoading ? (
-                <span className="loader loader_inline" />
-              ) : (
-                text.refreshStatus
-              )}
-            </Button>
-          </div>
-
-          <div className="file-manager__status-box">
-            <span className="file-manager__status-label">{text.syncStatus}</span>
-            <pre className="file-manager__status-preview">{syncStatusPreview}</pre>
-          </div>
-        </section>
-      </div>
-
-      <section className="file-manager__panel file-manager__panel_full">
-        <div className="file-manager__panel-header">
-          <div>
-            <h3>{text.catalogTitle}</h3>
-            <p>{text.catalogSubtitle}</p>
-          </div>
-        </div>
-
-        <div className="file-manager__search">
+      <section className="file-manager__panel file-manager__panel_workspace">
+        <div className="file-manager__toolbar">
           <input
             type="text"
-            className="file-manager__input"
+            className="file-manager__search"
             placeholder={text.searchPlaceholder}
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
           />
+          <div className="file-manager__toolbar-actions">
+            <span className="file-manager__count">
+              {filteredFiles.length} {text.filesCount}
+            </span>
+            <Button
+              type="button"
+              className="file-manager__action file-manager__action_compact"
+              onClick={handleStartCreate}
+              disabled={isCreating}
+            >
+              {text.newFile}
+            </Button>
+          </div>
         </div>
 
-        <div className="file-manager__list">
-          {filteredFiles.length ? (
-            filteredFiles.map((item) => (
-              <article className="file-manager__file-card" key={item.id || item.storage_key}>
-                <div className="file-manager__file-header">
-                  <div>
-                    <h4>{item.keyword || text.notSpecified}</h4>
-                    <p>{item.storage_key || text.notSpecified}</p>
-                  </div>
-                  <span
-                    className={`file-manager__badge ${
-                      item.deleted ? "file-manager__badge_deleted" : ""
-                    }`}
-                  >
-                    {item.deleted ? text.deleted : text.active}
-                  </span>
-                </div>
+        <div className="file-manager__workspace">
+          <div className="file-manager__explorer">
+            {filteredFiles.length ? (
+              <FileTree
+                roots={treeRoots}
+                orphans={orphans}
+                expanded={effectiveExpanded}
+                selectedFileId={isCreating ? "" : selectedFileId}
+                editingFileId={editingFileId}
+                renameValue={renameValue}
+                text={text}
+                onToggle={toggleNode}
+                onSelect={handleSelectFile}
+                onRenameStart={handleRenameStart}
+                onRenameChange={setRenameValue}
+                onRenameCommit={handleRenameCommit}
+                onRenameCancel={handleRenameCancel}
+              />
+            ) : (
+              <div className="file-manager__tree-empty">{text.noFiles}</div>
+            )}
+          </div>
+          <FileDetails
+            file={selectedFile}
+            isNew={isCreating}
+            storagePaths={storagePaths}
+            text={text}
+            savingId={savingId}
+            deletingId={deletingId}
+            uploadingPath={uploadingPath}
+            downloadingPath={downloadingPath}
+            isChanged={selectedFile && !isCreating ? isFileChanged(selectedFile) : false}
+            onFieldChange={handleFieldChange}
+            onSave={handleSave}
+            onCreate={handleCreate}
+            onCancelCreate={handleCancelCreate}
+            onDraftRuSelect={handleDraftRuSelect}
+            onDraftKzSelect={handleDraftKzSelect}
+            onSkipKzUpload={handleSkipKzUpload}
+            onDelete={handleDelete}
+            onUpload={handleUpload}
+            onDownload={handleDownload}
+          />
+        </div>
+      </section>
 
-                <div className="file-manager__fields">
-                  <label className="file-manager__field">
-                    <span>{text.keyword}</span>
-                    <input
-                      type="text"
-                      className="file-manager__input"
-                      value={item.keyword}
-                      onChange={(event) =>
-                        handleFieldChange(item.id, "keyword", event.target.value)
-                      }
-                    />
-                  </label>
-                  <label className="file-manager__field">
-                    <span>{text.pathRu}</span>
-                    <input
-                      type="text"
-                      className="file-manager__input"
-                      value={item.path_ru}
-                      onChange={(event) =>
-                        handleFieldChange(item.id, "path_ru", event.target.value)
-                      }
-                    />
-                  </label>
-                  <label className="file-manager__field">
-                    <span>{text.pathKz}</span>
-                    <input
-                      type="text"
-                      className="file-manager__input"
-                      value={item.path_kz}
-                      onChange={(event) =>
-                        handleFieldChange(item.id, "path_kz", event.target.value)
-                      }
-                    />
-                  </label>
-                </div>
-
-                <div className="file-manager__meta-grid">
-                  <div className="file-manager__meta-item">
-                    <span>{text.fileId}</span>
-                    <strong>{item.id || text.notSpecified}</strong>
-                  </div>
-                  <div className="file-manager__meta-item">
-                    <span>{text.etag}</span>
-                    <strong>{item.etag || text.notSpecified}</strong>
-                  </div>
-                  <div className="file-manager__meta-item">
-                    <span>{text.parsedAt}</span>
-                    <strong>{formatTimestamp(item.parsed_at)}</strong>
-                  </div>
-                  <div className="file-manager__meta-item">
-                    <span>{text.linkedIds}</span>
-                    <strong>
-                      {item.linked_ids?.length
-                        ? item.linked_ids.join(", ")
-                        : text.notSpecified}
-                    </strong>
-                  </div>
-                </div>
-
-                <div className="file-manager__file-actions">
-                  <Button
-                    type="button"
-                    className="file-manager__button"
-                    onClick={() => handleSave(item)}
-                    disabled={savingId === item.id || !isFileChanged(item)}
-                  >
-                    {savingId === item.id ? (
-                      <span className="loader loader_inline" />
-                    ) : (
-                      text.save
-                    )}
-                  </Button>
-                  <Button
-                    type="button"
-                    className="file-manager__button file-manager__button_secondary"
-                    onClick={() => handleDownload(item.path_ru)}
-                    disabled={!item.path_ru || downloadingPath === item.path_ru}
-                  >
-                    {downloadingPath === item.path_ru ? (
-                      <span className="loader loader_inline" />
-                    ) : (
-                      text.downloadRu
-                    )}
-                  </Button>
-                  <Button
-                    type="button"
-                    className="file-manager__button file-manager__button_secondary"
-                    onClick={() => handleDownload(item.path_kz)}
-                    disabled={!item.path_kz || downloadingPath === item.path_kz}
-                  >
-                    {downloadingPath === item.path_kz ? (
-                      <span className="loader loader_inline" />
-                    ) : (
-                      text.downloadKz
-                    )}
-                  </Button>
-                </div>
-              </article>
-            ))
-          ) : (
-            <div className="file-manager__empty">{text.noFiles}</div>
-          )}
+      <section className="file-manager__panel file-manager__upload">
+        <div className="file-manager__upload-header">
+          <div>
+            <h3 className="file-manager__section-title">{text.uploadTitle}</h3>
+            <p className="file-manager__upload-hint">{text.uploadHint}</p>
+          </div>
+          <Button
+            type="button"
+            className="file-manager__action"
+            onClick={handleOpenWebui}
+            disabled={!webui?.path}
+          >
+            {text.openWebui}
+          </Button>
+        </div>
+        <div className="file-manager__upload-meta">
+          <span>
+            {text.login}: <strong>{webui?.login || text.notSpecified}</strong>
+          </span>
+          <span>
+            {text.password}:{" "}
+            <strong>
+              {showPassword
+                ? webui?.password || text.notSpecified
+                : webui?.password
+                  ? "••••••••"
+                  : text.notSpecified}
+            </strong>
+            {webui?.password && (
+              <button
+                type="button"
+                className="file-manager__toggle-secret"
+                onClick={() => setShowPassword((previous) => !previous)}
+              >
+                {showPassword ? text.hide : text.show}
+              </button>
+            )}
+          </span>
         </div>
       </section>
     </div>

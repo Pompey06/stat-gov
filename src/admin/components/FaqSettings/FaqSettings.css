@@ -1,5 +1,4 @@
 .faq-settings {
-  padding: 51px 5.83vw 32px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -36,8 +35,7 @@
   justify-content: flex-end;
 }
 
-.faq-settings__action,
-.faq-settings__secondary-button {
+.faq-settings__action {
   min-height: 48px;
   display: inline-flex;
   align-items: center;
@@ -46,7 +44,7 @@
 }
 
 .faq-settings__action_primary {
-  min-width: 220px;
+  min-width: 180px;
 }
 
 .faq-settings__panel {
@@ -55,29 +53,6 @@
   border-radius: 18px;
   box-shadow: 0 12px 24px rgba(0, 72, 108, 0.06);
   padding: 24px;
-}
-
-.faq-settings__panel-header,
-.faq-settings__nested-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.faq-settings__panel-title {
-  color: #101820;
-  font-size: 22px;
-  font-weight: 300;
-  line-height: 1.1;
-}
-
-.faq-settings__section-note,
-.faq-settings__meta-note {
-  color: #647384;
-  font-size: 14px;
-  line-height: 1.45;
-  margin-top: 10px;
 }
 
 .faq-settings__status {
@@ -97,227 +72,15 @@
   color: #9a4f22;
 }
 
-.faq-settings__meta-grid {
-  margin-top: 18px;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 18px;
-}
-
-.faq-settings__meta-card {
-  border-radius: 14px;
-  background: #f7fbfd;
-  border: 1px solid rgba(0, 134, 191, 0.12);
-  padding: 16px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.faq-settings__meta-card span {
-  color: #647384;
-  font-size: 14px;
-}
-
-.faq-settings__meta-card strong {
-  color: #0d5097;
-  font-size: 20px;
-  font-weight: 400;
-}
-
-.faq-settings__stack {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.faq-settings__localized-grid {
-  margin-top: 18px;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.faq-settings__localized-grid_wide {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.faq-settings__field {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.faq-settings__field-label {
-  color: #546476;
-  font-size: 14px;
-  line-height: 1.35;
-}
-
-.faq-settings__input,
-.faq-settings__textarea,
-.faq-settings__select {
-  width: 100%;
-  border: 1px solid #d8e1e8;
-  border-radius: 10px;
-  background: #fff;
-  color: #223040;
-  font-size: 15px;
-  line-height: 1.4;
-  padding: 12px 14px;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.faq-settings__input:focus,
-.faq-settings__textarea:focus,
-.faq-settings__select:focus {
-  border-color: #0086bf;
-  box-shadow: 0 0 0 3px rgba(0, 134, 191, 0.12);
-}
-
-.faq-settings__textarea {
-  resize: vertical;
-  min-height: 120px;
-}
-
-.faq-settings__textarea_small {
-  min-height: 92px;
-}
-
-.faq-settings__textarea_tall {
-  min-height: 260px;
-}
-
-.faq-settings__textarea_code {
-  margin-top: 16px;
-  min-height: 260px;
-  font-family: Consolas, "Courier New", monospace;
-}
-
-.faq-settings__category {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.faq-settings__nested-section {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.faq-settings__nested-header h4,
-.faq-settings__nested-header h5,
-.faq-settings__nested-header h6 {
-  color: #1c2a3a;
-  font-size: 18px;
-  font-weight: 300;
-}
-
-.faq-settings__nested-card,
-.faq-settings__list-item,
-.faq-settings__generator-card {
-  border: 1px solid rgba(0, 134, 191, 0.12);
-  background: #f8fbfd;
-  border-radius: 16px;
-  padding: 18px;
-}
-
-.faq-settings__generator-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-  margin-top: 18px;
-}
-
-.faq-settings__generator-card {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.faq-settings__generator-card h4 {
-  color: #1c2a3a;
-  font-size: 18px;
-  font-weight: 300;
-}
-
-.faq-settings__add-button,
-.faq-settings__remove-button {
-  border: none;
-  border-radius: 999px;
-  cursor: pointer;
-  padding: 9px 14px;
-  font-size: 14px;
-  line-height: 1;
-  transition: background-color 0.2s, color 0.2s;
-}
-
-.faq-settings__add-button {
+.faq-settings__status_info {
   background: rgba(0, 134, 191, 0.1);
-  color: #0086bf;
+  color: #0d5097;
 }
 
-.faq-settings__add-button:hover {
-  background: rgba(0, 134, 191, 0.16);
+.faq-settings__editor-panel {
+  padding: 16px;
 }
 
-.faq-settings__remove-button {
-  background: rgba(229, 122, 68, 0.12);
-  color: #c85e24;
-}
-
-.faq-settings__remove-button:hover {
-  background: rgba(229, 122, 68, 0.18);
-}
-
-.faq-settings__remove-button_small {
-  padding: 8px 12px;
-}
-
-.faq-settings__empty-panel {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 16px;
-}
-
-.faq-settings__empty-inline {
-  color: #7b8b9c;
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.faq-settings__file-box {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  border: 1px dashed #b8cddd;
-  border-radius: 12px;
-  background: #fff;
-  padding: 14px;
-  color: #546476;
-}
-
-.faq-settings__hidden-file {
-  display: none;
-}
-
-.faq-settings__json-preview {
-  margin-top: 16px;
-  border-radius: 16px;
-  background: #122030;
-  color: #e8f2ff;
-  padding: 18px;
-  font-size: 13px;
-  line-height: 1.5;
-  overflow: auto;
-  max-height: 360px;
-}
-
-.faq-settings__secondary-button:disabled,
 .faq-settings__action:disabled,
 .faq-settings .button:disabled {
   opacity: 0.6;
@@ -330,55 +93,23 @@
   font-size: 18px;
 }
 
-@media (max-width: 1200px) {
-  .faq-settings__meta-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .faq-settings__localized-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .faq-settings__generator-grid,
-  .faq-settings__localized-grid_wide {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 1024px) {
-  .faq-settings {
-    padding: 40px 20px 24px;
-  }
-}
-
 @media (max-width: 768px) {
   .faq-settings {
-    padding: 16px;
     gap: 18px;
   }
 
   .faq-settings__header,
-  .faq-settings__actions,
-  .faq-settings__panel-header,
-  .faq-settings__nested-header,
-  .faq-settings__file-box {
+  .faq-settings__actions {
     flex-direction: column;
     align-items: stretch;
   }
 
   .faq-settings__actions .button,
-  .faq-settings__action,
-  .faq-settings__secondary-button {
+  .faq-settings__action {
     width: 100%;
   }
 
   .faq-settings__panel {
     padding: 16px;
-  }
-}
-
-@media (max-width: 560px) {
-  .faq-settings__meta-grid {
-    grid-template-columns: 1fr;
   }
 }

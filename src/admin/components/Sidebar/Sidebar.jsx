@@ -5,8 +5,6 @@ import logo from "../../assets/logo.svg";
 import newIcon from "../../assets/new.svg";
 import downloadIcon from "../../assets/download.svg";
 import burgerIcon from "../../assets/burgerIcon.svg";
-import userIcon from "../../assets/userIcon.svg";
-import arrowIcon from "../../assets/arrowIcon.svg";
 import SidebarButton from "../SidebarButton/SidebarButton";
 import "./Sidebar.css";
 import adminI18n from "../../i18n";
@@ -77,12 +75,31 @@ const FilesIcon = () => (
   </svg>
 );
 
+const SitemapIcon = () => (
+  <svg
+    width="34"
+    height="34"
+    viewBox="0 0 34 34"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <rect x="6" y="8" width="22" height="18" rx="2" stroke="white" strokeWidth="2" />
+    <path d="M10 14H24" stroke="white" strokeWidth="2" strokeLinecap="round" />
+    <path d="M10 18H20" stroke="white" strokeWidth="2" strokeLinecap="round" />
+    <path d="M10 22H17" stroke="white" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
+
 const Sidebar = ({ activeTab, setActiveTab, isOpen, onMenuToggle }) => {
   const { t, i18n } = useTranslation(undefined, { i18n: adminI18n });
-  const [activeLang, setActiveLang] = useState("ru");
+  const [activeLang, setActiveLang] = useState(
+    i18n.language === "kz" ? "kz" : "ru",
+  );
   const filesLabel =
     i18n.language === "kz" ? "Файлдарды жаңарту" : "Обновление файлов";
-  const faqLabel = i18n.language === "kz" ? "Жиі сұрақтар" : "Частые вопросы";
+  const faqLabel = i18n.language === "kz" ? "Санаттар мен FAQ" : "Категории и FAQ";
+  const sitemapLabel = i18n.language === "kz" ? "Сайт картасы" : "Карта сайта";
 
   const handleLangChange = (lang) => {
     setActiveLang(lang);
@@ -138,8 +155,14 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, onMenuToggle }) => {
           active={activeTab === 5}
           onClick={() => handleButtonClick(5)}
         />
+        <SidebarButton
+          icon={<SitemapIcon />}
+          text={sitemapLabel}
+          active={activeTab === 6}
+          onClick={() => handleButtonClick(6)}
+        />
       </nav>
-      <div className="sidebar-bottom show-768">
+      <div className="sidebar-bottom">
         <div className="language-switcher">
           <button
             className={`lang-button ru ${activeLang === "ru" ? "active" : ""}`}
@@ -153,17 +176,6 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, onMenuToggle }) => {
           >
             қаз
           </button>
-        </div>
-
-        <div className="user-info">
-          <div className="user-details">
-            <img src={userIcon} alt="User" className="user-info-icon" />
-            <div className="user-info-text">
-              <p className="user-email">userlogin@gmail.com</p>
-              <p className="user-name">admin</p>
-            </div>
-          </div>
-          <img src={arrowIcon} alt="Arrow" className="user-info-arrow" />
         </div>
       </div>
     </aside>

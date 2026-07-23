@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "$defs": {
+    "Category": {
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/LocalizedStr"
+        },
+        "subcategories": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Subcategory"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subcategories"
+        },
+        "faq": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/FAQItem"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Faq"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "Category",
+      "type": "object"
+    },
+    "FAQItem": {
+      "properties": {
+        "question": {
+          "$ref": "#/$defs/LocalizedStr"
+        },
+        "answer": {
+          "$ref": "#/$defs/LocalizedStr"
+        }
+      },
+      "required": [
+        "question",
+        "answer"
+      ],
+      "title": "FAQItem",
+      "type": "object"
+    },
+    "LocalizedStr": {
+      "properties": {
+        "ru": {
+          "title": "Ru",
+          "type": "string"
+        },
+        "kz": {
+          "default": "",
+          "title": "Kz",
+          "type": "string"
+        },
+        "en": {
+          "default": "",
+          "title": "En",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ru"
+      ],
+      "title": "LocalizedStr",
+      "type": "object"
+    },
+    "SitemapLocales": {
+      "properties": {
+        "ru": {
+          "default": "",
+          "title": "Ru",
+          "type": "string"
+        },
+        "kz": {
+          "default": "",
+          "title": "Kz",
+          "type": "string"
+        }
+      },
+      "title": "SitemapLocales",
+      "type": "object"
+    },
+    "Subcategory": {
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/LocalizedStr"
+        },
+        "reports": {
+          "items": {
+            "$ref": "#/$defs/LocalizedStr"
+          },
+          "title": "Reports",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "reports"
+      ],
+      "title": "Subcategory",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "categories": {
+      "items": {
+        "$ref": "#/$defs/Category"
+      },
+      "title": "Categories",
+      "type": "array"
+    },
+    "sitemap": {
+      "$ref": "#/$defs/SitemapLocales"
+    }
+  },
+  "title": "AppConfigInput",
+  "type": "object"
+}

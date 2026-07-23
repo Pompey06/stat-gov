@@ -47,45 +47,6 @@
    color: #fff;
 }
 
-.user-info {
-   background-color: #d9d9d9;
-   display: flex;
-   align-items: center;
-   padding: 10px 29px 10px 16px;
-}
-
-.user-info-arrow {
-   margin-left: 30px;
-   width: 16px;
-   height: 16px;
-}
-
-.user-details {
-   display: flex;
-   align-items: center;
-}
-
-.user-info-text {
-   display: flex;
-   flex-direction: column;
-   gap: 5px;
-   margin-left: 15px;
-}
-
-.user-name {
-   color: #82868a;
-   font-family: Roboto;
-   font-size: 16px;
-   font-weight: 300;
-}
-
-.user-email {
-   color: #0086bf;
-   font-family: Roboto;
-   font-size: 16px;
-   font-weight: 300;
-}
-
 .header-bottom-border {
    margin-top: 10px;
    height: 1px;
@@ -127,9 +88,5 @@
    .menu-toggle-icon {
       cursor: pointer;
       margin-bottom: 2px;
-   }
-   .mobile-user-icon {
-      width: 50px;
-      height: 50px;
    }
 }

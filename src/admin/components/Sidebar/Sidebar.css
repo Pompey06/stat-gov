@@ -1,11 +1,11 @@
 .sidebar {
    background-color: #0086bf;
-   height: 100vh;
+   height: 100%;
    display: flex;
    flex-direction: column;
-   align-items: center;
-   padding: 64px 20px 20px 60px;
-   width: 400px;
+   align-items: stretch;
+   padding: 64px 16px 20px;
+   box-sizing: border-box;
 }
 
 /* Стандартные стили для логотипа и навигации */
@@ -18,14 +18,48 @@
    display: flex;
    flex-direction: column;
    gap: 15px;
+   flex: 1;
 }
 
-/* Стили для десктопа (ширина больше 768px) остаются без изменений */
+.sidebar-bottom {
+   margin-top: auto;
+   width: 100%;
+   padding-top: 24px;
+}
+
+.sidebar-bottom .language-switcher {
+   display: flex;
+}
+
+.sidebar-bottom .lang-button {
+   padding: 5px 10px;
+   border: 1px solid #fff;
+   background-color: #0086bf;
+   color: #fff;
+   cursor: pointer;
+   font-size: 16px;
+   font-weight: 300;
+   line-height: 1;
+   transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar-bottom .lang-button.ru {
+   border-radius: 5px 0 0 5px;
+}
+
+.sidebar-bottom .lang-button.kz {
+   border-radius: 0 5px 5px 0;
+}
+
+.sidebar-bottom .lang-button.active {
+   background-color: #fff;
+   color: #0086bf;
+}
+
+/* Стили для планшета */
 @media (max-width: 1024px) {
    .sidebar {
-      padding: 20px;
-      padding-right: 0;
-      width: 250px;
+      padding: 20px 16px 20px 0;
    }
 }
 
@@ -73,7 +107,6 @@
    }
    .sidebar-button {
       padding: 12px;
-      padding-bottom: 20px;
    }
    .sidebar-nav {
       margin-bottom: 10px;
@@ -81,14 +114,6 @@
    .sidebar-bottom {
       margin-top: auto;
       margin-bottom: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 28px;
-   }
-   .sidebar-bottom .user-info {
-      border-radius: 5px;
-      background: #d9d9d9;
-      padding: 10px 14px;
    }
    .sidebar-bottom .lang-button {
       border: 1px solid #eee;
@@ -98,11 +123,5 @@
    .sidebar-bottom .lang-button.active {
       background-color: #eee;
       color: #0086bf;
-   }
-   .sidebar-bottom .user-email {
-      font-size: 14px;
-   }
-   .sidebar-bottom .user-name {
-      font-size: 14px;
    }
 }
