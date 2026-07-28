@@ -39,6 +39,10 @@ const resources = {
         endDateTitle: "по:",
         datePlaceholder: "Выбор даты",
         downloadButton: "Скачать xlsx",
+        problematicOnly:
+          "Только проблемные (не найдено / пустой ответ / ошибка / без ответа)",
+        problematicHint:
+          "В Excel проблемные сообщения подсвечены цветом; на листе «Легенда» — расшифровка.",
       },
       analytics: {
         title: "Аналитика и мониторинг",
@@ -141,6 +145,10 @@ const resources = {
         endDateTitle: "Аяқталу күні:",
         datePlaceholder: "Күнді таңдау",
         downloadButton: "xlsx жүктеу",
+        problematicOnly:
+          "Тек проблемалықтар (табылмады / бос жауап / қате / жауапсыз)",
+        problematicHint:
+          "Excel-де проблемалық хабарламалар түспен белгіленеді; «Легенда» парағында түсіндірме бар.",
       },
       analytics: {
         title: "Талдау және мониторинг",

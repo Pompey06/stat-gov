@@ -11,6 +11,7 @@ import "./FeedbackExport.css";
 import ru from "date-fns/locale/ru";
 import { useApi } from "../Context/Context";
 import { useTranslation } from "react-i18next";
+import adminI18n from "../../i18n";
 
 // Кастомный инпут для DatePicker
 const CustomDateInput = forwardRef(({ value, onClick, placeholder, onClear }, ref) => (
@@ -46,10 +47,11 @@ CustomDateInput.propTypes = {
 CustomDateInput.displayName = "CustomDateInput";
 
 const FeedbackExport = ({ credentials }) => {
-   const { t } = useTranslation();
+   const { t } = useTranslation(undefined, { i18n: adminI18n });
    const api = useApi();
    const [startDate, setStartDate] = useState(null);
    const [endDate, setEndDate] = useState(null);
+   const [problematicOnly, setProblematicOnly] = useState(false);
 
    // ← новое состояние загрузки
    const [isDownloading, setIsDownloading] = useState(false);
@@ -72,6 +74,7 @@ const FeedbackExport = ({ credentials }) => {
          const params = {
             from_date: startDate ? formatDate(startDate) : null,
             to_date: endDate ? formatDate(endDate) : null,
+            problematic_only: problematicOnly || undefined,
          };
          const response = await api.get("/conversation/export.xlsx", {
             headers: { Authorization: `Basic ${encodedCredentials}` },
@@ -81,7 +84,10 @@ const FeedbackExport = ({ credentials }) => {
          const url = window.URL.createObjectURL(new Blob([response.data]));
          const link = document.createElement("a");
          link.href = url;
-         link.setAttribute("download", "export.xlsx");
+         link.setAttribute(
+            "download",
+            problematicOnly ? "export-problematic.xlsx" : "export.xlsx"
+         );
          document.body.appendChild(link);
          link.click();
          document.body.removeChild(link);
@@ -134,6 +140,15 @@ const FeedbackExport = ({ credentials }) => {
                />
             </div>
          </div>
+         <label className="export-filter">
+            <input
+               type="checkbox"
+               checked={problematicOnly}
+               onChange={(event) => setProblematicOnly(event.target.checked)}
+            />
+            <span>{t("feedbackExport.problematicOnly")}</span>
+         </label>
+         <p className="export-filter-hint">{t("feedbackExport.problematicHint")}</p>
          <Button
             type="button"
             onClick={handleDownload}
