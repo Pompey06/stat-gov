@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useMemo } from "react";
 import MessageList from "./MessageList/MessageList";
 import MessageInput from "./MessageInput/MessageInput";
 import { ChatContext } from "../../context/ChatContext";
@@ -29,6 +29,27 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
   const showAvatar = import.meta.env.VITE_SHOW_AVATAR === "true";
   const useAltGreeting = import.meta.env.VITE_USE_ALT_GREETING === "true";
   const languageOptions = [KZ_LANGUAGE, RU_LANGUAGE, EN_LANGUAGE];
+  const watermarkText = t("chat.watermarkText");
+
+  const watermarkBackground = useMemo(() => {
+    const [firstLine = "", ...restLines] = watermarkText.split(" ");
+    const secondLine = restLines.join(" ");
+
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="220" height="140" viewBox="0 0 220 140">
+        <g transform="translate(56 76) rotate(-35)">
+          <rect x="42" y="-28" width="12" height="12" fill="none" stroke="#6d7f98" stroke-width="1" opacity="0.45" transform="rotate(45 48 -22)" />
+          <text x="48" y="-19" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="700" fill="#6d7f98" opacity="0.45">!</text>
+          <text x="48" y="-2" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#6d7f98" opacity="0.4">
+            <tspan x="48" dy="0">${firstLine}</tspan>
+            ${secondLine ? `<tspan x="48" dy="14">${secondLine}</tspan>` : ""}
+          </text>
+        </g>
+      </svg>
+    `;
+
+    return `url("data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}")`;
+  }, [watermarkText]);
 
   const handleLanguageChange = (lang) => {
     updateLocale(lang);
@@ -49,11 +70,11 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
   if (isEmptyChat) {
     return (
       <div className="chat-window chat-window--watermark chat-window-start flex flex-col h-full items-center justify-center">
-        {/* <div
+        <div
           className="chat-window__watermark"
           style={{ backgroundImage: watermarkBackground }}
           aria-hidden="true"
-        /> */}
+        />
         <Header isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
         {isSmall ? (
@@ -191,11 +212,11 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
 
   return (
     <div className="chat-window chat-window--watermark flex flex-col h-full">
-      {/* <div
+      <div
         className="chat-window__watermark"
         style={{ backgroundImage: watermarkBackground }}
         aria-hidden="true"
-      /> */}
+      />
       <MessageList
         isSidebarOpen={isSidebarOpen}
         toggleSidebar={toggleSidebar}
