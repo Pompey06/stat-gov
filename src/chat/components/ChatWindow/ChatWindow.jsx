@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useMemo } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import MessageList from "./MessageList/MessageList";
 import MessageInput from "./MessageInput/MessageInput";
 import { ChatContext } from "../../context/ChatContext";
@@ -29,6 +29,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
   const showAvatar = import.meta.env.VITE_SHOW_AVATAR === "true";
   const useAltGreeting = import.meta.env.VITE_USE_ALT_GREETING === "true";
   const languageOptions = [KZ_LANGUAGE, RU_LANGUAGE, EN_LANGUAGE];
+  /*
   const watermarkText = t("chat.watermarkText");
 
   const watermarkBackground = useMemo(() => {
@@ -50,6 +51,7 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
 
     return `url("data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}")`;
   }, [watermarkText]);
+  */
 
   const handleLanguageChange = (lang) => {
     updateLocale(lang);
@@ -70,11 +72,11 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
   if (isEmptyChat) {
     return (
       <div className="chat-window chat-window--watermark chat-window-start flex flex-col h-full items-center justify-center">
-        <div
+        {/* <div
           className="chat-window__watermark"
           style={{ backgroundImage: watermarkBackground }}
           aria-hidden="true"
-        />
+        /> */}
         <Header isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
         {isSmall ? (
@@ -212,11 +214,11 @@ export default function ChatWindow({ isSidebarOpen, toggleSidebar }) {
 
   return (
     <div className="chat-window chat-window--watermark flex flex-col h-full">
-      <div
+      {/* <div
         className="chat-window__watermark"
         style={{ backgroundImage: watermarkBackground }}
         aria-hidden="true"
-      />
+      /> */}
       <MessageList
         isSidebarOpen={isSidebarOpen}
         toggleSidebar={toggleSidebar}
