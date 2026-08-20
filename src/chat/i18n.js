@@ -21,7 +21,42 @@ const normalizeStoredLanguage = (lang) => {
   return KZ_LANGUAGE;
 };
 
-const initialLanguage = normalizeStoredLanguage(storedLocale);
+const getLanguageFromPathname = (pathname) => {
+  const pathLanguage = pathname.split("/").filter(Boolean)[0];
+
+  if (pathLanguage === "ru") return RU_LANGUAGE;
+  if (pathLanguage === "en") return EN_LANGUAGE;
+  if (pathLanguage === "kz" || pathLanguage === "kk") return KZ_LANGUAGE;
+  if (!pathLanguage) return KZ_LANGUAGE;
+
+  return null;
+};
+
+const getEmbeddedLanguage = () => {
+  try {
+    const parentLanguage = getLanguageFromPathname(window.parent.location.pathname);
+    if (parentLanguage) return parentLanguage;
+  } catch {
+    // The parent URL is inaccessible when the iframe has another origin.
+  }
+
+  if (document.referrer) {
+    try {
+      return getLanguageFromPathname(new URL(document.referrer).pathname);
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
+};
+
+const embeddedLanguage = getEmbeddedLanguage();
+const initialLanguage = embeddedLanguage || normalizeStoredLanguage(storedLocale);
+
+if (embeddedLanguage && storedLocale !== embeddedLanguage) {
+  localStorage.setItem("locale", embeddedLanguage);
+}
 
 if (storedLocale && !supportedLanguages.includes(storedLocale)) {
   localStorage.setItem("locale", initialLanguage);
