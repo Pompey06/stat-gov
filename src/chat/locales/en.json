@@ -8,8 +8,8 @@
   },
   "chat": {
     "suggestionText": "Perhaps you were looking for ...",
-    "greeting": "Hello! How can I help you?",
-    "greetingAltTitle": "Hello! How can I help you?",
+    "greeting": "Hello! I’m AI Stat, an AI-powered virtual assistant. How can I help you?",
+    "greetingAltTitle": "Hello! I’m AI Stat, an AI-powered virtual assistant. How can I help you?",
     "greetingAltDescription": "*We are currently in testing mode, and your questions help us improve the bot. If you have suggestions, you can leave them ",
     "greetingAltDescriptionLink": "here",
     "greetingAltDescriptionAfterLink": ".",
