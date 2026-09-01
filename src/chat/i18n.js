@@ -12,40 +12,77 @@ const EN_LANGUAGE = "eng";
 const supportedLanguages = [RU_LANGUAGE, KZ_LANGUAGE, EN_LANGUAGE];
 const storedLocale = localStorage.getItem("locale");
 
-const normalizeStoredLanguage = (lang) => {
-   if (lang === EN_LANGUAGE || lang === "en") return EN_LANGUAGE;
-   if (lang === "ru" || lang === RU_LANGUAGE) return RU_LANGUAGE;
-   if (lang === "kz" || lang === "kk" || lang === KZ_LANGUAGE) {
+const normalizeLanguageCode = (lang) => {
+   const normalizedLanguage = String(lang || "").trim().toLowerCase();
+
+   if (normalizedLanguage === EN_LANGUAGE || normalizedLanguage === "en") {
+      return EN_LANGUAGE;
+   }
+
+   if (normalizedLanguage === "ru" || normalizedLanguage === RU_LANGUAGE) {
+      return RU_LANGUAGE;
+   }
+
+   if (
+      normalizedLanguage === "kz" ||
+      normalizedLanguage === "kk" ||
+      normalizedLanguage === KZ_LANGUAGE
+   ) {
       return KZ_LANGUAGE;
    }
-   return KZ_LANGUAGE;
+
+   return null;
+};
+
+const normalizeStoredLanguage = (lang) => {
+   return normalizeLanguageCode(lang) || KZ_LANGUAGE;
 };
 
 const getLanguageFromPathname = (pathname) => {
    const pathLanguage = pathname.split("/").filter(Boolean)[0];
 
-   if (pathLanguage === "ru") return RU_LANGUAGE;
-   if (pathLanguage === "en") return EN_LANGUAGE;
-   if (pathLanguage === "kz" || pathLanguage === "kk") return KZ_LANGUAGE;
-   if (!pathLanguage) return KZ_LANGUAGE;
+   return normalizeLanguageCode(pathLanguage);
+};
 
-   return null;
+const getLanguageFromUrl = (url) => {
+   try {
+      const parsedUrl = new URL(url, window.location.origin);
+      const queryLanguage = normalizeLanguageCode(
+         parsedUrl.searchParams.get("lang"),
+      );
+
+      return {
+         queryLanguage,
+         pathLanguage: getLanguageFromPathname(parsedUrl.pathname),
+      };
+   } catch {
+      return { queryLanguage: null, pathLanguage: null };
+   }
 };
 
 const getEmbeddedLanguage = () => {
+   const urls = [window.location.href];
+
    try {
-      const parentLanguage = getLanguageFromPathname(window.parent.location.pathname);
-      if (parentLanguage) return parentLanguage;
+      if (window.parent !== window) {
+         urls.push(window.parent.location.href);
+      }
    } catch {
       // The parent URL is inaccessible when the iframe has another origin.
    }
 
    if (document.referrer) {
-      try {
-         return getLanguageFromPathname(new URL(document.referrer).pathname);
-      } catch {
-         return null;
-      }
+      urls.push(document.referrer);
+   }
+
+   const parsedUrls = urls.map(getLanguageFromUrl);
+
+   for (const { queryLanguage } of parsedUrls) {
+      if (queryLanguage) return queryLanguage;
+   }
+
+   for (const { pathLanguage } of parsedUrls) {
+      if (pathLanguage) return pathLanguage;
    }
 
    return null;
