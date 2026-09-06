@@ -53,7 +53,7 @@
     "badModalDescription": "We want to get better! Tell us what can be improved.",
     "requestFeedback": "Rate the quality of the answer",
     "badFeedbackPromptText": "We are sorry that we could not answer your question. Please leave your contact details so our operators can get in touch with you for a consultation.",
-    "openRegistrationForm": "Create a request",
+    "openRegistrationForm": "Create a request to the contact center",
     "registrationTitle": "Request registration"
   },
   "modal": {
