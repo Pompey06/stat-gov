@@ -13,6 +13,7 @@ import {
   saveFeedbackState,
 } from "../utils/feedbackStorage";
 import mockCategories from "./mockCategories.json";
+import previewFrequentQuestions from "./previewFrequentQuestions.json";
 
 const ChatContext = createContext();
 const RU_LANGUAGE = "\u0440\u0443\u0441";
@@ -602,6 +603,12 @@ const ChatProvider = ({ children }) => {
         const res = await api.get("/assistant/categories");
         fetchedCategories = res.data?.categories || [];
         fetchedFrequentQuestions = res.data?.frequent_questions || [];
+      }
+
+      if (
+        new URLSearchParams(window.location.search).get("faqPreview") === "1"
+      ) {
+        fetchedFrequentQuestions = previewFrequentQuestions;
       }
 
       setCategories(fetchedCategories);
