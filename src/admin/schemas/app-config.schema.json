@@ -120,6 +120,13 @@
     }
   },
   "properties": {
+    "frequent_questions": {
+      "items": {
+        "$ref": "#/$defs/FAQItem"
+      },
+      "title": "Frequent Questions",
+      "type": "array"
+    },
     "categories": {
       "items": {
         "$ref": "#/$defs/Category"
