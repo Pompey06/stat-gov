@@ -44,6 +44,7 @@ const getBackendLang = (lang) =>
 const ChatProvider = ({ children }) => {
   const { t, i18n } = useTranslation(undefined, { i18n: chatI18n });
   const [categories, setCategories] = useState([]);
+  const [frequentQuestions, setFrequentQuestions] = useState([]);
   const [currentCategory, setCurrentCategory] = useState(null);
   const [currentSubcategory, setCurrentSubcategory] = useState(null);
   const [inputPrefill, setInputPrefill] = useState("");
@@ -590,17 +591,21 @@ const ChatProvider = ({ children }) => {
 
     try {
       let fetchedCategories = []; // Initialize with empty array
+      let fetchedFrequentQuestions = [];
 
       if (USE_MOCK_CATEGORIES) {
         // берём данные из локального mockCategories.json
         fetchedCategories = mockCategories.categories || [];
+        fetchedFrequentQuestions = mockCategories.frequent_questions || [];
       } else {
         // реальный вызов на бэкенд
         const res = await api.get("/assistant/categories");
         fetchedCategories = res.data?.categories || [];
+        fetchedFrequentQuestions = res.data?.frequent_questions || [];
       }
 
       setCategories(fetchedCategories);
+      setFrequentQuestions(fetchedFrequentQuestions);
 
       // Only call updateChatWithCategories if we have categories
       if (fetchedCategories && fetchedCategories.length > 0) {
@@ -1481,6 +1486,20 @@ const ChatProvider = ({ children }) => {
     }
   };
 
+  const handleFrequentQuestionClick = (item) => {
+    const question = pickLocalized(item?.question).trim();
+    if (!question || isTyping) return;
+
+    setCurrentCategory(null);
+    setCurrentSubcategory(null);
+    setCategoryFilter(null);
+    createMessage(question, false, {
+      category: "",
+      subcategory: "",
+      subcategory_report: "",
+    });
+  };
+
   const removeFeedbackMessage = (messageIndex) => {
     setChats((prevChats) =>
       prevChats.map((chat) => {
@@ -1734,6 +1753,8 @@ const ChatProvider = ({ children }) => {
         createMessage,
         cancelAssistantResponse,
         handleButtonClick,
+        frequentQuestions,
+        handleFrequentQuestionClick,
         sendFeedback,
         getBotMessageIndex,
         removeFeedbackMessage,

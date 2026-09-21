@@ -3,6 +3,12 @@
     "feedbackPrompt": "Rate the quality of the answer",
     "noMessagesInChat": "There are no messages in this chat"
   },
+  "frequentQuestions": {
+    "title": "Frequently asked questions",
+    "description": "Find answers to popular questions",
+    "open": "Show frequently asked questions",
+    "close": "Hide frequently asked questions"
+  },
   "logo": {
     "text": "Bureau of National Statistics of the Agency for Strategic Planning and Reforms of the Republic of Kazakhstan"
   },

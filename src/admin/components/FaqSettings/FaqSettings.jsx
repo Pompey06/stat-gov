@@ -15,7 +15,7 @@ const TEXT = {
   ru: {
     pageTitle: "Категории и FAQ",
     pageSubtitle:
-      "Категории и отчёты — кнопки в начале чата для выбора темы. FAQ — если бот не знает ответ, предлагает примеры вопросов.",
+      "Категории и отчёты — кнопки выбора темы. frequent_questions — общий список популярных вопросов на стартовом экране. FAQ — подсказки внутри категорий.",
     save: "Сохранить",
     saving: "Сохранение...",
     reload: "Обновить с сервера",
@@ -29,7 +29,7 @@ const TEXT = {
   kz: {
     pageTitle: "Санаттар мен FAQ",
     pageSubtitle:
-      "Санаттар мен есептер — чаттың басында таңдауға арналған батырмалар. FAQ — бот жауап білмесе, сұрақ мысалдарын ұсынады.",
+      "Санаттар мен есептер — тақырып таңдау батырмалары. frequent_questions — бастапқы экрандағы танымал сұрақтардың жалпы тізімі. FAQ — санат ішіндегі кеңестер.",
     save: "Сақтау",
     saving: "Сақталуда...",
     reload: "Серверден жаңарту",
@@ -53,6 +53,9 @@ const normalizeFaq = (item = {}) => ({
   answer: normalizeLocalized(item.answer),
 });
 
+const normalizeFrequentQuestions = (items = []) =>
+  Array.isArray(items) ? items.map((item) => normalizeFaq(item)) : [];
+
 const normalizeSubcategory = (subcategory = {}) => ({
   name: normalizeLocalized(subcategory.name),
   reports: Array.isArray(subcategory.reports)
@@ -73,8 +76,14 @@ const normalizeCategory = (category = {}) => ({
 const normalizeCategories = (categories = []) =>
   Array.isArray(categories) ? categories.map((category) => normalizeCategory(category)) : [];
 
-const categoriesToYaml = (categories) =>
-  stringify({ categories: normalizeCategories(categories) }, { lineWidth: 0 });
+const configToYaml = (categories, frequentQuestions) =>
+  stringify(
+    {
+      frequent_questions: normalizeFrequentQuestions(frequentQuestions),
+      categories: normalizeCategories(categories),
+    },
+    { lineWidth: 0 },
+  );
 
 const FaqSettings = ({ credentials }) => {
   const { i18n } = useTranslation(undefined, { i18n: adminI18n });
@@ -119,7 +128,10 @@ const FaqSettings = ({ credentials }) => {
       }
 
       const categories = normalizeCategories(configResponse.data?.categories);
-      const nextYaml = categoriesToYaml(categories);
+      const frequentQuestions = normalizeFrequentQuestions(
+        configResponse.data?.frequent_questions,
+      );
+      const nextYaml = configToYaml(categories, frequentQuestions);
 
       sitemapRef.current = {
         ru: configResponse.data?.sitemap?.ru ?? "",
@@ -153,8 +165,12 @@ const FaqSettings = ({ credentials }) => {
     try {
       const document = parse(yamlText);
       const categories = normalizeCategories(document.categories);
+      const frequentQuestions = normalizeFrequentQuestions(
+        document.frequent_questions,
+      );
       const payload = stringify(
         {
+          frequent_questions: frequentQuestions,
           categories,
           sitemap: sitemapRef.current,
         },
@@ -168,7 +184,13 @@ const FaqSettings = ({ credentials }) => {
         },
       });
 
-      const nextYaml = categoriesToYaml(response.data?.categories);
+      const savedFrequentQuestions = normalizeFrequentQuestions(
+        response.data?.frequent_questions,
+      );
+      const nextYaml = configToYaml(
+        response.data?.categories,
+        savedFrequentQuestions,
+      );
 
       sitemapRef.current = {
         ru: response.data?.sitemap?.ru ?? sitemapRef.current.ru,

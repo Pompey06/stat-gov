@@ -6,6 +6,7 @@ export const buildCategoriesYamlSchema = (backendSchema) => ({
   required: ["categories"],
   additionalProperties: false,
   properties: {
+    frequent_questions: backendSchema.properties.frequent_questions,
     categories: backendSchema.properties.categories,
   },
 });

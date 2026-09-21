@@ -9,6 +9,7 @@ import { ChatContext } from "../../../context/ChatContext";
 import "./MessageList.css";
 import TypingIndicator from "../TypingIndicator/TypingIndicator";
 import chatI18n from "../../../i18n";
+import FrequentQuestions from "../FrequentQuestions/FrequentQuestions";
 
 const exactIconStyles = `
    .str0 {stroke:#373435;stroke-width:20;stroke-miterlimit:22.9256}
@@ -170,6 +171,8 @@ export default function MessageList({ isSidebarOpen, toggleSidebar }) {
       getBotMessageIndex,
       isTyping,
       handleButtonClick,
+      frequentQuestions,
+      handleFrequentQuestionClick,
       showInitialButtons,
       chatSearchFocus,
       clearChatSearchFocus,
@@ -189,10 +192,11 @@ export default function MessageList({ isSidebarOpen, toggleSidebar }) {
 
    const scrollTargetRef = useRef(null);
    useEffect(() => {
+      if (currentChat?.isEmpty) return;
       if (scrollTargetRef.current) {
          scrollTargetRef.current.scrollIntoView({ behavior: "smooth" });
       }
-   }, [messages]);
+   }, [messages, currentChat?.isEmpty]);
 
    useEffect(() => {
       if (!chatSearchFocus) return;
@@ -366,6 +370,14 @@ export default function MessageList({ isSidebarOpen, toggleSidebar }) {
                         ))}
                      </div>
                   </div>
+               )}
+
+               {Boolean(currentChat?.isEmpty) && frequentQuestions.length > 0 && (
+                  <FrequentQuestions
+                     items={frequentQuestions}
+                     onSelect={handleFrequentQuestionClick}
+                     disabled={isTyping}
+                  />
                )}
 
                {renderedMessages}
