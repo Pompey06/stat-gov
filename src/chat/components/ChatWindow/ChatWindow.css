@@ -152,6 +152,33 @@
   padding: 0;
 }
 
+@media (min-width: 701px) {
+  .chat-window-start:has(.frequent-questions--open) {
+    justify-content: flex-start;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: clamp(64px, 6vh, 88px) 0 32px;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+    scrollbar-color: #8cb9dc transparent;
+    scrollbar-width: thin;
+  }
+
+  .chat-window-start:has(.frequent-questions--open)
+    > *:not(.language) {
+    flex-shrink: 0;
+  }
+
+  .chat-window-start:has(.frequent-questions--open)::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .chat-window-start:has(.frequent-questions--open)::-webkit-scrollbar-thumb {
+    border-radius: 3px;
+    background: #8cb9dc;
+  }
+}
+
 @media (max-width: 1400px) {
   .chat-window-start .bottom__wrapper {
     width: 100%;
