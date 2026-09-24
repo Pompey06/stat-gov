@@ -1486,20 +1486,6 @@ const ChatProvider = ({ children }) => {
     }
   };
 
-  const handleFrequentQuestionClick = (item) => {
-    const question = pickLocalized(item?.question).trim();
-    if (!question || isTyping) return;
-
-    setCurrentCategory(null);
-    setCurrentSubcategory(null);
-    setCategoryFilter(null);
-    createMessage(question, false, {
-      category: "",
-      subcategory: "",
-      subcategory_report: "",
-    });
-  };
-
   const removeFeedbackMessage = (messageIndex) => {
     setChats((prevChats) =>
       prevChats.map((chat) => {
@@ -1754,7 +1740,6 @@ const ChatProvider = ({ children }) => {
         cancelAssistantResponse,
         handleButtonClick,
         frequentQuestions,
-        handleFrequentQuestionClick,
         sendFeedback,
         getBotMessageIndex,
         removeFeedbackMessage,

@@ -1,9 +1,8 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef } from "react";
 import Message from "../Message/Message";
 import FeedbackMessage from "../FeeadbackMessage/FeedbackMessage";
 import BadFeedbackRegistrationMessage from "../BadFeedbackRegistrationMessage/BadFeedbackRegistrationMessage";
 import Header from "../../Header/Header";
-import Sidebar from "../../Sidebar/Sidebar";
 import { useTranslation } from "react-i18next";
 import { ChatContext } from "../../../context/ChatContext";
 import "./MessageList.css";
@@ -163,6 +162,12 @@ function getDirectionIcon(text, index) {
    return <StatsSearchIcon />;
 }
 
+const isStartChoice = (message) =>
+   Boolean(
+      message?.isButton &&
+         (message.isSubcategory || message.isReport || message.isFaq),
+   );
+
 export default function MessageList({ isSidebarOpen, toggleSidebar }) {
    const { t } = useTranslation(undefined, { i18n: chatI18n });
    const {
@@ -172,7 +177,6 @@ export default function MessageList({ isSidebarOpen, toggleSidebar }) {
       isTyping,
       handleButtonClick,
       frequentQuestions,
-      handleFrequentQuestionClick,
       showInitialButtons,
       chatSearchFocus,
       clearChatSearchFocus,
@@ -220,18 +224,6 @@ export default function MessageList({ isSidebarOpen, toggleSidebar }) {
       return () => window.clearTimeout(timeoutId);
    }, [messages, currentChatId, chatSearchFocus, clearChatSearchFocus]);
 
-   const useWindowWidth = () => {
-      const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-      useEffect(() => {
-         const handleResize = () => setWindowWidth(window.innerWidth);
-         window.addEventListener("resize", handleResize);
-         return () => window.removeEventListener("resize", handleResize);
-      }, []);
-      return windowWidth;
-   };
-
-   const windowWidth = useWindowWidth();
-
    const initialDirectionButtons = useMemo(
       () =>
          showInitialButtons
@@ -250,6 +242,14 @@ export default function MessageList({ isSidebarOpen, toggleSidebar }) {
    const showInitialDirections =
       Boolean(currentChat?.isEmpty) && initialDirectionButtons.length > 0;
 
+   const startChoices = useMemo(
+      () =>
+         currentChat?.isEmpty && !showInitialButtons
+            ? messages.filter(isStartChoice)
+            : [],
+      [currentChat?.isEmpty, messages, showInitialButtons],
+   );
+
    let botCount = 0;
    const renderedMessages = messages.map((message, index) => {
       if (
@@ -260,6 +260,10 @@ export default function MessageList({ isSidebarOpen, toggleSidebar }) {
          !message.isReport &&
          !message.isFaq
       ) {
+         return null;
+      }
+
+      if (startChoices.length > 0 && isStartChoice(message)) {
          return null;
       }
 
@@ -342,12 +346,6 @@ export default function MessageList({ isSidebarOpen, toggleSidebar }) {
             isSidebarOpen={isSidebarOpen}
             toggleSidebar={toggleSidebar}
          />
-         {windowWidth < 700 && (
-            <Sidebar
-               isSidebarOpen={isSidebarOpen}
-               toggleSidebar={toggleSidebar}
-            />
-         )}
          <div className="overflow-y-auto message-list-wrap">
             <div className="message-list justify-end flex flex-col">
                {showInitialDirections && (
@@ -358,6 +356,7 @@ export default function MessageList({ isSidebarOpen, toggleSidebar }) {
                               key={`${button.text}-${buttonIndex}`}
                               type="button"
                               className="direction-card"
+                              style={{ "--direction-index": buttonIndex }}
                               onClick={() => handleButtonClick(button)}
                            >
                               <span className="direction-card__icon">
@@ -372,15 +371,28 @@ export default function MessageList({ isSidebarOpen, toggleSidebar }) {
                   </div>
                )}
 
-               {Boolean(currentChat?.isEmpty) && frequentQuestions.length > 0 && (
-                  <FrequentQuestions
-                     items={frequentQuestions}
-                     onSelect={handleFrequentQuestionClick}
-                     disabled={isTyping}
-                  />
+               {startChoices.length > 0 && (
+                  <div className="message-list__choices">
+                     {startChoices.map((choice, choiceIndex) => (
+                        <button
+                           key={`${choice.key || choice.text}-${choiceIndex}`}
+                           type="button"
+                           className="message-list__choice"
+                           style={{ "--choice-index": choiceIndex }}
+                           onClick={() => handleButtonClick(choice)}
+                        >
+                           <span>{choice.text}</span>
+                        </button>
+                     ))}
+                  </div>
                )}
 
                {renderedMessages}
+
+               {Boolean(currentChat?.isEmpty) && frequentQuestions.length > 0 && (
+                  <FrequentQuestions items={frequentQuestions} />
+               )}
+
                {isTyping && (
                   <TypingIndicator text={t("chatTyping.typingMessage")} />
                )}

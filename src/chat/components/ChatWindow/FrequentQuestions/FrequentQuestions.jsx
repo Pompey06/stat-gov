@@ -1,6 +1,9 @@
 import { useEffect, useId, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
+import ReactMarkdown from "react-markdown";
+import remarkBreaks from "remark-breaks";
+import remarkGfm from "remark-gfm";
 import chatI18n from "../../../i18n";
 import "./FrequentQuestions.css";
 
@@ -12,27 +15,116 @@ const localeKey = (language) => {
   return "ru";
 };
 
-const localizedQuestion = (item, language) => {
-  const question = item?.question;
-  if (typeof question === "string") return question;
+const localizedText = (value, language) => {
+  if (typeof value === "string") return value;
 
   const locale = localeKey(language);
-  if (locale === "en") return question?.en || "";
-  return question?.[locale] || question?.ru || question?.kz || question?.en || "";
+  if (locale === "en") return value?.en || value?.ru || value?.kz || "";
+  if (locale === "kz") return value?.kz || value?.ru || value?.en || "";
+  return value?.ru || value?.kz || value?.en || "";
 };
 
-export default function FrequentQuestions({ items, onSelect, disabled }) {
+function Answer({ children }) {
+  if (!children) return null;
+
+  return (
+    <div className="frequent-questions__answer">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm, remarkBreaks]}
+        components={{
+          a: ({ node, ...props }) => {
+            void node;
+            return <a {...props} target="_blank" rel="noreferrer" />;
+          },
+        }}
+      >
+        {children}
+      </ReactMarkdown>
+    </div>
+  );
+}
+
+Answer.propTypes = {
+  children: PropTypes.string,
+};
+
+function QuestionEntry({ item, language, number, depth = 0 }) {
+  const question = localizedText(item?.question, language);
+  const answer = localizedText(item?.answer, language);
+  const subquestions = Array.isArray(item?.subquestions)
+    ? item.subquestions.filter((subquestion) =>
+        Boolean(localizedText(subquestion?.question, language)),
+      )
+    : [];
+
+  if (!question) return null;
+
+  return (
+    <li
+      className={`frequent-questions__item${
+        depth > 0 ? " frequent-questions__item--nested" : ""
+      }`}
+    >
+      <details className="frequent-questions__entry">
+        <summary className="frequent-questions__question">
+          <span className="frequent-questions__number" aria-hidden="true">
+            {number}
+          </span>
+          <span className="frequent-questions__question-text">{question}</span>
+          <svg
+            className="frequent-questions__question-arrow"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path d="m9 6 6 6-6 6" />
+          </svg>
+        </summary>
+
+        <div className="frequent-questions__entry-body">
+          <Answer>{answer}</Answer>
+
+          {subquestions.length > 0 && (
+            <ol className="frequent-questions__subquestions">
+              {subquestions.map((subquestion, index) => (
+                <QuestionEntry
+                  key={`${number}.${index + 1}-${localizedText(
+                    subquestion.question,
+                    language,
+                  )}`}
+                  item={subquestion}
+                  language={language}
+                  number={`${number}.${index + 1}`}
+                  depth={depth + 1}
+                />
+              ))}
+            </ol>
+          )}
+        </div>
+      </details>
+    </li>
+  );
+}
+
+QuestionEntry.propTypes = {
+  item: PropTypes.shape({
+    question: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
+    answer: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+    subquestions: PropTypes.array,
+  }).isRequired,
+  language: PropTypes.string.isRequired,
+  number: PropTypes.string.isRequired,
+  depth: PropTypes.number,
+};
+
+export default function FrequentQuestions({ items }) {
   const { t, i18n } = useTranslation(undefined, { i18n: chatI18n });
   const [isOpen, setIsOpen] = useState(false);
   const sectionRef = useRef(null);
   const panelId = useId();
-  const visibleItems = items
-    .map((item, index) => ({
-      item,
-      index,
-      question: localizedQuestion(item, i18n.language),
-    }))
-    .filter(({ question }) => Boolean(question));
+  const visibleItems = items.filter((item) =>
+    Boolean(localizedText(item?.question, i18n.language)),
+  );
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -65,7 +157,6 @@ export default function FrequentQuestions({ items, onSelect, disabled }) {
         className="frequent-questions__toggle"
         aria-expanded={isOpen}
         aria-controls={panelId}
-        aria-label={t(isOpen ? "frequentQuestions.close" : "frequentQuestions.open")}
         onClick={() => setIsOpen((value) => !value)}
       >
         <span className="frequent-questions__help" aria-hidden="true">
@@ -95,34 +186,17 @@ export default function FrequentQuestions({ items, onSelect, disabled }) {
           id={panelId}
           className="frequent-questions__panel"
           aria-hidden={!isOpen}
+          inert={!isOpen}
         >
           <ol className="frequent-questions__list">
-            {visibleItems.map(({ item, index, question }) => {
-              return (
-                <li key={`${question}-${index}`} className="frequent-questions__item">
-                  <button
-                    type="button"
-                    className="frequent-questions__question"
-                    onClick={() => onSelect(item)}
-                    disabled={disabled}
-                    tabIndex={isOpen ? 0 : -1}
-                  >
-                    <span className="frequent-questions__number" aria-hidden="true">
-                      {index + 1}
-                    </span>
-                    <span>{question}</span>
-                    <svg
-                      className="frequent-questions__question-arrow"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      aria-hidden="true"
-                    >
-                      <path d="m9 6 6 6-6 6" />
-                    </svg>
-                  </button>
-                </li>
-              );
-            })}
+            {visibleItems.map((item, index) => (
+              <QuestionEntry
+                key={`${index}-${localizedText(item.question, i18n.language)}`}
+                item={item}
+                language={i18n.language}
+                number={String(index + 1)}
+              />
+            ))}
           </ol>
         </div>
       </div>
@@ -133,20 +207,9 @@ export default function FrequentQuestions({ items, onSelect, disabled }) {
 FrequentQuestions.propTypes = {
   items: PropTypes.arrayOf(
     PropTypes.shape({
-      question: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.shape({
-          ru: PropTypes.string,
-          kz: PropTypes.string,
-          en: PropTypes.string,
-        }),
-      ]).isRequired,
+      question: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
+      answer: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+      subquestions: PropTypes.array,
     }),
   ).isRequired,
-  onSelect: PropTypes.func.isRequired,
-  disabled: PropTypes.bool,
-};
-
-FrequentQuestions.defaultProps = {
-  disabled: false,
 };

@@ -15,7 +15,7 @@ function AppChat() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isBinModalOpen, setBinModalOpen] = useState(false);
   const [isRegistrationModalOpen, setRegistrationModalOpen] = useState(false);
-  const showSpecialButton = import.meta.env.VITE_SHOW_SPECIAL_BUTTON === "true";
+  const showSpecialButton = import.meta.env.VITE_SHOW_SPECIAL_BUTTON !== "false";
 
   const {
     currentChatId,

@@ -51,6 +51,9 @@ const normalizeLocalized = (value = {}) => ({
 const normalizeFaq = (item = {}) => ({
   question: normalizeLocalized(item.question),
   answer: normalizeLocalized(item.answer),
+  subquestions: Array.isArray(item.subquestions)
+    ? item.subquestions.map((subquestion) => normalizeFaq(subquestion))
+    : [],
 });
 
 const normalizeFrequentQuestions = (items = []) =>

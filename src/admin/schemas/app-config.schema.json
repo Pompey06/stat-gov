@@ -50,6 +50,14 @@
         },
         "answer": {
           "$ref": "#/$defs/LocalizedStr"
+        },
+        "subquestions": {
+          "items": {
+            "$ref": "#/$defs/FAQItem"
+          },
+          "default": [],
+          "title": "Subquestions",
+          "type": "array"
         }
       },
       "required": [
