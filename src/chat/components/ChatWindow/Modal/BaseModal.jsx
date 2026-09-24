@@ -1,6 +1,11 @@
 // BaseModal.jsx
 import React from "react";
-import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
+import {
+   Dialog,
+   DialogBackdrop,
+   DialogPanel,
+   DialogTitle,
+} from "@headlessui/react";
 import closeIcon from "../../../assets/close.svg";
 import "./Modal.css";
 import { useTranslation } from "react-i18next";
@@ -16,14 +21,20 @@ export function BaseModal({ isOpen, onClose, title, children, modalClassName = "
                <DialogPanel
                   className={`relative modal__wrapper transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl ${modalClassName}`}
                >
-                  <img
-                     src={closeIcon}
-                     onClick={onClose}
-                     className="absolute top-4 right-4 cursor-pointer w-6 h-6"
-                     alt={t("modal.close")}
-                  />
                   <div className={`modal p-6 ${modalClassName ? modalClassName + "-content" : ""}`}>
-                     <h2 className="font-light text-2xl/6 mb-2">{title}</h2>
+                     <div className="modal__header">
+                        <DialogTitle as="h2" className="font-light text-2xl/6">
+                           {title}
+                        </DialogTitle>
+                        <button
+                           type="button"
+                           className="modal__close-button"
+                           onClick={onClose}
+                           aria-label={t("modal.close")}
+                        >
+                           <img src={closeIcon} alt="" aria-hidden="true" />
+                        </button>
+                     </div>
                      {children}
                   </div>
                </DialogPanel>
