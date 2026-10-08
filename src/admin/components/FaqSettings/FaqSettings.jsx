@@ -1,21 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
-import { parse, stringify } from "yaml";
 import Button from "../Button/Button";
-import YamlEditor from "../YamlEditor/YamlEditor";
+import FaqEditor from "../FaqEditor/FaqEditor";
+import CategoryEditor from "../CategoryEditor/CategoryEditor";
 import { useApi } from "../Context/Context";
 import useAuthHeaders from "../../hooks/useAuthHeaders";
 import adminI18n from "../../i18n";
-import { buildCategoriesYamlSchema, bundledCategoriesYamlSchema } from "../../utils/appConfigSchema";
-import { validateYamlDocument } from "../../utils/yamlSchemaLinter";
 import "./FaqSettings.css";
 
 const TEXT = {
   ru: {
     pageTitle: "Категории и FAQ",
     pageSubtitle:
-      "Категории и отчёты — кнопки выбора темы. frequent_questions — общий список популярных вопросов на стартовом экране. FAQ — подсказки внутри категорий.",
+      "Часто задаваемые вопросы показываются на стартовом экране чата. Категории — кнопки выбора темы, у каждой может быть свой FAQ.",
     save: "Сохранить",
     saving: "Сохранение...",
     reload: "Обновить с сервера",
@@ -25,11 +23,26 @@ const TEXT = {
       "Не удалось загрузить настройки с сервера. Проверьте, существует ли AppConfig на бэкенде.",
     saveError: "Не удалось сохранить конфигурацию.",
     unsavedChanges: "Есть несохранённые изменения.",
+    frequentQuestionsTitle: "Часто задаваемые вопросы",
+    categoriesTitle: "Категории",
+    question: "Вопрос",
+    answer: "Ответ",
+    subquestions: "Вложенные вопросы",
+    addQuestion: "+ Добавить вопрос",
+    addSubquestion: "+ Добавить вложенный вопрос",
+    deleteQuestion: "Удалить вопрос",
+    confirmDeleteQuestion: "Удалить этот вопрос вместе со всеми вложенными?",
+    noQuestions: "Пока нет вопросов.",
+    categoryName: "Название категории",
+    subcategories: "Подкатегории",
+    subcategoryName: "Название подкатегории",
+    reports: "Отчёты",
+    categoryFaq: "FAQ категории",
   },
   kz: {
     pageTitle: "Санаттар мен FAQ",
     pageSubtitle:
-      "Санаттар мен есептер — тақырып таңдау батырмалары. frequent_questions — бастапқы экрандағы танымал сұрақтардың жалпы тізімі. FAQ — санат ішіндегі кеңестер.",
+      "Жиі қойылатын сұрақтар чаттың бастапқы экранында көрсетіледі. Санаттар — тақырып таңдау батырмалары, әр санаттың өз FAQ-ы болуы мүмкін.",
     save: "Сақтау",
     saving: "Сақталуда...",
     reload: "Серверден жаңарту",
@@ -39,6 +52,21 @@ const TEXT = {
       "Серверден баптауларды жүктеу мүмкін болмады. Бэкендте AppConfig бар-жоғын тексеріңіз.",
     saveError: "Конфигурацияны сақтау мүмкін болмады.",
     unsavedChanges: "Сақталмаған өзгерістер бар.",
+    frequentQuestionsTitle: "Жиі қойылатын сұрақтар",
+    categoriesTitle: "Санаттар",
+    question: "Сұрақ",
+    answer: "Жауап",
+    subquestions: "Қосалқы сұрақтар",
+    addQuestion: "+ Сұрақ қосу",
+    addSubquestion: "+ Қосалқы сұрақ қосу",
+    deleteQuestion: "Сұрақты жою",
+    confirmDeleteQuestion: "Бұл сұрақты барлық қосалқы сұрақтарымен бірге жою керек пе?",
+    noQuestions: "Әзірге сұрақтар жоқ.",
+    categoryName: "Санат атауы",
+    subcategories: "Санатшалар",
+    subcategoryName: "Санатша атауы",
+    reports: "Есептер",
+    categoryFaq: "Санат FAQ",
   },
 };
 
@@ -48,45 +76,33 @@ const normalizeLocalized = (value = {}) => ({
   en: value?.en ?? "",
 });
 
-const normalizeFaq = (item = {}) => ({
+const normalizeFaqItem = (item = {}) => ({
   question: normalizeLocalized(item.question),
   answer: normalizeLocalized(item.answer),
-  subquestions: Array.isArray(item.subquestions)
-    ? item.subquestions.map((subquestion) => normalizeFaq(subquestion))
-    : [],
+  subquestions: Array.isArray(item.subquestions) ? item.subquestions.map(normalizeFaqItem) : [],
 });
 
-const normalizeFrequentQuestions = (items = []) =>
-  Array.isArray(items) ? items.map((item) => normalizeFaq(item)) : [];
+const normalizeFaqList = (items = []) =>
+  Array.isArray(items) ? items.map(normalizeFaqItem) : [];
 
 const normalizeSubcategory = (subcategory = {}) => ({
   name: normalizeLocalized(subcategory.name),
-  reports: Array.isArray(subcategory.reports)
-    ? subcategory.reports.map((report) => normalizeLocalized(report))
-    : [],
+  reports: Array.isArray(subcategory.reports) ? subcategory.reports.map(normalizeLocalized) : [],
 });
 
 const normalizeCategory = (category = {}) => ({
   name: normalizeLocalized(category.name),
   subcategories: Array.isArray(category.subcategories)
-    ? category.subcategories.map((subcategory) => normalizeSubcategory(subcategory))
+    ? category.subcategories.map(normalizeSubcategory)
     : [],
-  faq: Array.isArray(category.faq)
-    ? category.faq.map((item) => normalizeFaq(item))
-    : [],
+  faq: normalizeFaqList(category.faq),
 });
 
 const normalizeCategories = (categories = []) =>
-  Array.isArray(categories) ? categories.map((category) => normalizeCategory(category)) : [];
+  Array.isArray(categories) ? categories.map(normalizeCategory) : [];
 
-const configToYaml = (categories, frequentQuestions) =>
-  stringify(
-    {
-      frequent_questions: normalizeFrequentQuestions(frequentQuestions),
-      categories: normalizeCategories(categories),
-    },
-    { lineWidth: 0 },
-  );
+const snapshot = (frequentQuestions, categories) =>
+  JSON.stringify({ frequentQuestions, categories });
 
 const FaqSettings = ({ credentials }) => {
   const { i18n } = useTranslation(undefined, { i18n: adminI18n });
@@ -95,115 +111,81 @@ const FaqSettings = ({ credentials }) => {
   const langKey = i18n.language === "kz" ? "kz" : "ru";
   const text = TEXT[langKey];
 
+  // sitemap is not editable on this page, but PUT /settings/app-config
+  // replaces the whole AppConfig, so it must always be sent back unchanged.
   const sitemapRef = useRef({ ru: "", kz: "" });
-  const savedYamlRef = useRef("");
-  const yamlSchemaRef = useRef(bundledCategoriesYamlSchema);
+  const savedSnapshotRef = useRef("");
 
-  const [yamlText, setYamlText] = useState("");
-  const [yamlSchema, setYamlSchema] = useState(bundledCategoriesYamlSchema);
-  const [validationErrors, setValidationErrors] = useState([]);
+  const [frequentQuestions, setFrequentQuestions] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [status, setStatus] = useState({ type: "", message: "" });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  const isDirty = yamlText !== savedYamlRef.current;
-  const hasValidationErrors = validationErrors.length > 0;
-
-  const applyYaml = useCallback((text, schema = yamlSchemaRef.current) => {
-    setYamlText(text);
-    setValidationErrors(validateYamlDocument(text, schema));
-  }, []);
+  const isDirty = snapshot(frequentQuestions, categories) !== savedSnapshotRef.current;
 
   const loadConfig = useCallback(async () => {
     setIsLoading(true);
     setStatus({ type: "", message: "" });
 
     try {
-      const [configResponse, schemaResponse] = await Promise.all([
-        api.get("/settings/app-config", { headers: authHeaders }),
-        api.get("/settings/schema", { headers: authHeaders }).catch(() => null),
-      ]);
+      const response = await api.get("/settings/app-config", { headers: authHeaders });
 
-      if (schemaResponse?.data) {
-        const nextSchema = buildCategoriesYamlSchema(schemaResponse.data);
-        yamlSchemaRef.current = nextSchema;
-        setYamlSchema(nextSchema);
-      }
-
-      const categories = normalizeCategories(configResponse.data?.categories);
-      const frequentQuestions = normalizeFrequentQuestions(
-        configResponse.data?.frequent_questions,
-      );
-      const nextYaml = configToYaml(categories, frequentQuestions);
+      const nextFrequentQuestions = normalizeFaqList(response.data?.frequent_questions);
+      const nextCategories = normalizeCategories(response.data?.categories);
 
       sitemapRef.current = {
-        ru: configResponse.data?.sitemap?.ru ?? "",
-        kz: configResponse.data?.sitemap?.kz ?? "",
+        ru: response.data?.sitemap?.ru ?? "",
+        kz: response.data?.sitemap?.kz ?? "",
       };
-      savedYamlRef.current = nextYaml;
-      applyYaml(nextYaml);
+
+      setFrequentQuestions(nextFrequentQuestions);
+      setCategories(nextCategories);
+      savedSnapshotRef.current = snapshot(nextFrequentQuestions, nextCategories);
     } catch (error) {
       console.error("Failed to load app config:", error);
       setStatus({ type: "error", message: text.loadError });
     } finally {
       setIsLoading(false);
     }
-  }, [api, applyYaml, authHeaders, text.loadError]);
+    // text.loadError intentionally omitted: it would re-trigger the load
+    // effect on every language switch, which is not desired here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [api, authHeaders]);
 
   useEffect(() => {
     loadConfig();
   }, [loadConfig]);
 
   const handleSave = async () => {
-    const errors = validateYamlDocument(yamlText, yamlSchemaRef.current);
-
-    if (errors.length) {
-      setValidationErrors(errors);
-      return;
-    }
-
     setIsSaving(true);
     setStatus({ type: "", message: "" });
 
     try {
-      const document = parse(yamlText);
-      const categories = normalizeCategories(document.categories);
-      const frequentQuestions = normalizeFrequentQuestions(
-        document.frequent_questions,
-      );
-      const payload = stringify(
-        {
-          frequent_questions: frequentQuestions,
-          categories,
-          sitemap: sitemapRef.current,
-        },
-        { lineWidth: 0 },
-      );
+      const payload = {
+        frequent_questions: normalizeFaqList(frequentQuestions),
+        categories: normalizeCategories(categories),
+        sitemap: sitemapRef.current,
+      };
 
-      const response = await api.put("/settings/app-config/yaml", payload, {
-        headers: {
-          ...authHeaders,
-          "Content-Type": "text/plain; charset=utf-8",
-        },
+      const response = await api.put("/settings/app-config", payload, {
+        headers: authHeaders,
       });
 
-      const savedFrequentQuestions = normalizeFrequentQuestions(
-        response.data?.frequent_questions,
-      );
-      const nextYaml = configToYaml(
-        response.data?.categories,
-        savedFrequentQuestions,
-      );
+      const nextFrequentQuestions = normalizeFaqList(response.data?.frequent_questions);
+      const nextCategories = normalizeCategories(response.data?.categories);
 
       sitemapRef.current = {
         ru: response.data?.sitemap?.ru ?? sitemapRef.current.ru,
         kz: response.data?.sitemap?.kz ?? sitemapRef.current.kz,
       };
-      savedYamlRef.current = nextYaml;
-      applyYaml(nextYaml);
+
+      setFrequentQuestions(nextFrequentQuestions);
+      setCategories(nextCategories);
+      savedSnapshotRef.current = snapshot(nextFrequentQuestions, nextCategories);
       setStatus({ type: "success", message: text.successSaved });
     } catch (error) {
-      console.error("Failed to save app config via yaml:", error);
+      console.error("Failed to save app config:", error);
       setStatus({ type: "error", message: text.saveError });
     } finally {
       setIsSaving(false);
@@ -233,7 +215,7 @@ const FaqSettings = ({ credentials }) => {
             type="button"
             className="faq-settings__action faq-settings__action_primary"
             onClick={handleSave}
-            disabled={isSaving || hasValidationErrors || !isDirty}
+            disabled={isSaving || !isDirty}
           >
             {isSaving ? text.saving : text.save}
           </Button>
@@ -252,13 +234,25 @@ const FaqSettings = ({ credentials }) => {
         </div>
       )}
 
-      <section className="faq-settings__panel faq-settings__editor-panel">
-        <YamlEditor
-          value={yamlText}
-          onChange={applyYaml}
-          schema={yamlSchema}
-          errors={validationErrors}
-        />
+      <section className="faq-settings__panel">
+        <h3 className="faq-settings__section-title">{text.frequentQuestionsTitle}</h3>
+        <FaqEditor items={frequentQuestions} onChange={setFrequentQuestions} texts={text} depth={0} />
+      </section>
+
+      <section className="faq-settings__panel">
+        <h3 className="faq-settings__section-title">{text.categoriesTitle}</h3>
+        {categories.map((category, index) => (
+          <CategoryEditor
+            key={index}
+            category={category}
+            onChange={(next) => {
+              const nextCategories = categories.slice();
+              nextCategories[index] = next;
+              setCategories(nextCategories);
+            }}
+            texts={text}
+          />
+        ))}
       </section>
     </div>
   );

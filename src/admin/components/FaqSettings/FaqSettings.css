@@ -81,6 +81,13 @@
   padding: 16px;
 }
 
+.faq-settings__section-title {
+  color: #1a2430;
+  font-size: 20px;
+  font-weight: 400;
+  margin-bottom: 16px;
+}
+
 .faq-settings__action:disabled,
 .faq-settings .button:disabled {
   opacity: 0.6;
