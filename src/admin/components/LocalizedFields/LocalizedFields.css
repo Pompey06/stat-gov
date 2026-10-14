@@ -1,0 +1,57 @@
+.localized-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.localized-fields__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #4a5664;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.localized-fields__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.localized-fields__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.localized-fields__lang {
+  flex: 0 0 32px;
+  padding-top: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0086bf;
+}
+
+.localized-fields__control {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 1px solid rgba(0, 72, 108, 0.16);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 15px;
+  font-family: inherit;
+  color: #1a2430;
+  background: #fff;
+}
+
+.localized-fields__control:focus {
+  outline: none;
+  border-color: #0086bf;
+  box-shadow: 0 0 0 2px rgba(0, 134, 191, 0.15);
+}
+
+textarea.localized-fields__control {
+  resize: vertical;
+  min-height: 60px;
+}

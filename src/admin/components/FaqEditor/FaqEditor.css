@@ -1,0 +1,23 @@
+.faq-editor {
+  display: flex;
+  flex-direction: column;
+}
+
+.faq-editor__empty {
+  color: #8a97a6;
+  font-size: 14px;
+  padding: 8px 2px 14px;
+}
+
+.faq-editor__add {
+  align-self: flex-start;
+  background-color: transparent !important;
+  color: #0086bf !important;
+  border: 1px dashed rgba(0, 134, 191, 0.5) !important;
+  padding: 9px 14px !important;
+  font-size: 14px !important;
+}
+
+.faq-editor__add:hover {
+  background-color: rgba(0, 134, 191, 0.08) !important;
+}
