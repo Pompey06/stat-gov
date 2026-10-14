@@ -31,6 +31,7 @@ const TEXT = {
     successImported: "Текст подставлен в редактор.",
     loadError: "Не удалось загрузить карту сайта.",
     saveError: "Не удалось сохранить.",
+    conflictError: "Конфигурация изменилась на сервере. Скопируйте свои правки и обновите страницу перед сохранением.",
     importError: "Не удалось импортировать.",
     unsavedChanges: "Есть несохранённые изменения.",
     ru: "Русский",
@@ -56,6 +57,7 @@ const TEXT = {
     successImported: "Мәтін редакторға қойылды.",
     loadError: "Сайт картасын жүктеу мүмкін болмады.",
     saveError: "Сақтау мүмкін болмады.",
+    conflictError: "Сервердегі конфигурация өзгерді. Өзгерістеріңізді көшіріп, сақтамас бұрын бетті жаңартыңыз.",
     importError: "Импорттау мүмкін болмады.",
     unsavedChanges: "Сақталмаған өзгерістер бар.",
     ru: "Орысша",
@@ -76,6 +78,8 @@ const SitemapSettings = ({ credentials }) => {
   const text = TEXT[langKey];
   const htmlInputRef = useRef(null);
   const categoriesRef = useRef([]);
+  const frequentQuestionsRef = useRef([]);
+  const updatedAtRef = useRef(null);
   const savedSitemapRef = useRef(normalizeSitemap());
 
   const [sitemap, setSitemap] = useState(() => normalizeSitemap());
@@ -85,12 +89,14 @@ const SitemapSettings = ({ credentials }) => {
   const [status, setStatus] = useState({ type: "", message: "" });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [isGeneratingUrl, setIsGeneratingUrl] = useState(false);
   const [isGeneratingHtml, setIsGeneratingHtml] = useState(false);
 
-  const isDirty =
+  const isDirty = hasLoaded && (
     sitemap.ru !== savedSitemapRef.current.ru ||
-    sitemap.kz !== savedSitemapRef.current.kz;
+    sitemap.kz !== savedSitemapRef.current.kz
+  );
 
   const updateLocale = useCallback((locale, value) => {
     setSitemap((previous) => ({
@@ -101,6 +107,7 @@ const SitemapSettings = ({ credentials }) => {
 
   const loadConfig = useCallback(async () => {
     setIsLoading(true);
+    setHasLoaded(false);
     setStatus({ type: "", message: "" });
 
     try {
@@ -111,29 +118,43 @@ const SitemapSettings = ({ credentials }) => {
       categoriesRef.current = Array.isArray(response.data?.categories)
         ? response.data.categories
         : [];
+      frequentQuestionsRef.current = Array.isArray(response.data?.frequent_questions)
+        ? response.data.frequent_questions
+        : [];
       savedSitemapRef.current = nextSitemap;
+      updatedAtRef.current = response.data?.updated_at;
       setSitemap(nextSitemap);
+      setHasLoaded(true);
     } catch (error) {
       console.error("Failed to load sitemap config:", error);
       setStatus({ type: "error", message: text.loadError });
     } finally {
       setIsLoading(false);
     }
-  }, [api, authHeaders, text.loadError]);
+    // Keep unsaved edits when switching the admin interface language.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [api, authHeaders]);
 
   useEffect(() => {
     loadConfig();
   }, [loadConfig]);
 
   const handleSave = async () => {
+    if (!hasLoaded) return;
     setIsSaving(true);
     setStatus({ type: "", message: "" });
 
     try {
+      const latest = await api.get("/settings/app-config", { headers: authHeaders });
+      if (latest.data?.updated_at !== updatedAtRef.current) {
+        setStatus({ type: "error", message: text.conflictError });
+        return;
+      }
       const response = await api.put(
         "/settings/app-config",
         {
           categories: categoriesRef.current,
+          frequent_questions: frequentQuestionsRef.current,
           sitemap,
         },
         {
@@ -147,7 +168,11 @@ const SitemapSettings = ({ credentials }) => {
       categoriesRef.current = Array.isArray(response.data?.categories)
         ? response.data.categories
         : categoriesRef.current;
+      frequentQuestionsRef.current = Array.isArray(response.data?.frequent_questions)
+        ? response.data.frequent_questions
+        : frequentQuestionsRef.current;
       savedSitemapRef.current = nextSitemap;
+      updatedAtRef.current = response.data?.updated_at;
       setSitemap(nextSitemap);
       setStatus({ type: "success", message: text.successSaved });
     } catch (error) {
@@ -251,7 +276,7 @@ const SitemapSettings = ({ credentials }) => {
             type="button"
             className="sitemap-settings__action sitemap-settings__action_primary"
             onClick={handleSave}
-            disabled={isSaving || !isDirty}
+            disabled={isSaving || !hasLoaded || !isDirty}
           >
             {isSaving ? text.saving : text.save}
           </Button>

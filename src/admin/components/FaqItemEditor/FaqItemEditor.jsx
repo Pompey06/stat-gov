@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import PropTypes from "prop-types";
 import Button from "../Button/Button";
 import LocalizedFields from "../LocalizedFields/LocalizedFields";
@@ -9,7 +9,10 @@ const previewText = (item) =>
   item.question?.ru || item.question?.kz || item.question?.en || "…";
 
 const FaqItemEditor = ({ item, onChange, onDelete, texts, depth }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const bodyId = useId();
+  const [isOpen, setIsOpen] = useState(
+    () => !item.question?.ru && !item.question?.kz && !item.question?.en,
+  );
 
   const updateField = (field, value) => onChange({ ...item, [field]: value });
 
@@ -25,6 +28,8 @@ const FaqItemEditor = ({ item, onChange, onDelete, texts, depth }) => {
         type="button"
         className="faq-item__header"
         onClick={() => setIsOpen((value) => !value)}
+        aria-expanded={isOpen}
+        aria-controls={bodyId}
       >
         <span className={`faq-item__arrow ${isOpen ? "faq-item__arrow_open" : ""}`}>
           {isOpen ? "▼" : "▶"}
@@ -33,7 +38,7 @@ const FaqItemEditor = ({ item, onChange, onDelete, texts, depth }) => {
       </button>
 
       {isOpen && (
-        <div className="faq-item__body">
+        <div className="faq-item__body" id={bodyId}>
           <LocalizedFields
             label={texts.question}
             value={item.question}

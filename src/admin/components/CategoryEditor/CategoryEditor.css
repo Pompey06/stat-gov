@@ -66,3 +66,20 @@
 .category-editor__reports {
   margin-top: 6px;
 }
+
+.category-editor__report {
+  margin-bottom: 12px;
+}
+
+.category-editor__action {
+  margin: 8px 8px 8px 0;
+  padding: 8px 12px !important;
+  background: transparent !important;
+  color: #0086bf !important;
+  border: 1px solid rgba(0, 134, 191, 0.5) !important;
+}
+
+.category-editor__action_delete {
+  color: #a4341f !important;
+  border-color: rgba(164, 52, 31, 0.4) !important;
+}

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import Button from "../Button/Button";
 import FaqEditor from "../FaqEditor/FaqEditor";
 import CategoryEditor from "../CategoryEditor/CategoryEditor";
+import { emptyLocalized } from "../FaqItemEditor/faqItemDefaults";
 import { useApi } from "../Context/Context";
 import useAuthHeaders from "../../hooks/useAuthHeaders";
 import adminI18n from "../../i18n";
@@ -22,6 +23,7 @@ const TEXT = {
     loadError:
       "Не удалось загрузить настройки с сервера. Проверьте, существует ли AppConfig на бэкенде.",
     saveError: "Не удалось сохранить конфигурацию.",
+    conflictError: "Конфигурация изменилась на сервере. Скопируйте свои правки и обновите страницу перед сохранением.",
     unsavedChanges: "Есть несохранённые изменения.",
     frequentQuestionsTitle: "Часто задаваемые вопросы",
     categoriesTitle: "Категории",
@@ -38,6 +40,14 @@ const TEXT = {
     subcategoryName: "Название подкатегории",
     reports: "Отчёты",
     categoryFaq: "FAQ категории",
+    addCategory: "+ Добавить категорию",
+    deleteCategory: "Удалить категорию",
+    confirmDeleteCategory: "Удалить категорию со всеми подкатегориями и FAQ?",
+    addSubcategory: "+ Добавить подкатегорию",
+    deleteSubcategory: "Удалить подкатегорию",
+    confirmDeleteSubcategory: "Удалить подкатегорию со всеми отчётами?",
+    addReport: "+ Добавить отчёт",
+    deleteReport: "Удалить отчёт",
   },
   kz: {
     pageTitle: "Санаттар мен FAQ",
@@ -51,6 +61,7 @@ const TEXT = {
     loadError:
       "Серверден баптауларды жүктеу мүмкін болмады. Бэкендте AppConfig бар-жоғын тексеріңіз.",
     saveError: "Конфигурацияны сақтау мүмкін болмады.",
+    conflictError: "Сервердегі конфигурация өзгерді. Өзгерістеріңізді көшіріп, сақтамас бұрын бетті жаңартыңыз.",
     unsavedChanges: "Сақталмаған өзгерістер бар.",
     frequentQuestionsTitle: "Жиі қойылатын сұрақтар",
     categoriesTitle: "Санаттар",
@@ -67,6 +78,14 @@ const TEXT = {
     subcategoryName: "Санатша атауы",
     reports: "Есептер",
     categoryFaq: "Санат FAQ",
+    addCategory: "+ Санат қосу",
+    deleteCategory: "Санатты жою",
+    confirmDeleteCategory: "Санатты барлық санатшаларымен және FAQ-ымен бірге жою керек пе?",
+    addSubcategory: "+ Санатша қосу",
+    deleteSubcategory: "Санатшаны жою",
+    confirmDeleteSubcategory: "Санатшаны барлық есептерімен бірге жою керек пе?",
+    addReport: "+ Есеп қосу",
+    deleteReport: "Есепті жою",
   },
 };
 
@@ -114,6 +133,7 @@ const FaqSettings = ({ credentials }) => {
   // sitemap is not editable on this page, but PUT /settings/app-config
   // replaces the whole AppConfig, so it must always be sent back unchanged.
   const sitemapRef = useRef({ ru: "", kz: "" });
+  const updatedAtRef = useRef(null);
   const savedSnapshotRef = useRef("");
 
   const [frequentQuestions, setFrequentQuestions] = useState([]);
@@ -121,11 +141,13 @@ const FaqSettings = ({ credentials }) => {
   const [status, setStatus] = useState({ type: "", message: "" });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
-  const isDirty = snapshot(frequentQuestions, categories) !== savedSnapshotRef.current;
+  const isDirty = hasLoaded && snapshot(frequentQuestions, categories) !== savedSnapshotRef.current;
 
   const loadConfig = useCallback(async () => {
     setIsLoading(true);
+    setHasLoaded(false);
     setStatus({ type: "", message: "" });
 
     try {
@@ -142,6 +164,8 @@ const FaqSettings = ({ credentials }) => {
       setFrequentQuestions(nextFrequentQuestions);
       setCategories(nextCategories);
       savedSnapshotRef.current = snapshot(nextFrequentQuestions, nextCategories);
+      updatedAtRef.current = response.data?.updated_at;
+      setHasLoaded(true);
     } catch (error) {
       console.error("Failed to load app config:", error);
       setStatus({ type: "error", message: text.loadError });
@@ -158,10 +182,16 @@ const FaqSettings = ({ credentials }) => {
   }, [loadConfig]);
 
   const handleSave = async () => {
+    if (!hasLoaded) return;
     setIsSaving(true);
     setStatus({ type: "", message: "" });
 
     try {
+      const latest = await api.get("/settings/app-config", { headers: authHeaders });
+      if (latest.data?.updated_at !== updatedAtRef.current) {
+        setStatus({ type: "error", message: text.conflictError });
+        return;
+      }
       const payload = {
         frequent_questions: normalizeFaqList(frequentQuestions),
         categories: normalizeCategories(categories),
@@ -183,6 +213,7 @@ const FaqSettings = ({ credentials }) => {
       setFrequentQuestions(nextFrequentQuestions);
       setCategories(nextCategories);
       savedSnapshotRef.current = snapshot(nextFrequentQuestions, nextCategories);
+      updatedAtRef.current = response.data?.updated_at;
       setStatus({ type: "success", message: text.successSaved });
     } catch (error) {
       console.error("Failed to save app config:", error);
@@ -215,7 +246,7 @@ const FaqSettings = ({ credentials }) => {
             type="button"
             className="faq-settings__action faq-settings__action_primary"
             onClick={handleSave}
-            disabled={isSaving || !isDirty}
+            disabled={isSaving || !hasLoaded || !isDirty}
           >
             {isSaving ? text.saving : text.save}
           </Button>
@@ -250,9 +281,20 @@ const FaqSettings = ({ credentials }) => {
               nextCategories[index] = next;
               setCategories(nextCategories);
             }}
+            onDelete={() => setCategories(categories.filter((_, i) => i !== index))}
             texts={text}
           />
         ))}
+        <Button
+          type="button"
+          className="faq-settings__action"
+          onClick={() => setCategories([
+            ...categories,
+            { name: emptyLocalized(), subcategories: [], faq: [] },
+          ])}
+        >
+          {text.addCategory}
+        </Button>
       </section>
     </div>
   );
